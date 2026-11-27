@@ -41,9 +41,9 @@ describe.skipIf(!TEST_DATABASE_URL)("Tallaby Pay withdrawals (integration)", { t
     await db.insert(s.users).values({ id: sellerId, isGuest: false, role: "seller" });
     created.push(sellerId);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address,
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain,
         support_email, status)
-      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb,
+      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub},
         ${`${sub}@example.com`}, 'approved')
     `);
     if (kyc) {

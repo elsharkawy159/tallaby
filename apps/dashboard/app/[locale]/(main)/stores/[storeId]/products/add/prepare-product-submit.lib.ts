@@ -118,7 +118,9 @@ export function toProductPayload (data: AddProductFormData) {
     digitalFiles: _digitalFiles,
     ...payload
   } = rest
+  // F-108e: the type the category is for, checked on the server (assertCategoryKindForProduct); not a column, never written.
+  const categoryKind = productType === "digital" ? "digital" : "physical"
   // A digital product (F-108a) has no options: an edit removes any it had.
-  if (productType === "digital") return { payload: { ...payload, variants: [], variantTypes: [] }, taxonomy }
-  return { payload, taxonomy }
+  if (productType === "digital") return { payload: { ...payload, categoryKind, variants: [], variantTypes: [] }, taxonomy }
+  return { payload: { ...payload, categoryKind }, taxonomy }
 }

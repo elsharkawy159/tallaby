@@ -108,12 +108,12 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
     name: "search_categories",
     title: "Search Tallaby categories",
     description:
-      "Search Tallaby's category list in Arabic or English (e.g. \"mugs\", \"أكواب\"). Every product needs one of these as categoryId; pick the most specific match.",
+      "Search Tallaby's category list in Arabic or English (e.g. \"mugs\", \"أكواب\"). Every product needs one of these as categoryId; pick the most specific match. Products you add are physical, so leave productKind out; pass productKind \"digital\" only to find a category for a digital product the seller set up in the dashboard.",
     input: agentSearchCategoriesSchema,
     scope: "store.read",
     write: false,
     annotations: READ,
-    run: async (args) => ({ data: { categories: await agentSearchCategories(contextFor(actor, args.storeId), args.query) }, storeId: args.storeId }),
+    run: async (args) => ({ data: { categories: await agentSearchCategories(contextFor(actor, args.storeId), args.query, args.productKind) }, storeId: args.storeId }),
   });
 
   registerTool(server, actor, {

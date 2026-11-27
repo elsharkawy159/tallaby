@@ -33,8 +33,8 @@ describe.skipIf(!TEST_DATABASE_URL)("product trash (integration)", { timeout: 90
     await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
-      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'tr@example.com', 'approved')
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, status)
+      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'tr@example.com', 'approved')
     `);
     return id;
   }

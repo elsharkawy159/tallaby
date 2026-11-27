@@ -96,8 +96,6 @@ describe.skipIf(!isStaging)("product slugs per seller (integration)", { timeout:
         displayName: `Slug ${run} ${index}`,
         slug: `slugfix-${run}-${index}`,
         subdomain: `slugfix-${run}-${index}`,
-        businessType: "individual" as const,
-        legalAddress: { country: "EG" },
         supportEmail: "slug@example.test",
         status: "approved" as const,
       })),

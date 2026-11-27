@@ -55,6 +55,12 @@ const RECEIVE_INPUT: Record<
   paymentLink: { icon: Link2, placeholder: "https://ipn.eg/…", inputMode: "url" },
 };
 
+/** The order the drawer lists them in: the payment link first, as the easiest for customers. */
+const RECEIVE_BY_OPTIONS: InstapayReceiveType[] = [
+  "paymentLink",
+  ...INSTAPAY_RECEIVE_TYPES.filter((type) => type !== "paymentLink"),
+];
+
 /** Field errors from the shared detail schemas, keyed by field. */
 function fieldErrors(
   kind: "wallet" | "instapay",
@@ -413,7 +419,9 @@ export function MethodSheet({
   const kind = methodKey === "cod" ? "cod" : methodKey === "instapay" ? "instapay" : "wallet";
   const setUp = kind === "cod" || !!entry?.details;
   const [values, setValues] = useState<PaymentDetailsFormValues>({ ...EMPTY, ...(entry?.details ?? {}) });
-  const [receiveBy, setReceiveBy] = useState<InstapayReceiveType>(() => instapayReceiveType(entry?.details));
+  const [receiveBy, setReceiveBy] = useState<InstapayReceiveType>(() =>
+    entry?.details ? instapayReceiveType(entry.details) : "paymentLink",
+  );
   const [fee, setFee] = useState(entry?.fee ? String(entry.fee) : "");
   const [maxOrder, setMaxOrder] = useState(entry?.maxOrder ? String(entry.maxOrder) : "");
   const [note, setNote] = useState(entry?.note ?? "");
@@ -528,12 +536,13 @@ export function MethodSheet({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {INSTAPAY_RECEIVE_TYPES.map((type) => {
+                        {RECEIVE_BY_OPTIONS.map((type) => {
                           const Icon = RECEIVE_INPUT[type].icon;
                           return (
                             <SelectItem key={type} value={type}>
                               <Icon className="size-4 text-muted-foreground" aria-hidden />
                               {t(`receiveBy.${type}`)}
+                              {type === "paymentLink" && <Tag tone="success">{t("receiveBy.recommended")}</Tag>}
                             </SelectItem>
                           );
                         })}

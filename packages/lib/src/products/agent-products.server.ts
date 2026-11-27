@@ -53,6 +53,8 @@ import {
 } from "@workspace/db";
 import { syncCategoryProductCountForProductChange, syncCategoryProductCountForProductMutation } from "@workspace/db/categories";
 import { setStockContext } from "@workspace/db/inventory";
+import { bundleAvailability } from "./bundles.lib";
+import { loadBundleItems } from "./bundles.server";
 import { syncProductVariants } from "@workspace/db/products";
 import {
   aliasedProductShownInStore,
@@ -87,9 +89,10 @@ import {
 import { restoreProducts, trashProducts } from "./trash.server";
 import { roundPricePayload, roundVariantPriceRow } from "./price-rounding-payload.lib";
 import { loadStorePriceRounding } from "./price-rounding.server";
+import { DIGITAL_FILE_REQUIRED, digitalProductsWithoutFiles } from "./digital-publish.server";
+import { CATEGORY_KIND_MISMATCH, categoryMatchesProductType, toProductKind, type ProductKind } from "./category-kind.lib";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
-import { DIGITAL_FILE_REQUIRED, digitalProductsWithoutFiles } from "./digital-publish.server";
 
 export type AgentProductErrorCode =
   | "not_found"
@@ -198,7 +201,7 @@ function snapshotOf(row: NonNullable<Awaited<ReturnType<typeof loadSnapshot>>>):
 
 async function requireProduct(store: AgentStore, sellerId: string, productId: string, { allowTrash = false } = {}) {
   const [row] = await db
-    .select({ id: products.id, status: products.status, images: products.images, deletedAt: products.deletedAt, sku: products.sku })
+    .select({ id: products.id, status: products.status, images: products.images, deletedAt: products.deletedAt, sku: products.sku, isBundle: products.isBundle, productType: products.productType })
     .from(products)
     .where(and(eq(products.id, productId), storeShowsProduct(store, sellerId), allowTrash ? undefined : isNull(products.deletedAt)))
     .limit(1);
@@ -223,6 +226,8 @@ async function resolveCategories(
     storeCategoryId?: string | null;
     storeCategoryName?: { ar?: string; en: string };
   },
+  /** The product's type: its Tallaby category must be of that kind (F-108e). */
+  productKind: ProductKind = "physical",
 ): Promise<{ categoryId?: string; sellerCategoryId?: string | null; taxonomyChanged: boolean }> {
   let sellerCategoryId: string | null | undefined = input.storeCategoryId;
   let sourceCategoryId: string | null = null;
@@ -243,10 +248,20 @@ async function resolveCategories(
 
   let categoryId = input.categoryId;
   if (categoryId) {
-    const [cat] = await db.select({ id: categories.id }).from(categories).where(eq(categories.id, categoryId)).limit(1);
+    const [cat] = await db.select({ id: categories.id, kind: categories.productKind }).from(categories).where(eq(categories.id, categoryId)).limit(1);
     if (!cat) throw new AgentProductError("invalid_category", "Unknown Tallaby category. Use search_categories.");
+    // F-108e: the existing code, so every caller that handles invalid_category keeps working.
+    if (!categoryMatchesProductType(cat.kind, productKind)) {
+      throw new AgentProductError(
+        "invalid_category",
+        `That category is for ${toProductKind(cat.kind)} products and this product is ${productKind}. Use search_categories with productKind "${productKind}".`,
+        { reason: CATEGORY_KIND_MISMATCH },
+      );
+    }
   } else if (sourceCategoryId) {
-    categoryId = sourceCategoryId;
+    // A store category copied from a Tallaby category of the other kind (F-108e) leaves the Tallaby category as it is.
+    const [source] = await db.select({ kind: categories.productKind }).from(categories).where(eq(categories.id, sourceCategoryId)).limit(1);
+    if (source && categoryMatchesProductType(source.kind, productKind)) categoryId = sourceCategoryId;
   }
   return { categoryId, sellerCategoryId, taxonomyChanged: sellerCategoryId !== undefined };
 }
@@ -553,11 +568,15 @@ export async function agentUpdateProduct(
   const before = await loadSnapshot(db, ctx.sellerId, input.productId);
   if (!before) throw new AgentProductError("not_found", "Product not found in this store.");
 
+  // A bundle (0188, F-07f) never has variants; `isBundle` itself is never written here.
+  if (current.isBundle && input.variants?.length) {
+    throw new AgentProductError("variants_invalid", "A bundle can't have variants. Its items are edited in the Tallaby dashboard.");
+  }
   if (input.variants) {
     const problem = checkAgentVariants(input.variants);
     if (problem) throw new AgentProductError("variants_invalid", `Variants are not valid: ${problem}.`);
   }
-  const taxonomy = await resolveCategories(ctx, store, input);
+  const taxonomy = await resolveCategories(ctx, store, input, toProductKind(current.productType)); // F-108e
   if (input.sku && (await skuTaken(ctx.sellerId, input.sku.trim(), input.productId))) {
     throw new AgentProductError("sku_taken", `SKU "${input.sku}" is already used by another product.`);
   }
@@ -700,16 +719,16 @@ export async function agentSetProductStatus(
   if (product.status === "rejected") throw new AgentProductError("cannot_publish", "Tallaby took this product down; it can't be published or hidden here.");
   if (wanted === "active" && imageList(product.images).length === 0) throw new AgentProductError("image_required", "Add at least one photo before publishing.");
   if (wanted === "active" && ctx.sellerStatus !== "approved") throw new AgentProductError("cannot_publish", "This account can't publish products right now.");
+  // A digital product is never live without a file (F-108b).
+  if (wanted === "active" && (await digitalProductsWithoutFiles(ctx.sellerId, [productId])).size > 0) {
+    throw new AgentProductError("cannot_publish", "This digital product has no file yet. Add its file in the Tallaby dashboard before publishing.", { reason: DIGITAL_FILE_REQUIRED });
+  }
 
   const before = await loadSnapshot(db, ctx.sellerId, productId);
   const updated = await db
     .update(products)
     .set({ status: wanted, updatedAt: new Date().toISOString() })
     .where(and(eq(products.id, productId), storeShowsProduct(store, ctx.sellerId), isNull(products.deletedAt)))
-  // A digital product is never live without a file (F-108b).
-  if (wanted === "active" && (await digitalProductsWithoutFiles(ctx.sellerId, [productId])).size > 0) {
-    throw new AgentProductError("cannot_publish", "This digital product has no file yet. Add its file in the Tallaby dashboard before publishing.", { reason: DIGITAL_FILE_REQUIRED });
-  }
     .returning({ id: products.id });
   if (!updated.length) throw new AgentProductError("not_found", "Product not found in this store.");
   if (before) await syncCategoryProductCountForProductChange({ categoryId: before.categoryId, previousStatus: before.status, nextStatus: wanted });
@@ -873,6 +892,8 @@ export async function agentGetProduct(ctx: AgentProductContext, productId: strin
         .limit(1)
     : [];
   const enSlug = product.productTranslations.find((r) => r.locale === "en")?.slug ?? null;
+  // A bundle's items, read-only (0188, F-07f): bundles are edited in the dashboard only.
+  const bundleRows = product.isBundle ? ((await loadBundleItems(store.id, [product.id], { locale: "en" })).get(product.id) ?? []) : null;
   const dims = product.dimensions && typeof product.dimensions === "object" ? (product.dimensions as Record<string, unknown>) : null;
 
   return {
@@ -887,6 +908,12 @@ export async function agentGetProduct(ctx: AgentProductContext, productId: strin
     discountEndsAt: price.discountEndsAt,
     quantity: Number(product.quantity ?? 0),
     trackStock: product.trackStock,
+    isBundle: product.isBundle,
+    /** A bundle's items (null = not a bundle) and how many bundles can be sold now (null = unlimited). */
+    bundleItems: bundleRows
+      ? bundleRows.map((item) => ({ productId: item.productId, variantId: item.variantId, sku: item.sku, name: item.name, variantName: item.variantName, quantity: item.quantity }))
+      : null,
+    bundleAvailable: bundleRows ? (bundleRows.some((item) => item.storeId !== store.id) ? 0 : bundleAvailability(bundleRows)) : null,
     images: imageList(product.images).map((path) => productImageUrl(path, base)),
     category: product.category ? { id: product.category.id, name: product.category.name, nameAr: product.category.nameAr } : null,
     storeCategory: storeCategory ?? null,
@@ -946,7 +973,7 @@ export async function agentListStoreCategories(ctx: AgentProductContext) {
 }
 
 /** Tallaby's category pack, searched in Arabic and English (the required categoryId on a product). */
-export async function agentSearchCategories(ctx: AgentProductContext, query: string) {
+export async function agentSearchCategories(ctx: AgentProductContext, query: string, productKind: ProductKind = "physical") {
   await loadStore(ctx, false);
   const pattern = `%${query.trim().slice(0, 80).replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
   const rows = await db
@@ -959,7 +986,8 @@ export async function agentSearchCategories(ctx: AgentProductContext, query: str
       parentAr: sql<string | null>`${sql`(SELECT p.name_ar FROM ${categories} p WHERE p.id = ${categories.parentId})`}`,
     })
     .from(categories)
-    .where(or(ilike(categories.name, pattern), ilike(categories.nameAr, pattern)))
+    // F-108e: only the categories of that product type (physical by default, like every product the tools create).
+    .where(and(eq(categories.productKind, productKind), or(ilike(categories.name, pattern), ilike(categories.nameAr, pattern))))
     .orderBy(desc(categories.productCount), asc(categories.name))
     .limit(15);
   return rows.filter((r) => r.name || r.nameAr);

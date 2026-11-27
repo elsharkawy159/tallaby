@@ -18,6 +18,7 @@ import {
 import {
   decrementStock,
   InsufficientStockError,
+  orderStockLinesOf,
   type StockLine,
 } from '@workspace/db/inventory'
 import type { StockContext } from '@workspace/db/inventory'
@@ -69,8 +70,8 @@ import {
   storeShippingCollector,
   type StorefrontCheckoutPayments,
 } from '../payments/store-methods'
-import { gatewayCollector, storeGatewayOrderMetadata } from '../payments/store-gateways.lib'
 import { DIGITAL_NO_COD_ERROR, isPaymentMethodAllowedForCart } from '../payments/digital-checkout.lib'
+import { gatewayCollector, storeGatewayOrderMetadata } from '../payments/store-gateways.lib'
 import { getTallabyPaySettings } from '../tallaby-pay/settings.server'
 import { amountToPiastres, customerTallabyPayFee, piastresToAmount } from '../tallaby-pay/fee.lib'
 import {
@@ -86,6 +87,8 @@ import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
 import { minOrderShortfalls, shouldEnforceMinOrder, type MinOrderShortfall } from './min-order-quantity.lib'
 import { splitDeposit } from './cod-deposit.lib'
 import { preorderSnapshotDate } from '../products/preorder.lib'
+import { bundleOrderProblem, bundleSnapshot, type BundleSnapshotItem } from '../products/bundles.lib'
+import { loadBundleItems, type LoadedBundleItem } from '../products/bundles.server'
 import {
   parseCustomerFields,
   parseCustomerInputsSnapshot,
@@ -415,6 +418,33 @@ export async function placeOrderFromCart(
     }
   }
 
+  // Product bundles (0188, F-07f; docs/plans/bundles.md §2–§3): a bundle line
+  // takes its stock from its items, read once for the whole cart from the
+  // order's store (the bundle's own on a marketplace cart). A bundle with no
+  // items, a trashed item, an item of another store or a missing variant is
+  // refused before any stock, coupon or money. The snapshot written on the
+  // line is the same list the stock is taken from.
+  const bundleItemsById = new Map<string, LoadedBundleItem[]>()
+  const bundleSnapshotById = new Map<string, BundleSnapshotItem[]>()
+  const bundleIdsByStore = new Map<string, string[]>()
+  for (const item of cart.cartItems) {
+    if (!item.product.isBundle) continue
+    const bundleStoreId = cart.storeId ?? item.product.storeId
+    if (!bundleStoreId) return { success: false, error: 'bundleUnavailable' }
+    bundleIdsByStore.set(bundleStoreId, [...(bundleIdsByStore.get(bundleStoreId) ?? []), item.productId])
+  }
+  for (const [bundleStoreId, ids] of bundleIdsByStore) {
+    const loaded = await loadBundleItems(bundleStoreId, ids, { locale })
+    for (const id of ids) {
+      const items = loaded.get(id)
+      if (!items || bundleOrderProblem(bundleStoreId, items)) {
+        return { success: false, error: 'bundleUnavailable' }
+      }
+      bundleItemsById.set(id, items)
+      bundleSnapshotById.set(id, bundleSnapshot(items))
+    }
+  }
+
   // Customer requirements (F-91): a line's inputs are checked again against the
   // product's fields NOW. The cart price already holds the extras worked out on
   // add; if a field changed (a new required field, a removed option, another
@@ -617,6 +647,8 @@ export async function placeOrderFromCart(
       customerInputs: customerInputsByLine.get(item.id) ?? null,
       // Pre-order (0179, F-23b): the product's expected delivery date, read from the row here, never from the client.
       preorderShipsAt: preorderSnapshotDate(item.product),
+      // Bundle (0188, F-07f): the items this line took stock from; cancel and return restore them.
+      bundleItems: item.product.isBundle ? (bundleSnapshotById.get(item.productId) ?? null) : null,
       currency: orderCurrency,
       condition: item.product.condition,
       fulfillmentType: item.product.fulfillmentType,
@@ -838,18 +870,53 @@ export async function placeOrderFromCart(
   const totalAmount = subtotal + shippingCost + tax - totalDiscount
   const orderNumber = generateOrderNumber()
 
-  const stockLineMeta = new Map<string, (typeof cart.cartItems)[number]>()
-  const stockLines: StockLine[] = cart.cartItems.map((item) => {
-    const variant = item.variant as { id?: string } | null
-    const line: StockLine = variant?.id
-      ? { kind: 'variant', id: variant.id, quantity: item.quantity }
-      : { kind: 'product', id: item.productId, quantity: item.quantity }
-    stockLineMeta.set(`${line.kind}:${line.id}`, item)
-    return line
-  })
+  // A bundle line moves its items' stock (orderStockLinesOf); a cart with no
+  // bundle gives exactly one line per cart line, as before.
+  type StockLineMeta = { productId: string; sellerId: string; categoryId: string | null; brandId: string | null }
+  const stockLineMeta = new Map<string, StockLineMeta>()
+  const stockLines: StockLine[] = orderStockLinesOf(
+    cart.cartItems.map((item) => {
+      const variant = item.variant as { id?: string } | null
+      const parts = item.product.isBundle ? bundleItemsById.get(item.productId) : undefined
+      if (parts) {
+        for (const part of parts) {
+          stockLineMeta.set(part.variantId ? `variant:${part.variantId}` : `product:${part.productId}`, {
+            productId: part.productId,
+            sellerId: item.sellerId,
+            categoryId: part.categoryId,
+            brandId: part.brandId,
+          })
+        }
+      } else {
+        stockLineMeta.set(variant?.id ? `variant:${variant.id}` : `product:${item.productId}`, {
+          productId: item.productId,
+          sellerId: item.sellerId,
+          categoryId: item.product.categoryId,
+          brandId: item.product.brandId,
+        })
+      }
+      return {
+        productId: item.productId,
+        variantId: variant?.id || null,
+        quantity: item.quantity,
+        bundleItems: parts ? (bundleSnapshotById.get(item.productId) ?? null) : null,
+      }
+    }),
+  )
 
   const resolvedPaymentMethod =
     paymentOverrides?.paymentMethod ?? paymentMethod
+
+  // Digital products (F-108b): a customer checkout with any digital product
+  // takes no cash on delivery (nothing is delivered to pay for), so no COD
+  // deposit either, whatever the client sent. Seller and admin orders keep
+  // their own payment.
+  if (
+    (orderSource === 'storefront' || orderSource === 'website') &&
+    !isPaymentMethodAllowedForCart(resolvedPaymentMethod, { hasDigital: hasDigitalItems })
+  ) {
+    return { success: false, error: DIGITAL_NO_COD_ERROR }
+  }
 
   // A discount override can be smaller than the waiver the rate rules found,
   // in which case shipping really is billed again — so COD eligibility is
@@ -907,17 +974,6 @@ export async function placeOrderFromCart(
     orderSource === 'storefront' && resolvedPaymentMethod === 'cash_on_delivery'
       ? (storefrontPayments?.deposit ?? null)
       : null
-  // Digital products (F-108b): a customer checkout with any digital product
-  // takes no cash on delivery (nothing is delivered to pay for), so no COD
-  // deposit either, whatever the client sent. Seller and admin orders keep
-  // their own payment.
-  if (
-    (orderSource === 'storefront' || orderSource === 'website') &&
-    !isPaymentMethodAllowedForCart(resolvedPaymentMethod, { hasDigital: hasDigitalItems })
-  ) {
-    return { success: false, error: DIGITAL_NO_COD_ERROR }
-  }
-
   const depositSplit = depositSetting ? splitDeposit(totalAmount, depositSetting.percent) : null
   const deposit =
     depositSetting && depositSplit && depositSplit.depositPiastres > 0
@@ -1331,8 +1387,8 @@ export async function placeOrderFromCart(
         sellerId: item.sellerId,
         // The order's store (orders.store_id, copied from the cart), for its product tag (F-87c).
         storeId: newOrder!.storeId ?? null,
-        categoryId: item.product.categoryId,
-        brandId: item.product.brandId,
+        categoryId: item.categoryId,
+        brandId: item.brandId,
       },
       stockBoundaryCrossed: r.stockBoundaryCrossed,
     }

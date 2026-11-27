@@ -32,8 +32,6 @@ describe.skipIf(!TEST_DATABASE_URL)("custom domain → store (integration)", () 
       displayName: "Res",
       slug: `res-${tag}`,
       subdomain: `res-${tag}`,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "res@example.com",
       status: "approved",
     });

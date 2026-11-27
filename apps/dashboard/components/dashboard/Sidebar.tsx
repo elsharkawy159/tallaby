@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   ChevronDown,
+  Eye,
   LogOut,
   PanelRightClose,
   PanelRightOpen,
@@ -64,6 +65,10 @@ interface SidebarProps {
   counts: SidebarCounts;
   stores: SwitcherStore[];
   selectedStoreId: string | null;
+  /** The selected store's public link, for the eye beside the collapse button (owner, 2026-11-27). */
+  storeHref: string | null;
+  /** The selected store's site is open to visitors: the eye is green, else red. */
+  siteLive: boolean;
   maxStores: number;
   features: Partial<Record<NavFeature, boolean>>;
   /** A Tallaby support account (decided on the server): links get a "copy page link" button. */
@@ -74,7 +79,7 @@ const MinTopUpContext = createContext<string | null>(null);
 
 /* The design's `.ni` and `.sub a`. */
 const NAV_ITEM =
-  "flex min-h-10 w-full cursor-pointer items-center gap-[11px] rounded-xl px-3 py-2 text-start text-[13.5px] font-medium text-(--s-text) no-underline transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink)";
+  "flex min-h-[38px] w-full cursor-pointer items-center gap-[11px] rounded-xl px-3 py-[7px] text-start text-[12.5px] font-medium text-(--s-text) no-underline transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink)";
 const NAV_ITEM_ACTIVE =
   "bg-primary font-bold text-primary-foreground shadow-(--s-shadow-nav) hover:bg-primary hover:text-primary-foreground";
 const NAV_ICON = "size-[18px] shrink-0 text-(--s-subtle)";
@@ -85,6 +90,8 @@ export const Sidebar = ({
   counts,
   stores,
   selectedStoreId,
+  storeHref,
+  siteLive,
   maxStores,
   features,
   supportTools = false,
@@ -136,7 +143,7 @@ export const Sidebar = ({
       <aside
         aria-label={t("nav.mainMenu")}
         className={cn(
-          "fixed inset-y-0 start-0 z-40 hidden flex-col border-e border-(--s-line) bg-(--s-glass-nav) backdrop-blur-md transition-[width] duration-300 ease-[cubic-bezier(.2,.7,.2,1)] min-[1021px]:flex",
+          "fixed inset-y-0 start-0 z-40 hidden flex-col bg-(--s-frame) transition-[width] duration-300 ease-[cubic-bezier(.2,.7,.2,1)] min-[1021px]:flex",
           isCollapsed ? "w-[76px]" : "w-[264px]",
         )}
       >
@@ -147,19 +154,30 @@ export const Sidebar = ({
           )}
         >
           {!isCollapsed && <SidebarLogo />}
-          <IconButton
-            onClick={toggleCollapse}
-            aria-label={
-              isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")
-            }
-            aria-expanded={!isCollapsed}
-          >
-            {isCollapsed ? (
-              <PanelRightOpen className="ltr:-scale-x-100" />
-            ) : (
-              <PanelRightClose className="ltr:-scale-x-100" />
-            )}
-          </IconButton>
+          <div className="flex items-center gap-0.5">
+            {/* No room beside the button in the 76px rail, so the eye shows only while expanded. */}
+            {!isCollapsed && <VisitStoreEye href={storeHref} siteLive={siteLive} />}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <IconButton
+                  onClick={toggleCollapse}
+                  aria-label={
+                    isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")
+                  }
+                  aria-expanded={!isCollapsed}
+                >
+                  {isCollapsed ? (
+                    <PanelRightOpen className="ltr:-scale-x-100" />
+                  ) : (
+                    <PanelRightClose className="ltr:-scale-x-100" />
+                  )}
+                </IconButton>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
         {/* Desktop only: the copy button shows on hover, which touch screens don't have. */}
         <SupportToolsContext.Provider value={supportTools}>
@@ -189,9 +207,12 @@ export const Sidebar = ({
       >
         <div className="flex h-[68px] shrink-0 items-center justify-between gap-2 px-[18px] max-[600px]:h-[60px]">
           <SidebarLogo />
-          <IconButton onClick={closeMobile} aria-label={t("nav.closeMenu")}>
-            <X />
-          </IconButton>
+          <div className="flex items-center gap-0.5">
+            <VisitStoreEye href={storeHref} siteLive={siteLive} />
+            <IconButton onClick={closeMobile} aria-label={t("nav.closeMenu")}>
+              <X />
+            </IconButton>
+          </div>
         </div>
         <SidebarContent
           {...content}
@@ -406,8 +427,8 @@ const SidebarContent = ({
       )}
 
       {/* Navigation */}
-      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-2.5 [scrollbar-width:thin]">
-        <ul className="flex flex-col gap-0.5">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <ul className="flex flex-col gap-px">
           {entries.map((entry, i) =>
             entry.kind === "divider" ? (
               isCollapsed || !entry.label ? (
@@ -436,8 +457,8 @@ const SidebarContent = ({
       {/* Support, then what the top bar hides on phones. Log out is in the Stores menu; a seller with no store gets it here. */}
       <div
         className={cn(
-          "flex shrink-0 flex-col gap-2 border-t border-(--s-line-soft)",
-          isCollapsed ? "p-3" : "px-3.5 pb-4 pt-3",
+          "flex shrink-0 flex-col gap-2",
+          isCollapsed ? "p-3" : "px-3.5 pb-3 pt-3",
         )}
       >
         <SupportCard isCollapsed={isCollapsed} />
@@ -494,7 +515,37 @@ function SellerIdentity({ isCollapsed }: { isCollapsed: boolean }) {
   );
 }
 
-/** WhatsApp support link: one compact row like the nav items (owner, 2026-11-22). */
+/**
+ * "Visit store" as a plain eye beside the collapse button (owner, 2026-11-27;
+ * it was a header pill): green while the site is open to visitors, red while
+ * it is offline. Opens the store in a new tab.
+ */
+function VisitStoreEye({ href, siteLive }: { href: string | null; siteLive: boolean }) {
+  const t = useTranslations("header");
+  if (!href) return null;
+  const label = `${t("visitStore")} · ${t(siteLive ? "siteLive" : "siteOffline")}`;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={label}
+          className={cn(
+            "grid size-9 place-items-center rounded-[11px] transition-colors duration-150 hover:bg-(--s-hover)",
+            siteLive ? "text-[#16a34a]" : "text-[#dc2626]",
+          )}
+        >
+          <Eye aria-hidden className="size-[18px]" />
+        </a>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+/** WhatsApp support link: a rounded (pill) button (owner, 2026-11-27). */
 function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
   const t = useTranslations("nav");
   const href = useSupportWhatsAppUrl();
@@ -505,8 +556,8 @@ function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
       rel="noopener noreferrer"
       aria-label={isCollapsed ? t("helpCardTitle") : undefined}
       className={cn(
-        "flex min-h-10 items-center gap-[11px] rounded-xl text-[13.5px] font-semibold text-(--s-whatsapp-ink) no-underline transition-colors duration-150 hover:bg-(--s-whatsapp-soft) hover:text-(--s-whatsapp-ink)",
-        isCollapsed ? "justify-center" : "px-3 py-2",
+        "flex min-h-10 items-center gap-[11px] rounded-full border border-(--s-whatsapp-line) bg-(--s-whatsapp-soft) text-[13.5px] font-semibold text-(--s-whatsapp-ink) no-underline transition-colors duration-150 hover:border-(--s-whatsapp) hover:text-(--s-whatsapp-ink)",
+        isCollapsed ? "mx-auto size-11 justify-center" : "px-3.5 py-2",
       )}
     >
       <span className="relative shrink-0">
@@ -534,7 +585,7 @@ function OnlineDot({ className }: { className?: string }) {
   return (
     <span aria-hidden className={cn("relative flex size-2.5 shrink-0", className)}>
       <span className="absolute inset-0 rounded-full bg-(--s-whatsapp) opacity-60 motion-safe:animate-ping" />
-      <span className="relative size-2.5 rounded-full bg-(--s-whatsapp) ring-2 ring-(--s-surface)" />
+      <span className="relative size-2.5 rounded-full bg-(--s-whatsapp) ring-2 ring-(--s-whatsapp-soft)" />
     </span>
   );
 }
@@ -709,7 +760,7 @@ function SidebarGroup({
         <div className="min-h-0 overflow-hidden">
           <ul
             id={subId}
-            className="relative mb-1.5 mt-0.5 flex flex-col gap-px ps-9 before:absolute before:inset-y-1 before:start-[20.5px] before:w-[1.5px] before:rounded-sm before:bg-(--s-field)"
+            className="relative mb-1 mt-px flex flex-col gap-px ps-8 before:absolute before:inset-y-1 before:start-[20.5px] before:w-[1.5px] before:rounded-sm before:bg-(--s-field)"
           >
             {group.items.map((item) => {
               const isActive = item.href === activeHref;
@@ -724,9 +775,9 @@ function SidebarGroup({
                     aria-disabled={item.disabled || undefined}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "relative flex min-h-[34px] items-center justify-between gap-2 rounded-[9px] px-2.5 py-1.5 text-[13px] text-(--s-muted) no-underline transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) max-[1020px]:min-h-10",
+                      "relative flex min-h-8 items-center justify-between gap-2 rounded-[9px] px-2.5 py-[5px] text-[12px] text-(--s-body) no-underline transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) max-[1020px]:min-h-10",
                       isActive &&
-                        "bg-(--s-hover) font-bold text-(--s-ink) before:absolute before:inset-y-[7px] before:-start-4 before:w-[3px] before:rounded-[3px] before:bg-(--s-primary)",
+                        "bg-(--s-hover) font-bold text-(--s-ink) before:absolute before:inset-y-[7px] before:-start-[12.25px] before:w-[3px] before:rounded-[3px] before:bg-(--s-primary)",
                       item.disabled && "pointer-events-none opacity-60",
                       copyLink && "pe-9",
                     )}

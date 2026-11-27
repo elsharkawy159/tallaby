@@ -13,9 +13,9 @@ export default function SellerSetupReminder() {
     optOutUrl: `${dash}/api/email/setup-reminders/unsubscribe?token=preview`,
     steps: [
       { key: "product", href: `${dash}/stores/${STORE}/products/add`, done: true },
-      { key: "design", href: `${dash}/stores/${STORE}/website/templates`, done: false },
-      { key: "payments", href: `${dash}/stores/${STORE}/settings/payments`, done: false },
-      { key: "shipping", href: `${dash}/stores/${STORE}/shipping`, done: false },
+      { key: "theme", href: `${dash}/stores/${STORE}/website/templates`, done: false },
+      { key: "identity", href: `${dash}/stores/${STORE}/website/design`, done: false },
+      { key: "wallet", href: `${dash}/wallet`, done: false },
     ],
   });
 }

@@ -5,6 +5,7 @@
  * always written in both Arabic and English (CLAUDE.md rule 13, AI rule 20).
  */
 import { z } from "zod";
+import { PRODUCT_KINDS } from "./category-kind.lib";
 
 export const AGENT_PRODUCT_LIMITS = {
   title: 255,
@@ -203,7 +204,12 @@ export const agentSearchProductsSchema = z
   .strict();
 
 export const agentSearchCategoriesSchema = z
-  .object({ storeId: uuid, query: z.string().trim().min(1).max(80) })
+  .object({
+    storeId: uuid,
+    query: z.string().trim().min(1).max(80),
+    // F-108e: physical (default) or digital categories; a product's category must be of its type.
+    productKind: z.enum(PRODUCT_KINDS).optional(),
+  })
   .strict();
 
 export const agentStoreRefSchema = z.object({ storeId: uuid }).strict();

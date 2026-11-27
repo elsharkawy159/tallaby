@@ -66,7 +66,6 @@ export interface SellersQuery {
   offset?: number;
   search?: string;
   status?: string[];
-  businessType?: string[];
   /** "verified" | "unverified" */
   verification?: string[];
   /** "exempt" | "charged" */
@@ -119,9 +118,7 @@ export async function getSellers(query: SellersQuery = {}) {
         logoUrl: sellers.logoUrl,
         bannerUrl: sellers.bannerUrl,
         taxId: sellers.taxId,
-        businessType: sellers.businessType,
         registrationNumber: sellers.registrationNumber,
-        legalAddress: sellers.legalAddress,
         status: sellers.status,
         verificationDetails: sellers.verificationDetails,
         returnPolicy: sellers.returnPolicy,
@@ -136,7 +133,6 @@ export async function getSellers(query: SellersQuery = {}) {
         freeDelivery: sellers.freeDelivery,
         feeStructure: sellers.feeStructure,
         taxInformation: sellers.taxInformation,
-        paymentDetails: sellers.paymentDetails,
         storeRating: sellers.storeRating,
         positiveRatingPercent: sellers.positiveRatingPercent,
         totalRatings: sellers.totalRatings,
@@ -201,12 +197,10 @@ export async function getSellers(query: SellersQuery = {}) {
         createdAt: seller.createdAt,
         at: now,
       }),
-      legalAddress: seller.legalAddress as Record<string, unknown>,
       verificationDetails: seller.verificationDetails as Record<string, unknown> | null,
       approvedCategories: seller.approvedCategories as string[] | null,
       feeStructure: seller.feeStructure as Record<string, unknown> | null,
       taxInformation: seller.taxInformation as Record<string, unknown> | null,
-      paymentDetails: seller.paymentDetails as Record<string, unknown> | null,
       fulfillmentOptions: seller.fulfillmentOptions as string[] | null,
       externalIds: seller.externalIds as Record<string, unknown> | null,
       sellerMetrics: seller.sellerMetrics as Record<string, unknown> | null,
@@ -733,12 +727,10 @@ export async function getSellerDetail(
     const detail: SellerDetail = {
       seller: {
         ...seller,
-        legalAddress: (seller.legalAddress ?? {}) as Record<string, unknown>,
         verificationDetails: seller.verificationDetails as Record<string, unknown> | null,
         approvedCategories: seller.approvedCategories as string[] | null,
         feeStructure: seller.feeStructure as Record<string, unknown> | null,
         taxInformation: seller.taxInformation as Record<string, unknown> | null,
-        paymentDetails: seller.paymentDetails as Record<string, unknown> | null,
         fulfillmentOptions: seller.fulfillmentOptions as string[] | null,
         externalIds: seller.externalIds as Record<string, unknown> | null,
         sellerMetrics: seller.sellerMetrics as Record<string, unknown> | null,

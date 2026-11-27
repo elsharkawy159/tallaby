@@ -38,6 +38,8 @@ const categorySchema = z.object({
   name: z.string().min(1, "Name is required"),
   slug: z.string().min(1, "Slug is required"),
   parentId: z.string().nullable(),
+  // F-108e (0191): picked for a main category only; a sub-category always takes its parent's kind.
+  productKind: z.enum(["physical", "digital"]),
 });
 
 interface CategoryAddDialogProps {
@@ -65,8 +67,10 @@ export function CategoryAddDialog({
       name: "",
       slug: "",
       parentId: parentId,
+      productKind: "physical",
     },
   });
+  const chosenParentId = form.watch("parentId");
 
   const onSubmit = async (values: z.infer<typeof categorySchema>) => {
     setIsSubmitting(true);
@@ -75,6 +79,7 @@ export function CategoryAddDialog({
         name: values.name,
         slug: values.slug,
         parentId: values.parentId,
+        productKind: values.productKind,
         locale,
         imageUrl: null,
       });
@@ -202,6 +207,32 @@ export function CategoryAddDialog({
                   </FormItem>
                 )}
               />
+            )}
+
+            {!parentId && !chosenParentId ? (
+              <FormField
+                control={form.control}
+                name="productKind"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="physical">Physical products</SelectItem>
+                        <SelectItem value="digital">Digital products</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <p className="text-muted-foreground text-sm">A sub-category is for the same product type as its parent.</p>
             )}
 
             <DialogFooter>

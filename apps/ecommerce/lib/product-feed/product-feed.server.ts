@@ -31,6 +31,7 @@ import {
 } from "@/lib/storefront.server";
 import { googleCategoryFor, type FeedCategoryNode } from "./google-category.lib";
 import { FEED_ITEM_LIMIT, feedSellerCategory, isVideoPath, type FeedProductRow, type FeedStoreInfo, type FeedTranslation } from "./product-feed.lib";
+import { applyBundleAvailability } from "@workspace/lib/products/bundles/server";
 
 /** Products per cached page. */
 const PAGE_SIZE = 100;
@@ -137,6 +138,7 @@ export async function loadFeedPage(sellerId: string, catalog: StoreCatalogScope,
       price: products.price,
       quantity: products.quantity,
       trackStock: products.trackStock,
+      isBundle: products.isBundle,
       condition: products.condition,
       images: products.images,
       categoryId: products.categoryId,
@@ -218,6 +220,7 @@ export async function loadFeedPage(sellerId: string, catalog: StoreCatalogScope,
       price: row.price,
       quantity: Number(row.quantity ?? 0) || 0,
       trackStock: row.trackStock,
+      isBundle: row.isBundle,
       condition: row.condition,
       images: urls(gallery.filter((path) => !isVideoPath(path))),
       videos: urls(gallery.filter(isVideoPath)),
@@ -265,7 +268,8 @@ export async function* feedProductPages(store: Storefront): AsyncGenerator<FeedP
   const categoryMap = await loadFeedCategoryMap();
   const { catalogSplit } = await storefrontCatalog(store);
   for (let page = 0; page < FEED_MAX_PAGES; page += 1) {
-    const rows = await getCachedFeedPage(store.id, store.storeId, catalogSplit, page);
+    // A bundle's stock is its items' (0188, F-07f): live, after the cached page, one query set per page.
+    const rows = await applyBundleAvailability(store.storeId, await getCachedFeedPage(store.id, store.storeId, catalogSplit, page));
     if (rows.length) {
       yield rows.map(({ categoryId, sellerCategory, ...row }): FeedProductRow => {
         const category = categoryMap.get(categoryId);

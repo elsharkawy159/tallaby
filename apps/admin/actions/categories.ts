@@ -14,6 +14,7 @@ import {
   inArray,
 } from "drizzle-orm";
 import { getAdminUser } from "./auth";
+import { toProductKind } from "@workspace/lib/products/category-kind";
 import {
   applyInvalidation,
   invalidateAllCategories,
@@ -175,18 +176,22 @@ export async function createCategory(data: {
   locale: "en" | "ar";
   imageUrl?: string | null;
   description?: string | null;
+  /** F-108e (0191): a main category's kind; a sub-category always takes its parent's (the DB trigger refuses anything else). */
+  productKind?: string;
 }) {
   try {
     await getAdminUser(); // Verify admin access
 
     // Calculate level based on parent
     let level = 1;
+    let productKind = toProductKind(data.productKind);
     if (data.parentId) {
       const parent = await db.query.categories.findFirst({
         where: eq(categories.id, data.parentId),
       });
       if (parent) {
         level = (parent.level || 1) + 1;
+        productKind = toProductKind(parent.productKind);
       }
     }
 
@@ -197,6 +202,7 @@ export async function createCategory(data: {
         slug: data.slug,
         parentId: data.parentId || null,
         level,
+        productKind,
         ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
       })
       .returning();
@@ -249,6 +255,13 @@ export async function updateCategory(
         });
         if (parent) {
           level = (parent.level || 1) + 1;
+          // F-108e (0191): a category only moves under one of its own kind (the DB trigger would refuse it anyway).
+          if (existingCategory && toProductKind(parent.productKind) !== toProductKind(existingCategory.productKind)) {
+            return {
+              success: false,
+              error: "A category can only move under a category for the same product type (physical or digital).",
+            };
+          }
         }
       }
       levelUpdate = { level };

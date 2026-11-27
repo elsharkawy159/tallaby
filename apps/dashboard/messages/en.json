@@ -68,6 +68,58 @@
       "generic": "Something went wrong. Try again."
     }
   },
+  "productBundle": {
+    "title": "Product bundle",
+    "description": "Sell several of your products together at this product's price.",
+    "toggle": "This product is a bundle",
+    "note": "The bundle's stock comes from its products, and each order takes stock from each of them. The customer pays this product's price. This product's own stock and variants are not used.",
+    "search": "Search by name or SKU",
+    "full": "You've reached the limit of {max} products",
+    "rules": "Up to {max} products, 1 to {maxQuantity} of each. Pre-order products, digital products and other bundles can't be added.",
+    "variant": "Variant",
+    "chooseVariant": "Choose a variant",
+    "chooseVariantFirst": "Choose a variant to see its stock",
+    "quantity": "Quantity",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove from bundle",
+    "untitled": "Untitled product",
+    "unlimitedStock": "Unlimited stock",
+    "inStock": "In stock: {count}",
+    "trashedItem": "In Trash. Remove it from the bundle or restore it.",
+    "available": "{count, plural, =0 {You can't sell any bundles now} one {You can sell 1 bundle} other {You can sell {formatted} bundles}}",
+    "availableUnlimited": "No limit: all its products have unlimited stock",
+    "zero": {
+      "noItems": "Add at least one product.",
+      "chooseVariant": "Choose a variant for each product that has variants.",
+      "itemTrashed": "One of the products is in Trash.",
+      "itemPreorder": "One of the products is now a pre-order. Remove it from the bundle.",
+      "itemDigital": "One of the products is now digital. Remove it from the bundle.",
+      "outOfStock": "One of the products doesn't have enough stock for one bundle."
+    },
+    "blocked": {
+      "hasVariants": "This product has variants, and a bundle can't have variants. Use a product without variants.",
+      "isItem": "This product is in another bundle, so it can't be a bundle.",
+      "digital": "This is a digital product, so it can't be a bundle."
+    },
+    "save": "Save bundle",
+    "saved": "Bundle saved",
+    "errors": {
+      "hasVariants": "This product has variants, and a bundle can't have variants.",
+      "isItem": "This product is in another bundle, so it can't be a bundle.",
+      "digital": "This is a digital product, so it can't be a bundle.",
+      "itemIsBundle": "A bundle can't go inside another bundle.",
+      "itemTrashed": "One of the products is in Trash. Remove it from the bundle.",
+      "itemPreorder": "A pre-order product can't go in a bundle.",
+      "itemDigital": "A digital product can't go in a bundle.",
+      "variantRequired": "Choose a variant for each product that has variants.",
+      "invalid": "Add 1 to {max} products, 1 to {maxQuantity} of each, with no repeats.",
+      "self": "A bundle can't contain itself.",
+      "notFound": "That product isn't available.",
+      "rateLimited": "Too many changes. Try again in a few minutes.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
   "quantityOffers": {
     "title": "Quantity offers",
     "description": "Lower the price when a customer buys more, like 2 for 10% off and 3 for 20% off. The offer covers every unit, shows on this product's page on your stores, and comes out of your own sale.",
@@ -397,7 +449,7 @@
     "settings": "Business & account",
     "fulfillment": "Fulfillment setup",
     "financial": "Financial Dashboard",
-    "marketing": "Offers & discounts",
+    "marketing": "Marketing tools",
     "shipping": "Shipping & Logistics",
     "reports": "Reports & Analytics",
     "help": "Help & Support",
@@ -427,7 +479,7 @@
     "supportMessageStoreLink": "Store link: {url}",
     "supportMessageQuestion": "I have a question about: ",
     "editProduct": "Edit product",
-    "settingsGroup": "Store settings",
+    "settingsGroup": "Settings",
     "ordersGroup": "Orders",
     "allOrders": "All orders",
     "deliveryTracking": "Delivery tracking",
@@ -448,7 +500,7 @@
     "mediaLibrary": "Media library",
     "apps": "App Center",
     "storeAnalytics": "Store views",
-    "roadmap": "Roadmap & ideas",
+    "roadmap": "Suggest a feature",
     "finance": "Wallet",
     "fulfillmentShipping": "Shipping & delivery",
     "storeSettings": "Store settings",
@@ -478,9 +530,14 @@
     "orderProtection": "Order protection",
     "storeApp": "Store app",
     "salesPopup": "Sales pop-up",
+    "policies": "Policies",
+    "businessContact": "Business & contact",
+    "phoneAlerts": "Phone alerts",
     "missedOrders": "Not completed",
     "pendingCarts": "Pending carts",
-    "crossSellReport": "Cross-sell report",
+    "downsell": "Downsell",
+    "crossSelling": "Cross-selling",
+    "freeShippingMinOrder": "Free shipping & minimum order",
     "customers": "Customers",
     "scanReturns": "Scan returns",
     "productTrash": "Trash",
@@ -1188,8 +1245,8 @@
           "cta": "Customize"
         },
         "product": {
-          "title": "Add your first product",
-          "description": "Photos, price and stock",
+          "title": "Products and categories",
+          "description": "Add your products and sort them into categories.",
           "cta": "Add product"
         },
         "shipping": {
@@ -1197,15 +1254,30 @@
           "description": "Your delivery areas and shipping prices.",
           "cta": "Set up"
         },
-        "design": {
-          "title": "Choose your store design",
-          "description": "Pick a template, then add your logo, colours and fonts.",
-          "cta": "Choose design"
+        "theme": {
+          "title": "Choose your theme",
+          "description": "Pick a ready design and make it yours.",
+          "cta": "Choose"
         },
-        "payments": {
-          "title": "Set up payments",
-          "description": "Choose how customers pay you: cash on delivery, wallets or InstaPay.",
+        "identity": {
+          "title": "Store identity",
+          "description": "Your logo, colours and fonts.",
+          "cta": "Customize"
+        },
+        "domain": {
+          "title": "Connect your domain",
+          "description": "Use your own domain instead of your Tallaby link.",
+          "cta": "Connect"
+        },
+        "seo": {
+          "title": "Show up in search",
+          "description": "Your store's title and description on Google.",
           "cta": "Set up"
+        },
+        "wallet": {
+          "title": "Wallet",
+          "description": "Top up once to keep seeing your orders.",
+          "cta": "Top up"
         }
       },
       "publish": {
@@ -1233,15 +1305,11 @@
       },
       "stepDone": "Done",
       "later": "Later",
-      "locked": {
-        "product": "Add your first product first.",
-        "design": "Choose your store design first.",
-        "shipping": "Set up shipping first."
-      }
+      "optional": "Optional"
     },
     "setupHome": {
       "title": "Let’s set up your store",
-      "description": "Four quick steps and your store is ready for its first order.",
+      "description": "A few quick steps and your store is ready for its first order.",
       "edit": "Edit",
       "openGuide": "Open setup guide"
     },
@@ -1475,7 +1543,8 @@
         "published": "Published",
         "draft": "Draft",
         "lowStock": "Low stock",
-        "outOfStock": "Out of stock"
+        "outOfStock": "Out of stock",
+        "bundles": "Bundles"
       },
       "searchPlaceholder": "Search by name or SKU…",
       "searchLabel": "Search products",
@@ -1496,7 +1565,8 @@
         "out": "Out of stock",
         "low": "{count} left",
         "in": "In stock · {count}",
-        "unlimited": "Unlimited"
+        "unlimited": "Unlimited",
+        "bundle": "Bundle"
       },
       "select": "Select {title}",
       "selected": "{count, plural, one {# product selected} other {# products selected}}",
@@ -2012,7 +2082,7 @@
       "priceSaved": "Will be saved as {amount} after rounding.",
       "salePriceSaved": "The sale price will be saved as {amount} after rounding.",
       "discountDropped": "After rounding, the sale price is no longer lower than the price, so the discount will be removed and the price saved as {amount}.",
-      "settingsLink": "Change rounding in settings"
+      "settingsLink": "Change rounding in Apps"
     },
     "variantPricing": {
       "usesMainPrice": "Uses main product price",
@@ -2592,7 +2662,10 @@
       "hintTallaby": "Search Tallaby categories and pick the closest one.",
       "fromStore": "From your store's categories",
       "fromTallaby": "Tallaby category · {path}",
-      "newCategory": "New category · added to your store's categories when you save"
+      "newCategory": "New category · added to your store's categories when you save",
+      "kindClearedDigital": "Pick a category for digital products. The one you chose is for physical products.",
+      "kindClearedPhysical": "Pick a category for physical products. The one you chose is for digital products.",
+      "kindMismatch": "This category doesn't match the product type. Pick another category and save again."
     },
     "brandField": {
       "label": "Brand",
@@ -2732,8 +2805,6 @@
         }
       }
     },
-    "title": "Store settings",
-    "subtitle": "Your store as customers see it, its links, and verification documents.",
     "saveFailed": "Failed to save settings",
     "autosave": {
       "idle": "Unsaved changes…",
@@ -2742,98 +2813,27 @@
       "error": "Could not save"
     },
     "fields": {
-      "displayName": "Display name",
-      "displayNamePlaceholder": "Name shown to customers",
       "supportEmail": "Support email",
       "supportPhone": "Support phone",
       "businessName": "Legal business name",
       "businessNamePlaceholder": "Registered business name",
-      "description": "Store description",
-      "descriptionPlaceholder": "Tell customers what you sell, what makes your products special, and your usual delivery time.",
       "banner": "Store banner",
-      "returnPolicy": "Return policy",
-      "returnPolicyPlaceholder": "Example: Products can be returned within 14 days of delivery in their original condition.",
-      "shippingPolicy": "Shipping policy",
-      "shippingPolicyPlaceholder": "Example: Delivery within 2–4 business days in Cairo and Giza.",
-      "displayNameNote": "Shown to customers",
       "businessNameNote": "As on your commercial register"
-    },
-    "documents": {
-      "title": "Verification Documents",
-      "description": "You can upload your business license and tax certificate (optional). Files save as soon as they upload.",
-      "type": {
-        "general": "General document",
-        "business_license": "Business license",
-        "tax_certificate": "Tax certificate"
-      },
-      "status": {
-        "pending": "Pending review",
-        "approved": "Approved",
-        "verified": "Verified",
-        "rejected": "Rejected",
-        "expired": "Expired"
-      },
-      "expires": "Expires {date}",
-      "uploadedOn": "Uploaded {date}",
-      "optional": "Optional",
-      "formats": "PNG, JPG or WebP · max 5 MB",
-      "generalHint": "Any other supporting document · max 5 MB",
-      "upload": "Upload",
-      "replace": "Replace",
-      "view": "View",
-      "tag": {
-        "optional": "Optional",
-        "review": "Under review",
-        "verified": "Verified"
-      }
     },
     "messages": {
       "profileUpdated": "Profile updated",
       "updateFailed": "Failed to update your profile",
-      "documentUploaded": "Document uploaded",
-      "uploadFailed": "Failed to upload the document",
       "fixErrors": "Please fix the validation errors",
       "somethingWentWrong": "Something went wrong"
     },
-    "viewStore": "View store",
-    "nav": {
-      "identity": "Identity",
-      "info": "Business info",
-      "contact": "Contact & support",
-      "link": "Link & domain",
-      "policies": "Policies",
-      "docs": "Verification documents",
-      "legal": "Legal details",
-      "payout": "Payout account"
-    },
-    "progress": {
-      "title": "Profile completeness",
-      "remaining": "Remaining: {sections}",
-      "separator": ", ",
-      "complete": "Your store profile is complete.",
-      "incomplete": "Incomplete"
-    },
     "sections": {
-      "identity": {
-        "title": "Identity",
-        "description": "The logo, name and banner shown at the top of your store page."
-      },
       "info": {
         "title": "Business info",
-        "description": "Your official business details and a short description for your store page."
+        "description": "Your business name, as on your commercial register."
       },
       "contact": {
         "title": "Contact & support",
         "description": "Customers reach you about their orders through these details."
-      },
-      "link": {
-        "title": "Link & domain",
-        "description": "Share your store link with customers. Your store page shows only your products.",
-        "active": "Active"
-      },
-      "policies": {
-        "title": "Policies",
-        "description": "Shown on every product page, so customers have fewer questions before buying."
       }
     },
     "identity": {
@@ -2853,11 +2853,6 @@
     "account": {
       "save": "Save",
       "saved": "Saved",
-      "cancel": "Cancel",
-      "moved": {
-        "title": "Logo and description moved to Store settings",
-        "description": "Each store now has its own identity. Open your main store's settings to edit it."
-      },
       "policies": {
         "title": "Return, shipping and privacy policies",
         "description": "This text shows on /returns, /shipping and /privacy in your stores, unless you designed a page with the same link. If you leave it empty, general wording with your store's name shows instead.",
@@ -2865,48 +2860,6 @@
         "shipping": "Shipping policy",
         "privacy": "Privacy policy",
         "privacyHint": "Leave it empty to show a general privacy policy with your store's name."
-      },
-      "legal": {
-        "title": "Legal details",
-        "description": "Your business type and registered address. Used for invoices and payouts, never shown in your store.",
-        "businessType": "Business type",
-        "governorate": "Governorate",
-        "governoratePlaceholder": "Choose a governorate",
-        "city": "City / area",
-        "postalCode": "Postal code (optional)",
-        "street": "Street address",
-        "streetPlaceholder": "Building, street and district",
-        "hint": "Only your governorate is shown publicly (for delivery estimates)."
-      },
-      "businessTypes": {
-        "individual": "Individual",
-        "company": "Company",
-        "partnership": "Partnership",
-        "corporation": "Corporation"
-      },
-      "payout": {
-        "title": "Payout account",
-        "description": "Optional. Our team can see this account if we ever need to send you money. Order money goes straight to you, your wallet balance isn't paid out, and affiliate withdrawals ask for an account each time.",
-        "method": "Payout method",
-        "accountHolder": "Account holder name",
-        "bankName": "Bank name",
-        "iban": "IBAN",
-        "provider": "Wallet provider",
-        "phone": "Wallet mobile number",
-        "address": "InstaPay address or mobile number",
-        "hint": "For your security, saved details are shown with the last 4 characters only.",
-        "change": "Change",
-        "methods": {
-          "bank_transfer": "Bank transfer",
-          "mobile_wallet": "Mobile wallet",
-          "instapay": "InstaPay"
-        },
-        "providers": {
-          "vodafone_cash": "Vodafone Cash",
-          "etisalat_cash": "e& Cash",
-          "orange_cash": "Orange Cash",
-          "we_pay": "WE Pay"
-        }
       },
       "errors": {
         "invalidInput": "Some details are not valid. Please check them and try again.",
@@ -3147,6 +3100,7 @@
       "items": "Items ({count})",
       "itemLine": "{quantity} × {price}",
       "preorderLine": "Pre-order · delivery {date}",
+      "bundleIncludes": "In this bundle:",
       "summary": "Summary",
       "source": "Source",
       "sourceManual": "Entered by you",
@@ -4821,7 +4775,12 @@
     "contact": {
       "title": "Contact",
       "description": "Shown in your store footer so customers can reach you.",
-      "hint": "Leave a field empty to hide it from your store."
+      "hint": "Leave a field empty to hide it from your store.",
+      "social": "Social media",
+      "socialHint": "Tap a platform's icon to turn it on, then add your page link.",
+      "socialRemove": "Remove {platform}",
+      "socialHidden": "Hidden from your store. Show it from Website › Social media.",
+      "socialManage": "Order or hide accounts in Website › Social media"
     },
     "languages": {
       "title": "Languages",
@@ -4847,6 +4806,7 @@
       "defaultLocale": "Default language",
       "industry": "Industry",
       "industryHint": "Pick the closest one; it fills the category fields below and suggests photos in the website editor.",
+      "industryPlaceholder": "Choose your store industry",
       "niche": "What does your store sell most?",
       "nicheHint": "We show the best-fitting templates first on the Templates page.",
       "nicheNone": "None of these"
@@ -5022,7 +4982,8 @@
       "ipaHelp": "Looks like an email: name@instapay. You'll find it in the InstaPay app, under your profile.",
       "phoneHelp": "The mobile number your InstaPay account is registered with.",
       "ibanHelp": "EG followed by 27 digits. Your bank shows it in its app or on your statement.",
-      "paymentLinkHelp": "In the InstaPay app, open your profile and share your payment link. It starts with https://ipn.eg/."
+      "paymentLinkHelp": "The easiest for your customers: they tap the link and pay in one step. In the InstaPay app, open your profile and share your payment link. It starts with https://ipn.eg/.",
+      "recommended": "Recommended"
     },
     "saved": "Payment methods updated.",
     "readOnly": "This store is read-only, so payment methods can't be changed.",
@@ -5518,15 +5479,41 @@
     "hideRates": "Hide delivery rates",
     "governorate": "Governorate",
     "soon": "Soon",
+    "mode": {
+      "chooseTitle": "How will you deliver your orders?",
+      "chooseDescription": "Pick one to start. You can change it any time.",
+      "self": {
+        "title": "Ship it yourself",
+        "description": "You or your own riders deliver, and you set the delivery price for each area."
+      },
+      "company": {
+        "title": "Use a shipping company",
+        "description": "Connect your Bosta account, or export your orders to Egypt Post."
+      },
+      "choose": "Choose this",
+      "keep": "Keep this",
+      "current": "Current",
+      "currentLabel": "How you deliver:",
+      "change": "Change",
+      "close": "Close",
+      "switchNote": "Switching deletes nothing: your areas, riders and shipping companies stay as they are.",
+      "saved": {
+        "self": "Saved: you ship your orders yourself.",
+        "company": "Saved: you ship with a shipping company."
+      },
+      "riders": {
+        "title": "Your riders",
+        "description": "Add your riders, then assign them orders and track each delivery.",
+        "manage": "Manage riders",
+        "track": "Track deliveries"
+      }
+    },
     "partner": {
       "title": "Shipping companies",
       "description": "Hand your orders to a shipping company instead of delivering them yourself.",
       "connectTitle": "Ship your orders with Bosta",
-      "whoTitle": "Who delivers your orders?",
-      "whoDescription": "Connect a shipping company to send orders in one tap, or deliver them yourself or with your own riders.",
-      "selfTitle": "I deliver myself or with my riders",
-      "selfBody": "Follow every delivery on the delivery tracking page.",
-      "selfActive": "On",
+      "whoTitle": "Your shipping company",
+      "whoDescription": "Connect Bosta or Egypt Post to send orders in one tap.",
       "connectBody": "Link your Bosta account once. Then send any order to Bosta in one click, or automatically when you confirm it.",
       "connect": "Connect Bosta",
       "finishSetup": "Finish Bosta setup",
@@ -5557,6 +5544,8 @@
     },
     "freeDelivery": {
       "title": "Free delivery",
+      "minOrderHint": "Set a minimum order amount in",
+      "minOrderLink": "Checkout settings",
       "none": "No free delivery",
       "noneDescription": "Customers pay your zone prices.",
       "over": "Free over an amount",
@@ -5652,6 +5641,179 @@
     "copiedShort": "Copied",
     "copied": "Address copied",
     "copyFailed": "Couldn't copy. Select the address and copy it yourself."
+  },
+  "crossSellApp": {
+    "howTitle": "How to add an offer",
+    "howDescription": "You set offers per product, on the product's page.",
+    "steps": {
+      "one": "Open the product you want to offer something with.",
+      "two": "Under \"Bought with this product\", pick the product and its discount.",
+      "three": "Save the product. The offer shows under it and in the cart while the switch above is on."
+    },
+    "openProducts": "Open products"
+  },
+  "whatsappButtonApp": {
+    "install": {
+      "title": "Show the WhatsApp button",
+      "on": "On",
+      "off": "Off",
+      "onBody": "The button shows on your store website.",
+      "offBody": "Turn it on to show the button on your store website. Your settings stay saved while it's off.",
+      "installed": "WhatsApp button is on",
+      "removed": "WhatsApp button is off. Your settings are kept."
+    },
+    "readOnly": "This store is read-only.",
+    "title": "WhatsApp button",
+    "description": "A green WhatsApp button fixed at the bottom of your store website. Shoppers tap it and chat with you.",
+    "noNumber": "Your store has no WhatsApp or phone number, so the button won't show. Add one in",
+    "noNumberLink": "Store settings › Contact",
+    "number": {
+      "label": "WhatsApp number",
+      "store": "Store number",
+      "storeMissing": "Your store has no number yet.",
+      "custom": "Another number",
+      "customHint": "A different number just for this button.",
+      "customLabel": "Number"
+    },
+    "message": {
+      "label": "Ready message",
+      "note": "Shoppers see it typed for them when the chat opens. They can change it before sending.",
+      "placeholder": "Hi, I have a question about a product"
+    },
+    "label": {
+      "label": "Text next to the button",
+      "note": "Shows on computers only. Leave it empty for the icon only.",
+      "placeholder": "Chat with us"
+    },
+    "position": {
+      "label": "Side",
+      "right": "Bottom right",
+      "left": "Bottom left"
+    },
+    "devices": {
+      "label": "Show on",
+      "all": "Computers and phones",
+      "desktop": "Computers only",
+      "mobile": "Phones only"
+    },
+    "size": {
+      "label": "Size",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    "offset": {
+      "offsetDesktop": "Distance from bottom on computers",
+      "offsetMobile": "Distance from bottom on phones",
+      "note": "In pixels, from 0 to 200."
+    },
+    "showOnCart": {
+      "label": "Show on cart and checkout",
+      "note": "It never shows on account, order or sign-in pages."
+    },
+    "preview": {
+      "title": "How it looks",
+      "desktop": "Computer",
+      "mobile": "Phone",
+      "hint": "This is how the button sits on your website.",
+      "hiddenHere": "The button is hidden on this device.",
+      "notInstalled": "Turn on the button above to show it on your website."
+    },
+    "saved": "WhatsApp button settings saved.",
+    "errors": {
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many attempts. Try again shortly.",
+      "invalidPhone": "Enter a valid number, like 01012345678 or +966501234567.",
+      "notInstalled": "The WhatsApp button is already off.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "topLoaderApp": {
+    "title": "Top loader",
+    "description": "A thin bar at the top of your store website while the next page loads, so visitors know the page is opening.",
+    "offNote": "The bar is off. Visitors see no bar while pages load.",
+    "readOnly": "This store is read-only.",
+    "colorLabel": "Bar colour",
+    "brand": "Brand colour",
+    "brandHint": "Your website's main colour. It changes by itself when you change your theme.",
+    "custom": "Custom colour",
+    "customHint": "Pick any colour for the bar.",
+    "customLabel": "Colour",
+    "invalidColor": "Enter a colour like #145163.",
+    "previewTitle": "How it looks",
+    "previewHint": "The bar runs along the top of the page while it loads.",
+    "previewOff": "The bar is off, so nothing shows while pages load.",
+    "saved": "Top loader settings saved.",
+    "errors": {
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many attempts. Try again shortly.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "downsellApp": {
+    "install": {
+      "title": "Offer before leaving checkout",
+      "on": "On",
+      "off": "Off",
+      "onBody": "When a shopper tries to leave checkout without ordering, the product's offer shows once.",
+      "offBody": "Turn it on to show your offers. Your offers stay saved while it's off.",
+      "installed": "Downsell is on",
+      "removed": "Downsell is off. Your offers are kept."
+    },
+    "readOnly": "This store is read-only, so its offers can't be changed.",
+    "unavailable": "This feature isn't available yet. It will start working soon with nothing for you to do.",
+    "offers": {
+      "title": "Offers",
+      "description": "One offer per product: a cheaper product from your store, or one of your coupons.",
+      "add": "Add offer",
+      "emptyTitle": "No offers yet",
+      "emptyBody": "Add an offer to a product. It shows when a shopper tries to leave with that product in the cart.",
+      "cheaperLine": "Cheaper product:",
+      "couponLine": "Coupon:",
+      "notShown": "not shown in the store now",
+      "couponEnded": "coupon not usable now",
+      "remove": "Remove offer",
+      "removed": "Offer removed",
+      "installHint": "Downsell is off. Turn it on to show these offers.",
+      "howItShows": "The offer shows once per visit, only on your store website's checkout, for the first product in the cart that has one."
+    },
+    "add": {
+      "title": "Add offer",
+      "description": "Pick the product, then what to offer the shopper instead.",
+      "mainLabel": "Product",
+      "mainNote": "The offer shows when this product is in the shopper's cart.",
+      "offerLabel": "Offer",
+      "kindProduct": "Cheaper product",
+      "kindCoupon": "Coupon",
+      "cheaperLabel": "Cheaper product",
+      "cheaperNote": "A product your store shows, priced below the first one. The shopper swaps it in one tap.",
+      "couponLabel": "Coupon",
+      "couponNote": "The coupon is applied to the order in one tap, with its usual rules.",
+      "couponPlaceholder": "Choose a coupon",
+      "noCoupons": "This store has no usable coupon. Create one in Coupons first.",
+      "search": "Search your products",
+      "noProducts": "No products",
+      "draft": "Draft",
+      "change": "Change",
+      "cancel": "Cancel",
+      "save": "Save offer",
+      "saved": "Offer saved"
+    },
+    "errors": {
+      "invalid": "Check the offer and try again.",
+      "unavailable": "This feature isn't available yet.",
+      "notFound": "This product isn't in this store.",
+      "offerNotFound": "This product or coupon isn't available for this store.",
+      "notCheaper": "Pick a product priced below the first one.",
+      "sameProduct": "Pick a different product.",
+      "limit": "This store has reached the most offers it can have.",
+      "notInstalled": "Downsell is already off.",
+      "readOnly": "This store is read-only.",
+      "rateLimited": "Too many changes. Try again in a moment.",
+      "generic": "Something went wrong. Try again."
+    }
   },
   "sizeChartApp": {
     "back": "Apps",
@@ -6429,7 +6591,9 @@
       "shipping": "Shipping",
       "payments": "Payments",
       "ai": "AI",
-      "storefront": "Product page"
+      "storefront": "Store website",
+      "marketing": "Marketing tools",
+      "orders": "Orders"
     },
     "groupCount": "{count, plural, one {# app} other {# apps}}",
     "find": "Find an app",
@@ -7170,7 +7334,6 @@
     "seoAdvanced": "Keywords and advanced SEO"
   },
   "domainSeo": {
-    "settingsLink": "Store address and domain moved to Website › Domain & SEO",
     "domain": {
       "readOnly": "This store is archived or suspended, so its address can't be changed.",
       "address": {
@@ -8556,7 +8719,121 @@
       "generic": "Couldn't save. Try again."
     }
   },
+  "orderCountries": {
+    "title": "Orders from my country only",
+    "description": "Refuse orders placed from outside the countries your store delivers to. It cuts fake and prank orders from abroad.",
+    "countries": "Your store delivers to: {countries}. Change this on the Shipping page.",
+    "note": "When we can't tell where a customer is, the order goes through.",
+    "turnedOn": "Only orders from your countries are accepted now.",
+    "turnedOff": "Orders from every country are accepted now.",
+    "errors": {
+      "readOnly": "This store can't be changed right now.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many changes. Try again in a few minutes.",
+      "generic": "Couldn't save. Please try again."
+    }
+  },
+  "appDetail": {
+    "start": {
+      "title": "How to start",
+      "builtin": {
+        "included": "It comes with your store. Nothing to install.",
+        "settings": "Open Settings and choose how it works.",
+        "thisStore": "It works on {store} only."
+      },
+      "feature": {
+        "included": "It comes with your store. Nothing to install.",
+        "where": "Find it in your dashboard: {where}.",
+        "open": "Open it from the Settings tab."
+      },
+      "install": {
+        "press": "Press Install.",
+        "settings": "Open Settings and set it up.",
+        "remove": "You can remove it any time."
+      },
+      "installPaid": {
+        "pressPaid": "Press Install. The price comes out of your store wallet.",
+        "settings": "Open Settings and set it up.",
+        "remove": "You can remove it any time."
+      },
+      "connect": {
+        "press": "Press Connect and sign in to your {vendor} account, or paste your ID.",
+        "settings": "Choose the settings that suit you.",
+        "disconnect": "You can disconnect any time."
+      },
+      "request": {
+        "soon": "This app is coming soon.",
+        "press": "Press Request it to tell us you want it.",
+        "notify": "We'll tell you when it's ready."
+      },
+      "soon": {
+        "soon": "This app is coming soon.",
+        "notify": "We'll tell you when it's ready."
+      }
+    },
+    "other": {
+      "title": "Other apps",
+      "all": "All apps",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "featurePageApp": {
+    "title": "Where to find it",
+    "open": "Open",
+    "pages": {
+      "coupons": {
+        "where": "Marketing › Coupons",
+        "how": "Add a coupon, choose its discount, and turn on the pop-up or the cart display if you want."
+      },
+      "automatic_discounts": {
+        "where": "Marketing › Automatic discounts",
+        "how": "Pick this store, add a discount, and choose what it applies to."
+      },
+      "quantity_offers": {
+        "where": "Products › edit a product › Quantity offers",
+        "how": "Open a product, go to Quantity offers, and add a discount for each quantity."
+      },
+      "bundles": {
+        "where": "Products › edit a product › Product bundle",
+        "how": "Open the product you want as a bundle, turn on \"This product is a bundle\", add its products and how many of each, then save."
+      },
+      "email_campaigns": {
+        "where": "Marketing › Email campaigns",
+        "how": "Write your email, check the preview, and send it to your customers and subscribers."
+      },
+      "catalog_share": {
+        "where": "Marketing › Shareable catalog",
+        "how": "Choose the store and the products, then copy the link or open the print page."
+      },
+      "order_protection": {
+        "where": "Store settings › Order protection",
+        "how": "Add blocked numbers, set the order limits, edit the WhatsApp confirmation message, and choose whether to take orders from your countries only."
+      },
+      "missed_orders": {
+        "where": "Orders › Missed orders",
+        "how": "Open the list and message each customer on WhatsApp or call them."
+      },
+      "store_app": {
+        "where": "Store settings › App",
+        "how": "Check the app name and icon, then share your store link: customers can install it from their phone's browser."
+      },
+      "languages": {
+        "where": "Store settings › General › Languages",
+        "how": "Choose the languages your store shows in and its main language, then save."
+      },
+      "shoppable_gallery": {
+        "where": "Website editor › Sections › Gallery",
+        "how": "Add the Shoppable photo section, pick its photo and products, then publish your website."
+      },
+      "min_order": {
+        "where": "Store settings › Checkout › Minimum order",
+        "how": "Turn on the minimum, set the amount, then save. For free delivery above an amount, open the Shipping page."
+      }
+    }
+  },
   "storePriceRounding": {
+    "saved": "Saved",
     "title": "Round prices",
     "description": "Round your product prices to clean numbers like 240 or 1,200 when you save them.",
     "enabled": "Round prices automatically",
@@ -8790,20 +9067,6 @@
       "tooLong": "The message is too long (1,000 characters max).",
       "generic": "Something went wrong. Try again."
     }
-  },
-  "crossSellReport": {
-    "title": "Cross-sell report",
-    "description": "What each \"Frequently bought with\" offer of this store sold, from your orders. Cancelled, returned and refunded orders and unpaid card orders aren't counted.",
-    "storeLabel": "Store: {name}",
-    "period": "Period",
-    "lastDays": "Last {days} days",
-    "offer": "Offer",
-    "orders": "Orders",
-    "units": "Units",
-    "discount": "Discount given",
-    "withProduct": "With {name}",
-    "emptyTitle": "No offers ordered in this period",
-    "emptyBody": "When a customer orders a product with one of your offers, it shows up here. You set offers on the product's edit page."
   },
   "pendingCarts": {
     "title": "Pending carts",
@@ -9426,7 +9689,6 @@
   "storeSetup": {
     "settingsTitle": "Store settings",
     "settingsDescription": "Everything about your store in one place.",
-    "policiesTab": "Policies and verification",
     "whatsappSame": "Same as the phone number",
     "fixedFieldsLabel": "Fixed fields, always required",
     "fixedName": "Name",
@@ -9457,8 +9719,6 @@
         "body": "You get {bonus} once for every such seller, paid to you in cash."
       }
     },
-    "accountTitle": "Account settings",
-    "accountDescription": "Your business details, payout account, policies and verification documents.",
     "appsTitle": "Apps and connections",
     "installedCount": "Installed apps",
     "feedsReadyCount": "Catalog links ready",

@@ -14,6 +14,8 @@ export const LEGACY_APP_ROUTES: readonly LegacyAppRoute[] = [
   { from: "/stores/[storeId]/apps/ai-assistants", to: "/stores/[storeId]/apps/ai-assistants", how: "same" },
   // The Google OAuth round-trip used to land on the Apps page (apps/page.tsx redirects it).
   { from: "/stores/[storeId]/apps?google=[result]", to: "/stores/[storeId]/apps/google-sheets/settings?google=[result]", how: "redirect" },
+  // Store settings › Sales pop-up became a Marketing tools app (owner, 2026-11-27; its page redirects).
+  { from: "/stores/[storeId]/settings/sales-popup", to: "/stores/[storeId]/apps/sales-popup/settings", how: "redirect" },
   // The list itself keeps its URL.
   { from: "/stores/[storeId]/apps", to: "/stores/[storeId]/apps", how: "same" },
 ];

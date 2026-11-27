@@ -204,9 +204,9 @@ describe.skipIf(!TEST_DATABASE_URL)("USD switch (integration)", { timeout: 90_00
       await tx.execute(sql`INSERT INTO auth.users (id) VALUES (${id})`);
       await tx.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${id}`);
       await tx.execute(sql`
-        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone,
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, support_phone,
                              fee_trial_eligible, welcome_gift_eligible)
-        VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'g@example.com', '01000000000', false, true)`);
+        VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'g@example.com', '01000000000', false, true)`);
       const [store] = await tx.execute(sql`SELECT id FROM stores WHERE seller_id = ${id} LIMIT 1`);
       await tx.execute(sql`UPDATE stores SET site_status = 'published', first_published_at = now() WHERE id = ${store.id}`);
       await tx.execute(sql`INSERT INTO template_installs (template_key, template_version, store_id, installed_by)

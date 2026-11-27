@@ -380,6 +380,8 @@ export interface CategoryOption {
   level: number
   parentId?: string
   description?: string
+  /** "physical" | "digital" (0191, F-108e); missing = physical. */
+  productKind?: string | null
 }
 
 export interface BrandOption {

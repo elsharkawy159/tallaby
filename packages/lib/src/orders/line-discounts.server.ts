@@ -70,11 +70,13 @@ export function toDiscountRule(row: typeof storeDiscountRules.$inferSelect): Dis
 /** Whether one gift unit can still be handed over: active, in this store's catalog, in stock. */
 export async function giftUnitAvailable(storeId: string, sellerId: string | null, productId: string, variantId: string | null): Promise<boolean> {
   const [product] = await db
-    .select({ sellerId: products.sellerId, status: products.status, deletedAt: products.deletedAt, trackStock: products.trackStock, quantity: products.quantity })
+    .select({ sellerId: products.sellerId, status: products.status, deletedAt: products.deletedAt, trackStock: products.trackStock, quantity: products.quantity, isBundle: products.isBundle })
     .from(products)
     .where(eq(products.id, productId))
     .limit(1);
   if (!product || product.sellerId !== sellerId || product.status !== "active" || product.deletedAt) return false;
+  // A bundle (0188, F-07f) is never a free gift: the line would take its items' stock for nothing.
+  if (product.isBundle) return false;
   if (!(await storeSellsProduct(storeId, productId))) return false;
   if (product.trackStock === false) return true;
   if (!variantId) return Number(product.quantity ?? 0) >= 1;

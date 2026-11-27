@@ -27,6 +27,7 @@ import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sect
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getAllCategories } from "@/actions/categories";
+import { filterCategoryTreeByKind } from "@workspace/lib/products/category-kind";
 import { autofillProduct } from "@/app/[locale]/(main)/stores/[storeId]/products/add/ai/ai-autofill.server";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { contentBlocksToHtml, pickAutofillCategory } from "@/app/[locale]/(main)/stores/[storeId]/products/add/ai/ai-autofill.lib";
@@ -280,7 +281,8 @@ async function generateProduct(ctx: RunContext, build: BuildRow, product: Builde
   return { value: output as unknown, cached };
 }
 
-const categoryTree = async () => ((await getAllCategories()).data ?? []) as CategoryOption[];
+// Builder products are physical (F-108e): physical categories only.
+const categoryTree = async () => filterCategoryTreeByKind(((await getAllCategories()).data ?? []) as CategoryOption[], "physical");
 
 /** The MCP tools' validation, except that a product with no photo is allowed: it stays a draft (AI-D8). */
 const builderProductSchema = agentCreateProductSchema.extend({ images: z.array(z.string().trim().min(1).max(2000)).max(10) });

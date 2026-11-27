@@ -236,9 +236,20 @@
     "suggestedTitle": "You may also like"
   },
   "checkout": {
-    "digitalNoCod": "Cash on delivery isn't available for digital products. Please choose another way to pay.",
-    "digitalNoPaymentMethod": "This store can't take payment for digital products yet. Please contact the store.",
-    "digitalDownload": "Digital download",
+    "downsell": {
+      "title": "Before you go",
+      "productBody": "This one costs less than \"{product}\".",
+      "swap": "Swap the product",
+      "viewProduct": "View product",
+      "couponBody": "A discount for you if you finish your order now.",
+      "applyCoupon": "Apply the discount",
+      "noThanks": "No, thanks",
+      "swapped": "Product swapped",
+      "failed": "Couldn't apply the offer. Try again.",
+      "percentOff": "{value}% off",
+      "amountOff": "{value} off",
+      "freeShipping": "Free delivery"
+    },
     "offerLines": {
       "crossSell": "Bundle offer",
       "quantityOffer": "Quantity offer"
@@ -328,6 +339,8 @@
       "transferTitle": "Send the deposit with {method}",
       "amountToSend": "Deposit to send",
       "payDeposit": "Pay the deposit",
+      "splitLine": "Pay <now></now> now, and the rest (<rest></rest>) in cash on delivery.",
+      "payAmountByCard": "Pay <amount></amount> by card",
       "orderPage": {
         "awaiting": "Your order is waiting for its deposit. Pay it so the order ships; otherwise it is cancelled after 48 hours.",
         "reported": "We told the store you sent the deposit. Your order ships once the seller confirms it arrived.",
@@ -351,9 +364,14 @@
     "egyptOnly": "We deliver inside Egypt only for now.",
     "paymentNotInCurrency": "This payment method isn't available for this store's currency.",
     "noPaymentInCurrency": "This store can't take payment for this order yet: cash on delivery isn't available here. Please contact the store.",
+    "digitalNoCod": "Cash on delivery isn't available for digital products. Please choose another way to pay.",
+    "digitalNoPaymentMethod": "This store can't take payment for digital products yet. Please contact the store.",
+    "digitalDownload": "Digital download",
     "minOrderNotReachedIn": "This store's minimum order is {minimum}. Add {missing} more to place your order.",
     "zoneNoCod": "Cash on delivery isn't available for this address.",
     "orderNotAccepted": "We can't accept this order right now. Please contact the store directly.",
+    "countryNotAccepted": "This store only takes orders from the countries it delivers to. If you think this is a mistake, contact the store directly.",
+    "bundleUnavailable": "A bundle in your cart isn't available right now. Remove it from your cart to place your order.",
     "tooManyOrders": "You've placed several orders in a short time. Please wait a little and try again, or contact the store directly.",
     "arrivesIn": "Arrives in {min}–{max} days",
     "noPaymentMethodsAvailable": "This store has no payment method available for this order. Please contact the store.",
@@ -462,6 +480,11 @@
       "copied": "Copied",
       "copyFailed": "Couldn't copy. Please copy it by hand.",
       "openLink": "Pay with the InstaPay link",
+      "openLinkAgain": "Open InstaPay again",
+      "newTab": "(opens in a new tab)",
+      "payAmount": "Pay <amount></amount>",
+      "receiptPrompt": "Paid? Upload the transfer receipt",
+      "orderNote": "Write order number <num>{number}</num> in the transfer note",
       "checkName": "Before you confirm the transfer in {method}, check that the recipient name matches the name above.",
       "scanQr": "Or scan the QR code",
       "steps": {
@@ -508,6 +531,9 @@
       "seconds": "Seconds"
     }
   },
+  "storeWhatsAppButton": {
+    "ariaLabel": "Chat with us on WhatsApp"
+  },
   "storeSalesPopup": {
     "someoneFrom": "Someone from {governorate} ordered",
     "someone": "Someone ordered",
@@ -543,6 +569,10 @@
       "percentOff": "Save {value}%",
       "amountOff": "Save {value} on each",
       "changeInCart": "It's in your cart. Change the count there."
+    },
+    "bundle": {
+      "title": "What's in the bundle",
+      "includes": "Includes: {items}"
     },
     "restock": {
       "title": "Notify me when it's back",
@@ -584,9 +614,6 @@
     "photos": "Product photos"
   },
   "product": {
-    "digitalBadge": "Digital product",
-    "digitalProduct": "Digital product",
-    "digitalDownloadAfterPayment": "Download it after payment. Nothing is shipped.",
     "addToCart": "Add to Cart",
     "adding": "Adding...",
     "inCartCount": "{count} in cart",
@@ -676,6 +703,9 @@
     "discountPercentOff": "{percent}% off",
     "badgeTrending": "Trending",
     "badgeSeasonal": "Seasonal",
+    "digitalBadge": "Digital product",
+    "digitalProduct": "Digital product",
+    "digitalDownloadAfterPayment": "Download it after payment. Nothing is shipped.",
     "discountAvailableUntil": "Discount available until:",
     "days": "Days",
     "hours": "Hours",

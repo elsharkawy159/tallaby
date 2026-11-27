@@ -96,8 +96,8 @@ describe.skipIf(!isStaging)("cart last activity (integration)", { timeout: 120_0
     await db.execute(sql`UPDATE users SET is_guest = true, email = ${`guest_${guestUid}@temp.local`} WHERE id = ${guestId}`);
     const sub = `ca-${sellerId.slice(0, 8)}`;
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
-      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'ca@example.com', 'approved')
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, status)
+      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'ca@example.com', 'approved')
     `);
     const [category] = [...(await db.execute(sql`SELECT id FROM categories LIMIT 1`))] as { id: string }[];
     for (const id of [productId, secondProductId]) {

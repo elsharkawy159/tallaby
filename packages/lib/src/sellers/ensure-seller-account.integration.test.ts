@@ -46,8 +46,6 @@ describe.skipIf(!TEST_DATABASE_URL)("ensureSellerAccount (integration)", () => {
       slug: `su-${tag}-one`,
       subdomain: `su-${tag}-one`,
       displayName: `Su ${tag} One`.replace(/\b\w/g, (c) => c.toUpperCase()),
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "one@example.com",
       supportPhone: "01012345678",
       status: "approved",

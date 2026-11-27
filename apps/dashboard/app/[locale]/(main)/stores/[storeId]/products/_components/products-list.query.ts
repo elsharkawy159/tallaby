@@ -52,6 +52,9 @@ function tabCondition(tab: ProductsTab): SQL | undefined {
       return sql`${products.trackStock} AND ${products.quantity} > 0 AND ${products.quantity} < ${LOW_STOCK_THRESHOLD}`;
     case "outOfStock":
       return sql`${products.trackStock} AND ${products.quantity} <= 0`;
+    case "bundles":
+      // F-07f (0188). A bundle never tracks stock itself, so it is in neither stock tab.
+      return eq(products.isBundle, true);
     default:
       return undefined;
   }
@@ -134,6 +137,7 @@ async function loadProductsByIds(sellerId: string, inStore: SQL | undefined, ids
       isFeatured: true,
       quantity: true,
       trackStock: true,
+      isBundle: true,
       price: true,
       averageRating: true,
       reviewCount: true,
@@ -172,6 +176,7 @@ function toVendorProduct(p: LoadedProduct, isArabic: boolean): Omit<VendorProduc
     isFeatured: p.isFeatured ?? false,
     quantity: Number(p.quantity) || 0,
     trackStock: p.trackStock,
+    isBundle: p.isBundle,
     basePrice: price.base,
     salePrice: price.final,
     brand: p.brand ? { name: p.brand.name } : null,
@@ -252,6 +257,7 @@ export async function countSellerProductsByTab(sellerId: string, inStore: SQL | 
       draft: sql<number>`count(*) FILTER (WHERE ${tabCondition("draft")})::int`,
       lowStock: sql<number>`count(*) FILTER (WHERE ${tabCondition("lowStock")})::int`,
       outOfStock: sql<number>`count(*) FILTER (WHERE ${tabCondition("outOfStock")})::int`,
+      bundles: sql<number>`count(*) FILTER (WHERE ${tabCondition("bundles")})::int`,
     })
     .from(products)
     .where(and(...baseConditions(sellerId, inStore)));

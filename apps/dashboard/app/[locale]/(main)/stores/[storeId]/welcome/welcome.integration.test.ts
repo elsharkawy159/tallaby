@@ -33,8 +33,8 @@ describe.skipIf(!TEST_DATABASE_URL)("welcome page loader (integration)", { timeo
       await db.execute(sql`INSERT INTO auth.users (id, email, aud, role) VALUES (${id}, ${email}, 'authenticated', 'authenticated')`);
       await db.execute(sql`INSERT INTO users (id, email, is_guest) VALUES (${id}, ${email}, false) ON CONFLICT DO NOTHING`);
       await db.execute(sql`
-        INSERT INTO sellers (id, business_name, display_name, slug, business_type, legal_address, support_email, status)
-        VALUES (${id}, 'QA welcome', 'QA welcome', ${`qa-${id.slice(0, 8)}`}, 'individual', '{"country":"EG"}'::jsonb, 'x@example.com', 'approved')
+        INSERT INTO sellers (id, business_name, display_name, slug, support_email, status)
+        VALUES (${id}, 'QA welcome', 'QA welcome', ${`qa-${id.slice(0, 8)}`}, 'x@example.com', 'approved')
       `);
     }
     await db.execute(sql`

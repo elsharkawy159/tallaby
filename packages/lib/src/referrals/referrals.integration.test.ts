@@ -38,9 +38,9 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate program (integration)", { timeout
     // later, unrelated sellers column still works.
     const phone = opts.phone ?? `010${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`;
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address,
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain,
         support_email, support_phone, status, referred_by_seller_id)
-      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb,
+      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub},
         ${`${sub}@example.com`}, ${phone}, ${opts.status ?? "approved"}, ${opts.referrer ?? null})
     `);
     return id;

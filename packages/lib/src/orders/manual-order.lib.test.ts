@@ -69,6 +69,7 @@ describe("error keys", () => {
     expect(manualOrderErrorKey("storeShippingNoCod")).toBe("noCod");
     expect(manualOrderErrorKey("Cash on delivery is not available when shipping cost exceeds 90 EGP")).toBe("noCod");
     expect(manualOrderErrorKey("Insufficient stock for a product in your cart")).toBe("insufficientStock");
+    expect(manualOrderErrorKey("bundleUnavailable")).toBe("productUnavailable");
     expect(manualOrderErrorKey("anything else")).toBe("generic");
   });
 });

@@ -51,6 +51,8 @@ export type SaveProductDigitalError =
   | "bundle"
   /** A product with options can't be digital. */
   | "hasVariants"
+  /** The product's Tallaby category is of the other kind (F-108e). */
+  | "category_kind_mismatch"
   | "generic";
 
 export type SaveProductDigitalResult =

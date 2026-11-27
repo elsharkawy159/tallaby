@@ -71,9 +71,24 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", P, `${P}/add`, `${P}/categories`, `${P}/brands`, "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/wallet/transactions", "/stores", "/settings", "/settings/plan", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", P, `${P}/add`, `${P}/categories`, `${P}/brands`, "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/wallet/transactions", "/settings/plan", "/help", "/earn", "/roadmap"]) {
       expect(hrefs, href).toContain(href);
     }
+  });
+
+  it("shows Riders only while the selected store ships its orders itself (owner, 2026-11-27)", () => {
+    const shipping = (features: { selfDelivery?: boolean }) => {
+      const group = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features }).find(
+        (e) => e.kind === "group" && e.key === "fulfillmentShipping",
+      );
+      return group?.kind === "group" ? group.items.map((i) => i.href) : [];
+    };
+    expect(shipping({ selfDelivery: true })).toContain("/orders/riders");
+    expect(shipping({ selfDelivery: false })).not.toContain("/orders/riders");
+    expect(shipping({})).not.toContain("/orders/riders");
+    // Delivery tracking and the Shipping page stay either way; Riders stays open by URL.
+    expect(shipping({})).toEqual(expect.arrayContaining(["/orders/delivery", `/stores/${STORE}/shipping`]));
+    expect(resolveDashboardRoute("/orders/riders").title).toBe("riders");
   });
 
   it("keeps Finance to the wallet, Tallaby Pay earnings and transactions (owner, 2026-11-27)", () => {
@@ -93,9 +108,12 @@ describe("SIDEBAR_CONFIG", () => {
   it("puts every store-scoped page in the sidebar once a store exists", () => {
     const linked = new Set(allLinks(SIDEBAR_CONFIG).map((l) => l.href));
     // Hidden from the sidebar, still open by URL (F-65a, F-65c; /financial and /reports since 2026-11-27, owner).
-    const hidden = new Set(["/marketing", "/stores/[storeId]/analytics", "/financial", "/reports"]);
+    // My stores (/stores) opens from the store switcher at the top of the sidebar, and the store
+    // settings pages from the settings page's own menu (owner, 2026-11-27).
+    const hidden = new Set(["/marketing", "/stores/[storeId]/analytics", "/financial", "/reports", "/stores"]);
+    const settingsPages = (href: string) => href.startsWith("/stores/[storeId]/settings/");
     for (const route of DASHBOARD_ROUTES) {
-      if (hidden.has(route.href)) continue;
+      if (hidden.has(route.href) || settingsPages(route.href)) continue;
       expect(linked.has(route.href), route.href).toBe(true);
     }
   });
@@ -118,18 +136,18 @@ describe("SIDEBAR_CONFIG", () => {
       "blogGroup",
       "marketing",
       "apps",
-      "settingsGroup",
       "|",
       "accountHelp",
       "earn",
+      "roadmap",
+      "settingsGroup",
     ]);
   });
 
   it("keeps account-wide pages out of the selected-store settings", () => {
     const hrefs = (key: string) =>
       SIDEBAR_CONFIG.flatMap((e) => (e.kind === "group" && e.key === key ? e.items.map((i) => i.href) : []));
-    expect(hrefs("settingsGroup").every((h) => h.includes("[storeId]"))).toBe(true);
-    expect(hrefs("accountHelp")).toEqual(["/stores", "/settings", "/settings/plan", "/help", "/roadmap"]);
+    expect(hrefs("accountHelp")).toEqual(["/settings/plan", "/help"]);
   });
 
   it("hides Website & Content without the store-builder flag", () => {
@@ -154,6 +172,7 @@ describe("SIDEBAR_CONFIG", () => {
       "|",
       "accountHelp",
       "earn",
+      "roadmap",
     ]);
   });
 
@@ -173,7 +192,6 @@ describe("SIDEBAR_CONFIG", () => {
       products: ["/stores/[storeId]/products", "manageProducts"],
       ordersGroup: ["/orders", "allOrders"],
       websiteContent: ["/stores/[storeId]/website", "websiteOverview"],
-      settingsGroup: ["/stores/[storeId]/settings", "general"],
     };
     for (const [key, [href, overviewKey]] of Object.entries(landing)) {
       expect(group(key), key).toMatchObject({ href, overviewKey });
@@ -251,6 +269,10 @@ describe("hidden campaign and store views pages (F-65)", () => {
       "/marketing/subscribers",
       "/marketing/emails",
       "/marketing/catalog",
+      "/stores/[storeId]/apps/downsell",
+      "/stores/[storeId]/apps/cross-sell",
+      "/stores/[storeId]/apps/sales-popup",
+      "/stores/[storeId]/shipping#free-shipping",
     ]);
   });
 
@@ -275,6 +297,43 @@ describe("hidden campaign and store views pages (F-65)", () => {
     expect(findActiveHref(entries, "/marketing")).toBeNull();
     expect(findActiveHref(entries, `/stores/${STORE}/analytics`)).toBeNull();
     expect(findActiveHref(entries, "/marketing/emails")).toBe("/marketing/emails");
+  });
+});
+
+describe("Marketing tools (owner, 2026-11-27)", () => {
+  const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } });
+  const groups = (pathname: string) => {
+    const active = findActiveHref(entries, pathname);
+    return entries.filter((e): e is ResolvedGroup => e.kind === "group" && isGroupActive(e, active)).map((g) => g.key);
+  };
+
+  it("uses the owner's group label and names each new item in both languages", () => {
+    expect(ar.nav).toMatchObject({ marketing: "أدوات التسويق", freeShippingMinOrder: "الحد الأدنى للشحن المجاني وللطلب" });
+    expect(en.nav).toMatchObject({ marketing: "Marketing tools", downsell: "Downsell", crossSelling: "Cross-selling" });
+  });
+
+  it("lights the app's item on its overview and settings pages, and opens only Marketing tools", () => {
+    for (const slug of ["downsell", "cross-sell", "sales-popup"]) {
+      for (const page of [`/stores/${STORE}/apps/${slug}`, `/stores/${STORE}/apps/${slug}/settings`]) {
+        expect(findActiveHref(entries, page), page).toBe(`/stores/${STORE}/apps/${slug}`);
+        expect(groups(page), page).toEqual(["marketing"]);
+      }
+    }
+    // Other apps keep the App Center link.
+    expect(findActiveHref(entries, `/stores/${STORE}/apps/bosta`)).toBe(`/stores/${STORE}/apps`);
+  });
+
+  it("matches the #free-shipping link to its page, but the Shipping page keeps its own item and group", () => {
+    expect(isActiveHref(`/stores/${STORE}/shipping`, `/stores/${STORE}/shipping#free-shipping`)).toBe(true);
+    expect(findActiveHref(entries, `/stores/${STORE}/shipping`)).toBe(`/stores/${STORE}/shipping`);
+    expect(groups(`/stores/${STORE}/shipping`)).toEqual(["fulfillmentShipping"]);
+    expect(resolveDashboardRoute(`/stores/${STORE}/shipping`).title).toBe("shippingSettings");
+  });
+
+  it("files the app pages under Marketing tools in the header, and Sales pop-up is no store setting", () => {
+    expect(resolveDashboardRoute(`/stores/${STORE}/apps/downsell/settings`)).toMatchObject({ title: "downsell", parent: "marketing" });
+    expect(resolveDashboardRoute(`/stores/${STORE}/apps/sales-popup`)).toMatchObject({ title: "salesPopup", parent: "marketing" });
+    expect(DASHBOARD_ROUTES.some((r) => r.href === "/stores/[storeId]/settings/sales-popup")).toBe(false);
   });
 });
 
@@ -347,7 +406,6 @@ describe("resolveSidebar", () => {
       products: [P, "manageProducts"],
       ordersGroup: ["/orders", "allOrders"],
       websiteContent: [`/stores/${STORE}/website`, "websiteOverview"],
-      settingsGroup: [`/stores/${STORE}/settings`, "general"],
     };
     for (const [key, [href, itemKey]] of Object.entries(landing)) {
       expect(first(key), key).toEqual({ kind: "link", key: itemKey, href, disabled: false, exact: true });
@@ -362,7 +420,7 @@ describe("resolveSidebar", () => {
     expect(group("fulfillmentShipping")).toMatchObject({ href: "/orders/delivery", countKey: undefined });
     expect(group("finance")).toMatchObject({ href: "/wallet" });
     expect(group("marketing")).toMatchObject({ href: "/coupons" });
-    expect(group("accountHelp")).toMatchObject({ href: "/stores" });
+    expect(group("accountHelp")).toMatchObject({ href: "/settings/plan" });
   });
 
   it("hides a store-scoped landing item with no store, and points the group at its first enabled item", () => {
@@ -416,7 +474,7 @@ describe("isActiveHref", () => {
 });
 
 describe("findActiveHref", () => {
-  const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } });
+  const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true, selfDelivery: true } });
   const active = (pathname: string) => findActiveHref(entries, pathname);
 
   it("picks the most specific link, so one group opens", () => {
@@ -424,13 +482,14 @@ describe("findActiveHref", () => {
     expect(active("/orders")).toBe("/orders");
     expect(active("/orders/riders")).toBe("/orders/riders");
     expect(active("/settings/plan")).toBe("/settings/plan");
-    expect(active(`/stores/${STORE}/settings/payments`)).toBe(`/stores/${STORE}/settings/payments`);
+    expect(active(`/stores/${STORE}/settings/payments`)).toBe(`/stores/${STORE}/settings`);
     expect(active(`/stores/${STORE}/website/blog/new`)).toBe(`/stores/${STORE}/website/blog`);
   });
 
-  it("does not light up My stores or Settings for pages under them", () => {
+  it("does not light up Settings for pages under them", () => {
     expect(active(`/stores/${STORE}/shipping`)).toBe(`/stores/${STORE}/shipping`);
-    expect(active("/stores")).toBe("/stores");
+    // My stores is not in the sidebar (owner, 2026-11-27).
+    expect(active("/stores")).toBeNull();
     expect(active(`${P}/abc/edit`)).toBeNull();
   });
 
@@ -455,8 +514,8 @@ describe("findActiveHref", () => {
     expect(active(`/stores/${STORE}/website`)).toBe(`/stores/${STORE}/website`);
     expect(isGroupActive(group("websiteContent"), active(`/stores/${STORE}/website`))).toBe(true);
     expect(active(`/stores/${STORE}/settings`)).toBe(`/stores/${STORE}/settings`);
-    expect(active(`/stores/${STORE}/settings/payments`)).toBe(`/stores/${STORE}/settings/payments`);
-    expect(isGroupActive(group("settingsGroup"), null)).toBe(false);
+    // The settings pages light the one Store settings link (owner, 2026-11-27).
+    expect(active(`/stores/${STORE}/settings/payments`)).toBe(`/stores/${STORE}/settings`);
   });
 });
 
@@ -491,8 +550,8 @@ describe("Products under their store (F-87c slice 2)", () => {
 
   it("keeps the Products pages in the command palette, filled with the selected store", () => {
     const products = COMMAND_PALETTE_ROUTES.filter((r) => r.href.startsWith("/stores/[storeId]/products"));
-    expect(products.map((r) => fillStoreHref(r.href, STORE))).toEqual([P, `${P}/add`, `${P}/categories`, `${P}/brands`, `${P}/inventory`, `${P}/trash`]);
-    expect(products.map((r) => fillStoreHref(r.href, null))).toEqual([null, null, null, null, null, null]);
+    expect(products.map((r) => fillStoreHref(r.href, STORE))).toEqual([P, `${P}/add`, `${P}/categories`, `${P}/brands`, `${P}/inventory`]);
+    expect(products.map((r) => fillStoreHref(r.href, null))).toEqual([null, null, null, null, null]);
     // Other store-scoped pages stay out of the palette, as before.
     expect(COMMAND_PALETTE_ROUTES.some((r) => r.href.startsWith("/stores/[storeId]/settings"))).toBe(false);
   });

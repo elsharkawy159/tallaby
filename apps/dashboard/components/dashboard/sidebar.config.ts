@@ -6,6 +6,7 @@ import {
   Globe,
   HandCoins,
   LayoutDashboard,
+  Lightbulb,
   Megaphone,
   Newspaper,
   Package,
@@ -33,7 +34,7 @@ import type { SidebarCounts } from "./sidebar.types";
  */
 
 export type NavStatus = "live" | "soon" | "planned";
-export type NavFeature = "storeBuilder" | "tallabyPayEarnings";
+export type NavFeature = "storeBuilder" | "tallabyPayEarnings" | "selfDelivery";
 
 export type NavLinkConfig = {
   key: NavKey;
@@ -95,8 +96,6 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "sellerBrands", href: "/stores/[storeId]/products/brands", status: "live" },
       // Low stock, quick restock and stock history (0125, F-10).
       { key: "inventory", href: "/stores/[storeId]/products/inventory", status: "live" },
-      // Deleted products wait here 30 days (0123, F-35).
-      { key: "productTrash", href: "/stores/[storeId]/products/trash", status: "live" },
       { key: "reviews", href: "/reviews", countKey: "reviews", status: "live" },
     ],
   },
@@ -113,8 +112,6 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "missedOrders", href: "/orders/missed", status: "live" },
       // Customers with items in a store's cart who haven't ordered (F-67).
       { key: "pendingCarts", href: "/orders/pending-carts", status: "live" },
-      // What each cross-sell offer of a store sold (F-32f).
-      { key: "crossSellReport", href: "/orders/cross-sell", status: "live" },
       // Customers of a store, grouped from its orders by phone (F-01).
       { key: "customers", href: "/orders/customers", status: "live" },
       // Scan returns (F-04e) hidden for now: the /orders search finds the order (owner, 2026-10-31).
@@ -129,7 +126,9 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       // Tracking individual orders; /shipping redirects here (P3-06).
       { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
-      { key: "riders", href: "/orders/riders", status: "live" },
+      // Only while the selected store ships its orders itself (Shipping › "Ship it yourself"; owner, 2026-11-27).
+      // The page stays open by URL: orders and delivery tracking use riders too.
+      { key: "riders", href: "/orders/riders", status: "live", feature: "selfDelivery" },
       { key: "shippingSettings", href: "/stores/[storeId]/shipping", status: "live" },
       // Hidden while Tallaby offers no storage, packing or delivery (owner, 2026-10-31).
       ...(TALLABY_SERVICES_ENABLED
@@ -203,30 +202,17 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "emailCampaigns", href: "/marketing/emails", status: "live" },
       // Shareable product catalog link / PDF for WhatsApp (ROADMAP.md F-11c).
       { key: "catalogShare", href: "/marketing/catalog", status: "live" },
+      // App Center apps (owner, 2026-11-27): each opens its app page; Sales pop-up left Store settings.
+      { key: "downsell", href: "/stores/[storeId]/apps/downsell", status: "live" },
+      { key: "crossSelling", href: "/stores/[storeId]/apps/cross-sell", status: "live" },
+      { key: "salesPopup", href: "/stores/[storeId]/apps/sales-popup", status: "live" },
+      // The free-delivery section of Shipping settings; it links on to the minimum order (Checkout settings).
+      { key: "freeShippingMinOrder", href: "/stores/[storeId]/shipping#free-shipping", status: "live" },
     ],
   },
   // Store views (SA-01) hidden: its numbers are on the home page, which links to it (owner, 2026-11-04, F-65c).
   // { kind: "link", key: "storeAnalytics", href: "/stores/[storeId]/analytics", icon: ChartLine, status: "live" },
   { kind: "link", key: "apps", href: "/stores/[storeId]/apps", icon: AppWindow, status: "live" },
-  {
-    kind: "group",
-    key: "settingsGroup",
-    icon: Settings,
-    href: "/stores/[storeId]/settings",
-    overviewKey: "general",
-    exact: true,
-    items: [
-      { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "live" },
-      // Extra checkout fields + thank-you page (ROADMAP.md F-25).
-      { key: "checkoutForm", href: "/stores/[storeId]/settings/checkout", status: "live" },
-      // Phone blocklist + WhatsApp confirm message (ROADMAP.md F-02).
-      { key: "orderProtection", href: "/stores/[storeId]/settings/protection", status: "live" },
-      // The store website as an installable app (ROADMAP.md F-36).
-      { key: "storeApp", href: "/stores/[storeId]/settings/app", status: "live" },
-      // Real recent orders as toasts on the store website (ROADMAP.md F-22).
-      { key: "salesPopup", href: "/stores/[storeId]/settings/sales-popup", status: "live" },
-    ],
-  },
   // Account-wide, not tied to the selected store.
   { kind: "divider", label: "sectionAccount" },
   {
@@ -234,16 +220,20 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "accountHelp",
     icon: CircleUserRound,
     items: [
-      { key: "myStores", href: "/stores", status: "live", exact: true },
-      { key: "settings", href: "/settings", status: "live", exact: true },
+      // My stores lives in the store switcher at the top of the sidebar, and the old account
+      // Settings page is part of Store settings (owner, 2026-11-27).
       { key: "planUsage", href: "/settings/plan", status: "live" },
       { key: "help", href: "/help", status: "live" },
-      { key: "roadmap", href: "/roadmap", status: "live" },
     ],
   },
   // Affiliate program (F-37): referral link, rewards, withdrawals. Its own top-level link so
   // every seller sees it without opening a group (owner, 2026-11-16). The /earn URL stays.
   { kind: "link", key: "earn", href: "/earn", icon: HandCoins, status: "live" },
+  // "Suggest a feature" (the public roadmap): its own top-level link (owner, 2026-11-27).
+  { kind: "link", key: "roadmap", href: "/roadmap", icon: Lightbulb, status: "live" },
+  // Store settings: one link, last in the list; the settings pages (General, Payment methods,
+  // Checkout, Order protection, App, Sales pop-up) are in the page's own menu (owner, 2026-11-27).
+  { kind: "link", key: "settingsGroup", href: "/stores/[storeId]/settings", icon: Settings, status: "live" },
 ];
 
 export type ResolvedLink = {
@@ -335,10 +325,14 @@ export function resolveSidebar(config: NavEntry[], ctx: SidebarContext): Resolve
   return out;
 }
 
-/** Whether a sidebar link is the current page (or its section). Home only matches exactly. */
+/** A link's page without its `#section` (the pathname never has one). */
+const pageOf = (href: string) => href.split("#")[0]!;
+
+/** Whether a sidebar link is the current page (or its section). Home only matches exactly. A `#section` link matches its page. */
 export function isActiveHref(pathname: string, href: string, options: { exact?: boolean } = {}): boolean {
-  if (href === "/" || options.exact) return pathname === href;
-  return pathname === href || pathname.startsWith(`${href}/`);
+  const page = pageOf(href);
+  if (page === "/" || options.exact) return pathname === page;
+  return pathname === page || pathname.startsWith(`${page}/`);
 }
 
 /** Every place the sidebar links to: top links and group items (landing pages included). */
@@ -356,13 +350,15 @@ export function isGroupActive(group: ResolvedGroup, activeHref: string | null): 
  * The one sidebar link for the current page: the most specific link that
  * matches, so /settings/plan picks Plan & usage rather than Settings, and only
  * one group opens. Null when no link
- * matches.
+ * matches. A `#section` link counts as its page, and on a tie the earlier
+ * link wins, so the Shipping settings page lights Shipping settings, not
+ * Marketing tools › Free shipping & minimum order.
  */
 export function findActiveHref(entries: ResolvedEntry[], pathname: string): string | null {
   let best: string | null = null;
   for (const link of navTargets(entries)) {
     if (link.disabled || !isActiveHref(pathname, link.href, { exact: link.exact })) continue;
-    if (!best || link.href.length > best.length) best = link.href;
+    if (!best || pageOf(link.href).length > pageOf(best).length) best = link.href;
   }
   return best;
 }

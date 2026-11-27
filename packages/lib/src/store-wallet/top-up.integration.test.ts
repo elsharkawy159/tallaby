@@ -46,8 +46,6 @@ describe.skipIf(!TEST_DATABASE_URL)("store top-up webhook (integration)", { time
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "tu@example.com",
       status: "approved",
     });

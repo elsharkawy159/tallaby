@@ -481,7 +481,7 @@ export function reviewIssues(snapshot: ReviewSnapshot): BuilderIssue[] {
   if (state.shipping?.mode !== "skip" && shipping?.status !== "done") issues.push({ code: "shippingNotSet", href: `${store}/shipping` });
   else if (state.shipping?.mode !== "skip" && !snapshot.zoneCount) issues.push({ code: "shippingNotSet", href: `${store}/shipping` });
 
-  if (!snapshot.returnPolicy?.trim()) issues.push({ code: "noReturnPolicy", href: "/settings" });
+  if (!snapshot.returnPolicy?.trim()) issues.push({ code: "noReturnPolicy", href: `${store}/settings/policies` });
   return issues;
 }
 
@@ -543,6 +543,6 @@ export function reviewIssuesV2(snapshot: ReviewSnapshotV2): BuilderIssue[] {
   const unmatched = (shipping?.data.unmatched as string[] | undefined) ?? [];
   if (unmatched.length) issues.push({ code: "placesNotRecognised", params: { places: unmatched.slice(0, 5).join("، ") }, href: `${store}/shipping` });
   if (state.shipping?.mode !== "skip" && (shipping?.status !== "done" || !snapshot.zoneCount)) issues.push({ code: "shippingNotSet", href: `${store}/shipping` });
-  if (!snapshot.returnPolicy?.trim()) issues.push({ code: "noReturnPolicy", href: "/settings" });
+  if (!snapshot.returnPolicy?.trim()) issues.push({ code: "noReturnPolicy", href: `${store}/settings/policies` });
   return issues;
 }

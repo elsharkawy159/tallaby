@@ -6,7 +6,7 @@ import { SellerButton, SellerCard } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
 import type { HomeSnapshot } from "./home.queries";
 import { HOME_STEP_ICONS, HOME_STEP_IMAGES } from "./setup-checklist.data";
-import { buildHomeSteps, homeStepBlocker } from "./setup-checklist.lib";
+import { buildHomeSteps, nextHomeStep } from "./setup-checklist.lib";
 import { storeWelcomeHref } from "../stores/[storeId]/welcome/welcome.lib";
 
 /** Length of the progress ring's circle (r = 26). */
@@ -14,16 +14,17 @@ const RING = 163.4;
 
 /**
  * The setup-only home (ROADMAP.md F-86): a new seller with setup open and no
- * real order sees just these four steps, no metrics. Not dismissible, so the
- * seller can't land on an empty metrics page. A step waiting for an earlier
- * one shows a disabled button and what to do first (owner, 2026-11-25).
+ * real order sees just these six steps, no metrics. Not dismissible, so the
+ * seller can't land on an empty metrics page. No step is locked; domain and
+ * SEO are optional and don't count in the ring (owner, 2026-11-27).
  */
 export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
   const t = await getTranslations("home.setupHome");
   const tSetup = await getTranslations("home.setup");
   const steps = buildHomeSteps(snapshot.setup, snapshot.setupStoreId);
-  const doneCount = steps.filter((step) => step.done).length;
-  const nextKey = steps.find((step) => !step.done)?.key;
+  const required = steps.filter((step) => !step.optional);
+  const doneCount = required.filter((step) => step.done).length;
+  const nextKey = nextHomeStep(steps)?.key;
 
   return (
     <section aria-labelledby="setup-home-title" className="sui-rise flex flex-col gap-4 [animation-delay:.05s]">
@@ -32,7 +33,7 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
           className="relative size-[60px] shrink-0"
           role="progressbar"
           aria-valuemin={0}
-          aria-valuemax={steps.length}
+          aria-valuemax={required.length}
           aria-valuenow={doneCount}
           aria-label={tSetup("progress")}
         >
@@ -47,11 +48,11 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
               strokeLinecap="round"
               className="stroke-accent"
               strokeDasharray={RING}
-              strokeDashoffset={RING * (1 - doneCount / Math.max(steps.length, 1))}
+              strokeDashoffset={RING * (1 - doneCount / Math.max(required.length, 1))}
             />
           </svg>
           <b dir="ltr" className="absolute inset-0 grid place-items-center font-montserrat text-sm font-extrabold">
-            {doneCount}/{steps.length}
+            {doneCount}/{required.length}
           </b>
         </div>
         <div className="relative min-w-0">
@@ -71,17 +72,16 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
         </div>
       </div>
 
-      <ol className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2 max-[600px]:grid-cols-1">
+      <ol className="grid grid-cols-3 gap-3 max-[1180px]:grid-cols-2 max-[600px]:grid-cols-1">
         {steps.map((step, i) => {
           const Icon = HOME_STEP_ICONS[step.key];
           const image = HOME_STEP_IMAGES[step.key];
           const next = step.key === nextKey;
-          const blocker = homeStepBlocker(steps, step.key, snapshot.setup);
           const card = (
               <SellerCard
                 className={cn(
                   "relative flex w-full flex-col gap-2.5 p-5 max-[600px]:p-4",
-                  !blocker && "transition-[border-color,box-shadow] duration-150 hover:border-(--s-outline) hover:shadow-(--s-shadow-hover)",
+                  "transition-[border-color,box-shadow] duration-150 hover:border-(--s-outline) hover:shadow-(--s-shadow-hover)",
                   next && "border-accent shadow-(--s-shadow-hover)",
                   step.done && "border-dashed shadow-none",
                 )}
@@ -117,6 +117,11 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                 </div>
                 <h3 className="text-[15px] font-bold leading-normal text-(--s-ink)">
                   {tSetup(`tasks.${step.key}.title`)}
+                  {step.optional && (
+                    <span className="ms-1.5 inline-block rounded-full bg-(--s-fill) px-2 py-px align-middle text-[11px] font-bold text-(--s-muted)">
+                      {tSetup("optional")}
+                    </span>
+                  )}
                   {step.done && <span className="sr-only"> — {tSetup("done")}</span>}
                 </h3>
                 <p className="text-pretty text-[13px] leading-[1.6] text-(--s-muted)">{tSetup(`tasks.${step.key}.description`)}</p>
@@ -129,13 +134,6 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                       </span>
                       <span className="text-[12.5px] font-bold text-(--s-subtle) group-hover:text-(--s-ink) group-hover:underline">{t("edit")}</span>
                     </div>
-                  ) : blocker ? (
-                    <div className="flex flex-col gap-1.5">
-                      <SellerButton size="sm" variant="outline" disabled className="max-[600px]:w-full">
-                        {tSetup(`tasks.${step.key}.cta`)}
-                      </SellerButton>
-                      <p className="text-pretty text-[12.5px] text-(--s-muted)">{tSetup(`locked.${blocker}`)}</p>
-                    </div>
                   ) : (
                     <SellerButton asChild size="sm" variant={next ? "amber" : "outline"} className="max-[600px]:w-full">
                       <span>
@@ -147,10 +145,12 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                 </div>
               </SellerCard>
           );
-          // The whole card opens the step (owner, 2026-11-26); a step waiting on an earlier one isn't a link.
+          // The whole card opens the step (owner, 2026-11-26); no step is locked (owner, 2026-11-27).
           return (
             <li key={step.key} className="flex">
-              {blocker ? card : <Link href={step.href} className="group flex w-full no-underline">{card}</Link>}
+              <Link href={step.href} className="group flex w-full no-underline">
+                {card}
+              </Link>
             </li>
           );
         })}

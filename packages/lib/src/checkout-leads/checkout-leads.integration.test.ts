@@ -29,8 +29,8 @@ describe.skipIf(!TEST_DATABASE_URL)("missed orders (integration)", { timeout: 60
     await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
-      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'cl@example.com', 'approved')
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, status)
+      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'cl@example.com', 'approved')
     `);
     const [store] = [...(await db.execute(sql`SELECT id FROM stores WHERE seller_id = ${id} LIMIT 1`))] as { id: string }[];
     return { id, storeId: store!.id };

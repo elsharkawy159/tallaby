@@ -25,8 +25,8 @@ describe.skipIf(!TEST_DATABASE_URL)("store WhatsApp (integration)", { timeout: 1
     await db.execute(sql`INSERT INTO auth.users (id, email, aud, role) VALUES (${id}, ${email}, 'authenticated', 'authenticated')`);
     await db.execute(sql`INSERT INTO users (id, email, is_guest) VALUES (${id}, ${email}, false) ON CONFLICT DO NOTHING`);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, business_type, legal_address, support_email, status)
-      SELECT ${id}, 'QA wa', 'QA wa', ${`qa-wa-${id.slice(0, 8)}`}, business_type, legal_address, ${email}, 'approved'
+      INSERT INTO sellers (id, business_name, display_name, slug, support_email, status)
+      SELECT ${id}, 'QA wa', 'QA wa', ${`qa-wa-${id.slice(0, 8)}`}, ${email}, 'approved'
       FROM sellers LIMIT 1`);
     const [store] = await db.select({ id: stores.id }).from(stores).where(eq(stores.sellerId, id));
     return store!.id;

@@ -125,6 +125,19 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
       },
     },
     {
+      // F-108e (0191): which product type the category is for; a whole branch is one kind.
+      accessorKey: "productKind",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Kind" />
+      ),
+      cell: ({ row }) =>
+        row.original.productKind === "digital" ? (
+          <Badge variant="secondary">Digital</Badge>
+        ) : (
+          <Badge variant="outline">Physical</Badge>
+        ),
+    },
+    {
       accessorKey: "parentId",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Parent Category" />

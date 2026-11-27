@@ -263,6 +263,20 @@ export function OrderDetailsDialog({
                               <span className="line-clamp-2 break-words text-[13.5px] font-semibold text-(--s-text)">{line.productName}</span>
                             )}
                             {line.variantName && <div className="text-xs text-(--s-subtle)">{line.variantName}</div>}
+                            {/* A bundle's items as sold (0188, F-07f): units to pack for the whole line. */}
+                            {line.bundleItems?.length ? (
+                              <div className="text-xs text-(--s-subtle)">
+                                <div>{t("bundleIncludes")}</div>
+                                <ul className="mt-0.5 grid gap-0.5">
+                                  {line.bundleItems.map((item) => (
+                                    <li key={`${item.productId}:${item.variantId ?? ""}`} className="break-words" dir="auto">
+                                      <span className="font-semibold text-(--s-text) tabular-nums">{item.quantity * line.quantity}×</span> {item.name}
+                                      {item.variantName && ` · ${item.variantName}`}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : null}
                             {line.preorderShipsAt && (
                               <div className="w-fit rounded-full bg-(--s-fill) px-2 py-0.5 text-[11.5px] font-semibold text-(--s-ink)">
                                 {t("preorderLine", { date: formatDate(preorderDayToDate(line.preorderShipsAt), locale, { dateStyle: "medium", timeZone: "UTC" }) })}

@@ -335,7 +335,7 @@ export async function sendSellerTestPush(sellerId: string): Promise<{ sent: numb
       payload: {
         title: t("test.title"),
         body: t("test.body"),
-        url: "/settings#push-alerts",
+        url: "/settings/notifications",
         tag: "tallaby-test",
         lang: device.locale,
         dir: device.locale === "ar" ? "rtl" : "ltr",

@@ -43,8 +43,6 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: 'individual',
-      legalAddress: { country: 'EG' },
       supportEmail: 'pf@example.com',
       status: 'approved',
       feeTrialEligible: false,

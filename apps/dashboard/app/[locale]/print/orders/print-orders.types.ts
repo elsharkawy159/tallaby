@@ -22,6 +22,8 @@ export interface PrintOrderLine {
   total: string;
   /** Customer requirements snapshot (0167, F-91): printed as text, photos counted. */
   customerInputs?: unknown;
+  /** A bundle line's items as sold (`order_items.bundle_items`, 0188, F-07f); printed under the line. */
+  bundleItems?: unknown;
 }
 
 /** One order as printed: only the session seller's lines. */

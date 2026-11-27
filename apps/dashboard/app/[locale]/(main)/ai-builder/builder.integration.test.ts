@@ -85,8 +85,8 @@ describe.skipIf(!TEST_DATABASE_URL)("AI Store Builder (integration)", { timeout:
     await db.execute(sql`INSERT INTO auth.users (id, email, aud, role) VALUES (${id}, ${email}, 'authenticated', 'authenticated') ON CONFLICT DO NOTHING`);
     await db.execute(sql`INSERT INTO users (id, email, is_guest) VALUES (${id}, ${email}, false) ON CONFLICT DO NOTHING`);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, business_type, legal_address, support_email, status)
-      SELECT ${id}, 'QA builder', 'QA builder', ${`qa-${id.slice(0, 8)}`}, business_type, legal_address, ${email}, 'approved'
+      INSERT INTO sellers (id, business_name, display_name, slug, support_email, status)
+      SELECT ${id}, 'QA builder', 'QA builder', ${`qa-${id.slice(0, 8)}`}, ${email}, 'approved'
       FROM sellers LIMIT 1`);
   };
 

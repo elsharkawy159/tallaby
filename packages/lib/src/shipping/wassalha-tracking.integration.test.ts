@@ -59,8 +59,8 @@ describe.skipIf(!TEST_DATABASE_URL)("wassalha tracking (integration)", { timeout
     }
     for (const id of [sellerId, otherSellerId]) {
       await db.execute(sql`
-        INSERT INTO sellers (id, business_name, display_name, slug, business_type, legal_address, support_email, status)
-        VALUES (${id}, 'QA wassalha', 'QA wassalha', ${`qa-${id.slice(0, 8)}`}, 'individual', '{"country":"EG"}'::jsonb, 'x@example.com', 'approved')
+        INSERT INTO sellers (id, business_name, display_name, slug, support_email, status)
+        VALUES (${id}, 'QA wassalha', 'QA wassalha', ${`qa-${id.slice(0, 8)}`}, 'x@example.com', 'approved')
       `);
     }
     for (const [id, owner, name] of [

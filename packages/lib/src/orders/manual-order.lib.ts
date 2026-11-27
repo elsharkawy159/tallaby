@@ -123,6 +123,6 @@ export function manualOrderErrorKey(error: string): ManualOrderErrorKey {
   if (error === "storePaymentNotInCurrency") return "notCovered";
   if (error === "storeShippingNoCod" || error.startsWith("Cash on delivery")) return "noCod";
   if (error.startsWith("Insufficient stock")) return "insufficientStock";
-  if (error.startsWith("Product is no longer")) return "productUnavailable";
+  if (error.startsWith("Product is no longer") || error === "bundleUnavailable") return "productUnavailable";
   return "generic";
 }

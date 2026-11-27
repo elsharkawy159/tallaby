@@ -32,8 +32,6 @@ async function insertSeller(db: TestDb, id: string, subdomain: string) {
     displayName: `Iso ${subdomain}`,
     slug: subdomain,
     subdomain,
-    businessType: "individual",
-    legalAddress: { country: "EG" },
     supportEmail: "iso@example.com",
     status: "approved",
   });

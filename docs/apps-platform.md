@@ -37,6 +37,7 @@ Schema: `packages/apps/src/manifest.ts` (`appManifestSchema`, strict: unknown ke
 | `status` | `live`, `beta`, `coming_soon`. |
 | `installMode` | `toggle` (install engine, `store_app_installs`), `connect` (account, id or key), `request` (F-62), `builtin` (every store has it). |
 | `settingsRoute` | Key in `APP_SETTINGS_ROUTES`, or null. The dashboard maps each key to a screen (`_settings/settings-routes.data.tsx`, typed `Record<AppSettingsRoute, …>`). |
+| `opens` | Only with `settingsRoute: "feature_page"` (both or neither): a key of `APP_FEATURE_PAGES` for a feature that keeps its own dashboard page (coupons, automatic discounts …). The app screen says where the page is and opens it; the dashboard maps each key to its path in `_settings/feature-page/feature-page.lib.ts` (owner, 2026-11-27). |
 | `surfaces[]` | Where it acts: `storefront.product_page`, `storefront.script`, `storefront.checkout`, `server.events`, `orders`, `orders.export`, `shipping`, `payments`, `catalog.import`, `catalog.feed`, `customer.messages`, `agent`. Data only today; the future permission model keys on it. |
 | `requires[]` | Other app ids it needs first (data only). |
 | `docsUrl` | Public https guide on tallaby.com. |

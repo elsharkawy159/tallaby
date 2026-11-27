@@ -12,9 +12,9 @@ const base: SellerSetupReminderEmailProps = {
   optOutUrl: "https://dashboard.tallaby.com/api/email/setup-reminders/unsubscribe?token=abc",
   steps: [
     { key: "product", href: `https://dashboard.tallaby.com/stores/${STORE}/products/add`, done: true },
-    { key: "design", href: `https://dashboard.tallaby.com/stores/${STORE}/website/templates`, done: false },
-    { key: "payments", href: `https://dashboard.tallaby.com/stores/${STORE}/settings/payments`, done: false },
-    { key: "shipping", href: `https://dashboard.tallaby.com/stores/${STORE}/shipping`, done: false },
+    { key: "theme", href: `https://dashboard.tallaby.com/stores/${STORE}/website/templates`, done: false },
+    { key: "identity", href: `https://dashboard.tallaby.com/stores/${STORE}/website/design`, done: false },
+    { key: "wallet", href: `https://dashboard.tallaby.com/wallet`, done: false },
   ],
 };
 
@@ -32,7 +32,7 @@ describe("SellerSetupReminderEmail", () => {
     const out = await html();
     expect(out).toContain('href="https://dashboard.tallaby.com/"');
     expect(out).toContain(`/stores/${STORE}/website/templates`);
-    expect(out).toContain(`/stores/${STORE}/shipping`);
+    expect(out).toContain("https://dashboard.tallaby.com/wallet");
     expect(out).not.toContain(`/stores/${STORE}/products/add`);
   });
 

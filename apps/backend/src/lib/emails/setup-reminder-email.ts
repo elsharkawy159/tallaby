@@ -4,7 +4,7 @@ import { FREE_ORDER_FEE_USD_CENTS, formatEgpApprox } from "@workspace/lib/billin
 import { getBillingState } from "@workspace/lib/billing/server";
 import { decideEmail } from "@workspace/lib/emails/policy";
 import {
-  STORE_SETUP_STEP_KEYS,
+  STORE_SETUP_REQUIRED_STEP_KEYS,
   STORE_SETUP_STEP_DONE,
   deliverSetupReminder,
   reminderStore,
@@ -62,10 +62,10 @@ export async function sendSellerSetupReminder(sellerId: string, kind: SetupRemin
         const store = reminderStore(seller.stores);
         const optOutUrl = setupReminderOptOutUrl(claim.token);
         const steps = store
-          ? STORE_SETUP_STEP_KEYS.map((key) => ({
+          ? STORE_SETUP_REQUIRED_STEP_KEYS.map((key) => ({
               key,
               done: STORE_SETUP_STEP_DONE[key](store.flags),
-              href: joinUrl(DASHBOARD_URL, storeSetupStepHref(key, store.id, store.flags)),
+              href: joinUrl(DASHBOARD_URL, storeSetupStepHref(key, store.id)),
             }))
           : [];
         return sendEmail({

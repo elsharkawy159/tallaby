@@ -70,6 +70,8 @@ export type VendorProduct = {
   quantity?: number | null;
   /** False: unlimited stock (0138, F-51). */
   trackStock?: boolean | null;
+  /** A bundle (0188, F-07f): its stock comes from its items, so the list shows "Bundle", not "Unlimited". */
+  isBundle?: boolean | null;
   basePrice?: string | number | null;
   salePrice?: string | number | null;
   brand?: { name: string } | null;
@@ -319,6 +321,8 @@ export function VendorProductsSection({
       >
         {PRODUCTS_TABS.map((key) => {
           const on = filters.tab === key;
+          // Bundles (F-07f): a tab only for a store that has one (or while it is open).
+          if (key === "bundles" && !on && counts.bundles === 0) return null;
           return (
             <button
               key={key}

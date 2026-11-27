@@ -53,6 +53,8 @@ export interface FeedProductRow {
   quantity: number;
   /** False: unlimited stock (0138, F-51), always "in stock". */
   trackStock?: boolean;
+  /** A bundle (0188, F-07f): `quantity`/`trackStock` already carry its computed availability. */
+  isBundle?: boolean;
   condition: string | null;
   /** Public image URLs, gallery order. */
   images: string[];
@@ -99,6 +101,8 @@ export interface FeedItem {
   productType: string | null;
   color: string | null;
   size: string | null;
+  /** Google's `is_bundle` (XML only; the CSV columns stay as they are). */
+  isBundle?: boolean;
 }
 
 export interface FeedStoreInfo {
@@ -260,7 +264,7 @@ export function buildProductItems(product: FeedProductRow, locale: FeedLocale, s
       pricing,
       images,
     );
-    return single ? [single] : [];
+    return single ? [product.isBundle === true ? { ...single, isBundle: true } : single] : [];
   }
 
   const items: FeedItem[] = [];
@@ -348,6 +352,8 @@ export function feedXmlItem(item: FeedItem): string {
     g("product_type", item.productType),
     g("color", item.color),
     g("size", item.size),
+    // A seller-made bundle of the store's products (0188, F-07f).
+    g("is_bundle", item.isBundle ? "yes" : null),
     // Sellers rarely have GTINs; without this Google rejects the item.
     g("identifier_exists", "no"),
     // Meta's video field (Google and TikTok ignore it).

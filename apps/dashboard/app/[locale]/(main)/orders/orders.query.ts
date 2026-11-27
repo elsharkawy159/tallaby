@@ -28,6 +28,7 @@ import {
 } from "./order-confirm.lib";
 import { DEFAULT_CURRENCY } from "@workspace/lib";
 import { readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
+import { parseBundleSnapshot } from "@workspace/lib/products/bundles";
 import {
   pickProductSlug,
   resolveCustomerEmail,
@@ -241,6 +242,7 @@ export async function loadSellerOrders(
           fulfillmentType: true,
           customerInputs: true,
           preorderShipsAt: true,
+          bundleItems: true,
         },
         with: {
           product: {
@@ -435,6 +437,7 @@ export async function loadSellerOrders(
         productUrl: productUrl(o.storeId, i.productId),
         customerInputs: i.customerInputs ?? null,
         preorderShipsAt: i.preorderShipsAt ?? null,
+        bundleItems: parseBundleSnapshot(i.bundleItems),
       })),
       itemCount: mine.reduce((n, i) => n + (i.quantity ?? 1), 0),
       failureReason: shipment?.failureReason ?? null,

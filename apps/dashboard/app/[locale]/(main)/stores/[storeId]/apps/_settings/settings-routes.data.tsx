@@ -11,6 +11,13 @@ import { easykashCallbackUrl } from "@workspace/lib/payments/store-gateways";
 import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { TALLABY_PAY_DEFAULT_SETTINGS } from "@workspace/lib/tallaby-pay";
 import { SIZE_CHART_APP, listStoreSizeCharts } from "@workspace/lib/size-charts/server";
+import { DOWNSELL_APP } from "@workspace/lib/downsell";
+import { listDownsellCoupons, listStoreDownsells } from "@workspace/lib/downsell/server";
+import { parseStoreSalesPopup } from "@workspace/lib/stores/sales-popup";
+import { parseStoreTopLoader } from "@workspace/lib/stores/top-loader";
+import { WHATSAPP_BUTTON_APP, parseStoreWhatsAppButton } from "@workspace/lib/stores/whatsapp-button";
+import { formatPhone } from "@workspace/store-sections/social";
+import { readPriceRoundingSetting } from "@workspace/lib/products/price-rounding";
 import { storeUrl } from "@workspace/lib/storefront";
 import { getStoreWhatsAppOverview, listStoreWhatsAppMessages } from "@workspace/lib/whatsapp/store/server";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
@@ -18,8 +25,10 @@ import { parseStoreSeo } from "@workspace/lib/stores";
 import { taxonomyInStore } from "@workspace/lib/stores/scope/server";
 import type { StoreRow } from "@workspace/lib/stores/server";
 import { getAllCategories } from "@/actions/categories";
+import { filterCategoryTreeByKind } from "@workspace/lib/products/category-kind"; // F-108e
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { StoreGatewaysCard } from "../../settings/payments/gateways.client";
+import { StoreSalesPopupSettings } from "../../settings/sales-popup/sales-popup.client";
 import type { AppCenterStoreState } from "../app-center.lib";
 import type { AppCategoryOption } from "../apps.types";
 import { labelStoreCategories } from "@/lib/stores/category-labels.lib";
@@ -29,11 +38,18 @@ import { SearchConsoleApp } from "../search-console.client";
 import { searchConsoleUrls } from "../search-console.lib";
 import { AiAssistantsApp } from "./ai-assistants/ai-assistants.client";
 import { BostaApp } from "./bosta/bosta.client";
+import { CrossSellApp } from "./cross-sell/cross-sell.client";
+import { DownsellApp } from "./downsell/downsell.client";
 import { IntegrationSettings } from "./integration-settings.client";
+import { PriceRoundingApp } from "./price-rounding/price-rounding.client";
+import { FeaturePageApp } from "./feature-page/feature-page";
 import { StoreQrCodesScreen } from "./qr-codes/qr-codes.data";
 import { SizeChartApp } from "./size-chart/size-chart.client";
+import { TopLoaderApp } from "./top-loader/top-loader.client";
+import { readStoreBrandColor } from "./top-loader/top-loader.query";
 import { WassalhaApp } from "./wassalha/wassalha.client";
 import { WhatsAppApp } from "./whatsapp/whatsapp.client";
+import { WhatsAppButtonApp } from "./whatsapp-button/whatsapp-button.client";
 
 /**
  * Every `settingsRoute` key of the registry (@workspace/apps) mapped to the
@@ -70,7 +86,8 @@ async function integration({ store, manifest, state, readOnly }: AppSettingsCont
     needsCategories ? getAllCategories() : Promise.resolve(null),
     getLocale(),
   ]);
-  const categories = tree?.success ? categoryOptions((tree.data ?? []) as CategoryNode[], locale) : [];
+  // F-108e: Shopify products are physical, so only physical categories are offered.
+  const categories = tree?.success ? categoryOptions(filterCategoryTreeByKind(tree.data ?? [], "physical") as CategoryNode[], locale) : [];
   return (
     <IntegrationSettings
       storeId={store.id}
@@ -180,6 +197,67 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
     );
   },
   qr_codes: async ({ store }) => <StoreQrCodesScreen store={store} />,
+
+  // Top loader (owner, 2026-11-27): on by default, brand colour or a custom one, in stores.settings.topLoader.
+  top_loader: async ({ store, readOnly }) => (
+    <TopLoaderApp storeId={store.id} brandColor={await readStoreBrandColor(store)} initial={parseStoreTopLoader(store.settings)} readOnly={readOnly} />
+  ),
+
+  // WhatsApp button (owner, 2026-11-27): install switch and settings in stores.settings.whatsappButton.
+  whatsapp_button: async ({ store, state, readOnly }) => {
+    const contact = (store.contact ?? {}) as { whatsapp?: unknown; phone?: unknown };
+    const storeNumber =
+      [contact.whatsapp, contact.phone].map((value) => (typeof value === "string" && value.length <= 40 ? formatPhone(value) : null)).find(Boolean) ?? null;
+    return (
+      <WhatsAppButtonApp
+        storeId={store.id}
+        installed={state.installs.some((install) => install.appKey === WHATSAPP_BUTTON_APP)}
+        storeNumber={storeNumber}
+        initial={parseStoreWhatsAppButton(store.settings)}
+        readOnly={readOnly}
+      />
+    );
+  },
+
+  // Marketing tools (owner, 2026-11-27). F-32: the store-wide switch (from Store settings › Checkout); offers stay per product.
+  cross_sell: async ({ store, readOnly }) => <CrossSellApp storeId={store.id} enabled={store.crossSellEnabled} readOnly={readOnly} />,
+
+  // F-22: the same settings as the old Store settings › Sales pop-up page (that URL redirects here).
+  // F-112: the Round prices card, moved here from Store settings › General (owner, 2026-11-27).
+  price_rounding: async ({ store, readOnly }) => {
+    const currency = parseStoreCurrency(store.settings);
+    return (
+      <PriceRoundingApp
+        storeId={store.id}
+        money={{ currency: currency.currency, label: currency.label }}
+        initial={readPriceRoundingSetting(store.settings)}
+        readOnly={readOnly}
+      />
+    );
+  },
+
+  // Features with their own page (coupons, automatic discounts …), listed as apps too (owner, 2026-11-27).
+  feature_page: async ({ store, manifest }) => (manifest.opens ? <FeaturePageApp storeId={store.id} page={manifest.opens} /> : null),
+
+  sales_popup: async ({ store, readOnly }) => (
+    <StoreSalesPopupSettings storeId={store.id} siteUrl={storeUrl(store.subdomain, null)} initial={parseStoreSalesPopup(store.settings)} readOnly={readOnly} />
+  ),
+
+  // F-116: on/off and one offer per product. "Not available yet" while 0185 is missing.
+  downsell: async ({ store, state, readOnly }) => {
+    const [locale, catalogSplit] = await Promise.all([getLocale(), isSwitchOn("stores_catalog_split")]);
+    const scope = { sellerId: store.sellerId, storeId: store.id, catalogSplit };
+    const [list, coupons] = await Promise.all([listStoreDownsells(scope, locale), listDownsellCoupons(scope)]);
+    return (
+      <DownsellApp
+        storeId={store.id}
+        installed={state.installs.some((install) => install.appKey === DOWNSELL_APP)}
+        readOnly={readOnly}
+        list={list}
+        coupons={coupons}
+      />
+    );
+  },
 
   // F-109: on/off, chosen events with previews, 30-day numbers and history. Read-only "Coming soon" while the
   // admin has WhatsApp off; every read falls back to that when 0180 is missing (shipped dark, owner 2026-11-26).

@@ -73,6 +73,28 @@ describe("store apps catalog", () => {
       { key: "size_chart", group: "storefront", kind: "widget", live: true, pricing: FREE },
       { key: "qr_codes", group: "storefront", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
       { key: "remove_branding", group: "storefront", kind: "widget", live: true, pricing: { model: "monthly", usdCents: 100 }, freeWithPro: true },
+      { key: "store_app", group: "storefront", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "languages", group: "storefront", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "shoppable_gallery", group: "storefront", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      // Top loader (owner, 2026-11-27): the storefront's loading bar, on for every store.
+      { key: "top_loader", group: "storefront", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      // WhatsApp button (owner, 2026-11-27): a floating chat button; the seller installs it.
+      { key: "whatsapp_button", group: "storefront", kind: "widget", live: true, pricing: FREE },
+      // Marketing tools (owner, 2026-11-27): Downsell installs; Cross-selling and Sales pop-up come with every store.
+      { key: "downsell", group: "marketing", kind: "widget", live: true, pricing: FREE },
+      { key: "cross_sell", group: "marketing", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "sales_popup", group: "marketing", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      // Round prices left Store settings › General; the rest keep their own pages and are listed here too (owner, 2026-11-27).
+      { key: "price_rounding", group: "marketing", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "coupons", group: "marketing", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "automatic_discounts", group: "marketing", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "quantity_offers", group: "marketing", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "bundles", group: "marketing", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "email_campaigns", group: "marketing", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "catalog_share", group: "marketing", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "order_protection", group: "orders", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "missed_orders", group: "orders", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "min_order", group: "orders", kind: "server", live: true, pricing: FREE, defaultInstalled: true },
       { key: "meta_pixel", group: "tracking", kind: "script", provider: "meta_pixel", pricing: FREE },
       { key: "google_analytics", group: "tracking", kind: "script", provider: "google_analytics", pricing: FREE },
       { key: "google_tag_manager", group: "tracking", kind: "script", provider: "google_tag_manager", pricing: FREE },
@@ -117,7 +139,28 @@ describe("store apps catalog", () => {
 
   it("lists the built-in apps, and every built-in app is live", () => {
     const defaults = STORE_APPS.filter(isStoreAppDefaultInstalled);
-    expect(defaults.map((a) => a.key)).toEqual(["ai_assistants", "qr_codes", "product_feeds", "google_search_console"]);
+    expect(defaults.map((a) => a.key)).toEqual([
+      "ai_assistants",
+      "qr_codes",
+      "store_app",
+      "languages",
+      "shoppable_gallery",
+      "top_loader",
+      "cross_sell",
+      "sales_popup",
+      "price_rounding",
+      "coupons",
+      "automatic_discounts",
+      "quantity_offers",
+      "bundles",
+      "email_campaigns",
+      "catalog_share",
+      "order_protection",
+      "missed_orders",
+      "min_order",
+      "product_feeds",
+      "google_search_console",
+    ]);
     for (const app of defaults) expect(isStoreAppLive(app), app.key).toBe(true);
   });
 
@@ -135,6 +178,17 @@ describe("store apps catalog", () => {
     expect(storeAppPricing(app)).toEqual({ model: "free" });
     expect(storeAppHref("s1", app)).toBe("/stores/s1/apps/size-chart");
     expect(storeAppSettingsHref("s1", app)).toBe("/stores/s1/apps/size-chart/settings");
-    expect(storeAppsInGroup("storefront").map((a) => a.key)).toEqual(["size_chart", "qr_codes", "remove_branding"]);
+    expect(storeAppsInGroup("storefront").map((a) => a.key)).toEqual(["size_chart", "qr_codes", "remove_branding", "store_app", "languages", "shoppable_gallery", "top_loader", "whatsapp_button"]);
+  });
+
+  it("lists Downsell, Cross-selling and Sales pop-up as free Marketing tools with their own pages (owner, 2026-11-27)", () => {
+    expect(storeAppsInGroup("marketing").map((a) => a.key).slice(0, 3)).toEqual(["downsell", "cross_sell", "sales_popup"]);
+    for (const key of ["downsell", "cross_sell", "sales_popup"]) {
+      const app = getStoreApp(key)!;
+      expect(isStoreAppLive(app), key).toBe(true);
+      expect(storeAppPricing(app), key).toEqual({ model: "free" });
+      expect(storeAppSettingsHref("s1", app), key).toBe(`/stores/s1/apps/${app.slug}/settings`);
+    }
+    expect(isStoreAppDefaultInstalled(getStoreApp("downsell")!)).toBe(false);
   });
 });

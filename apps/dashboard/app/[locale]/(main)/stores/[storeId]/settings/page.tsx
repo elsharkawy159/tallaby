@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { parseStoreCurrency } from "@workspace/lib";
-import { STORE_CATALOG_MAX_PRODUCTS } from "@workspace/lib/stores";
+import { STORE_CATALOG_MAX_PRODUCTS, readStoreSocialLinks } from "@workspace/lib/stores";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { industryOfCategory, nicheForIndustry, parseStoreNiche } from "@workspace/lib/stores/niche";
 import { getLocale } from "next-intl/server";
@@ -9,10 +9,10 @@ import { nicheChoices } from "@/lib/stores/niche-choices.lib";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { getBillingState } from "@workspace/lib/billing/server"
-import { readPriceRoundingSetting } from "@workspace/lib/products/price-rounding";
 import { StoreGeneralForm } from "./store-general.client";
 import { loadCatalogProducts } from "./catalog.data";
 import type { StoreGeneralFormValues } from "./store-settings.dto";
+import { toSocialRows } from "../website/social/social.dto";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -54,6 +54,7 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
   return (
     <StoreGeneralForm
       usdLive={billing.usdLive}
+      social={toSocialRows(readStoreSocialLinks(store.contact))}
       storeId={store.id}
       initial={initial}
       nicheOptions={nicheChoices(
@@ -61,8 +62,6 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
         locale,
       )}
       readOnly={readOnly}
-      // Round prices (ROADMAP.md F-112a), on or off; saved with the same button.
-      priceRounding={readPriceRoundingSetting(store.settings)}
       // Builder sellers edit the logo, banner and favicon in Website › Design;
       // the others keep them here.
       brandInSettings={!storeBuilderEnabled(store.sellerId)}

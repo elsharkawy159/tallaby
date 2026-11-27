@@ -8,7 +8,7 @@ import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 
 /**
- * Store settings › Sales pop-up (ROADMAP.md F-22b). storeId is explicit and
+ * Marketing tools › Sales pop-up app (ROADMAP.md F-22b; Store settings until 2026-11-27). storeId is explicit and
  * re-checked with requireStore; the input is cleaned again on the server and
  * saved in `stores.settings.salesPopup` (other keys kept). The storefront
  * profile carrying it is cached, so the store's hosts are invalidated.
@@ -34,7 +34,7 @@ export async function saveStoreSalesPopup(storeId: string, input: unknown): Prom
       })
       .where(and(eq(stores.id, store.id), eq(stores.sellerId, seller.sellerId)));
 
-    revalidateDashboardPath(`/stores/${store.id}/settings/sales-popup`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/sales-popup/settings`);
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, settings };
   } catch (error) {

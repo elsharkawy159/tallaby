@@ -48,8 +48,6 @@ describe.skipIf(!TEST_DATABASE_URL)('seller fulfillment setup (integration)', ()
       businessName: 'Fulfillment Test',
       displayName: 'Fulfillment Test',
       slug: `fulfillment-test-${sellerId}`,
-      businessType: 'individual',
-      legalAddress: {},
       supportEmail: 'test@example.com',
       status: 'approved',
     })

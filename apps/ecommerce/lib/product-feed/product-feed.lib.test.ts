@@ -227,6 +227,14 @@ describe("serialisation", () => {
     expect(xml.trimEnd().endsWith("</rss>")).toBe(true);
   });
 
+  it("marks a bundle with g:is_bundle and its computed availability (0188, F-07f)", () => {
+    const [bundle] = buildProductItems(product({ isBundle: true, trackStock: true, quantity: 0 }), "ar", STORE);
+    const xml = feedXmlItem(bundle!);
+    expect(xml).toContain("<g:is_bundle>yes</g:is_bundle>");
+    expect(xml).toContain("<g:availability>out of stock</g:availability>");
+    expect(feedXmlItem(buildProductItems(product(), "ar", STORE)[0]!)).not.toContain("is_bundle");
+  });
+
   it("writes CSV rows matching the header", () => {
     const [item] = buildProductItems(product({ variants: [variant({ images: ["https://cdn.example/red.jpg"] })] }), "en", STORE);
     const header = feedCsvHeader();

@@ -13,10 +13,13 @@ export function PaymentProofPicker({
   file,
   onChange,
   disabled,
+  title,
 }: {
   file: File | null;
   onChange: (file: File | null) => void;
   disabled?: boolean;
+  /** Replaces the default "Screenshot of the transfer (optional)" heading. */
+  title?: string;
 }) {
   const t = useTranslations("checkout.transfer.proof");
   const input = useRef<HTMLInputElement>(null);
@@ -35,7 +38,11 @@ export function PaymentProofPicker({
   return (
     <div className="space-y-2">
       <p className="text-sm font-semibold text-gray-900">
-        {t("title")} <span className="text-xs font-normal text-gray-500">{t("optional")}</span>
+        {title ?? (
+          <>
+            {t("title")} <span className="text-xs font-normal text-gray-500">{t("optional")}</span>
+          </>
+        )}
       </p>
       <input
         ref={input}

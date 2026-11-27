@@ -20,10 +20,6 @@ export function buildSellersWhere(query: SellersQuery): SQL | undefined {
   ) as SellerStatus[];
   if (statuses.length) conditions.push(inArray(sellers.status, statuses));
 
-  if (query.businessType?.length) {
-    conditions.push(inArray(sellers.businessType, query.businessType));
-  }
-
   const booleanFilter = (
     values: string[] | undefined,
     column:

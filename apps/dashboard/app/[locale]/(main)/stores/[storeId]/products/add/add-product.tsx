@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   useForm,
   useFormContext,
@@ -67,6 +67,8 @@ import { ImportDialog } from "./import-dialog";
 import { BulkUrlImport } from "./bulk-url-import.client";
 import { useProductDraft, type DraftStatus } from "./use-product-draft";
 import { toProductPayload } from "./prepare-product-submit.lib";
+import { useKindCategories } from "./category-kind.client";
+import { CATEGORY_KIND_MISMATCH, filterCategoryTreeByKind } from "@workspace/lib/products/category-kind";
 import {
   ensureTaxonomyItem,
   setProductSellerTaxonomy,
@@ -148,7 +150,7 @@ function NewProduct(props: AddProductProps) {
 }
 
 function AddProductForm({
-  categories,
+  categories: allCategories,
   sellerPricing,
   linkHost = null,
   edit,
@@ -214,6 +216,9 @@ function AddProductForm({
   });
   // A digital product (F-108a) has no shipping section.
   const isDigital = useWatch({ control: form.control, name: "productType" }) === "digital";
+  // F-108e: the category pickers, search and AI matches show only the categories of the product's type; imports stay physical.
+  const categories = useKindCategories(form, allCategories);
+  const physicalCategories = useMemo(() => filterCategoryTreeByKind(allCategories, "physical"), [allCategories]);
 
   // New products autosave a draft; edits only save on "Save changes", so guard those.
   // `isDirty` alone isn't enough: the pricing section syncs `price.base` on mount with
@@ -333,8 +338,10 @@ function AddProductForm({
       files: (data.digitalFiles ?? []).map(({ path, name }) => ({ path, name })),
     });
     if (!saved.success) {
-      toast.warning(tDigital("saveFailed"));
-      if (isNew && data.productType === "digital") await setProductPublished(productStoreId, productId, false);
+      toast.warning(saved.error === CATEGORY_KIND_MISMATCH ? tForm("categoryField.kindMismatch") : tDigital("saveFailed"));
+      // F-108e: a product whose type change failed now has a category of the other kind, so it's hidden too, never left live.
+      const switched = (data.productType ?? "physical") !== (edit?.defaultValues.productType ?? "physical");
+      if ((isNew && data.productType === "digital") || (!isNew && switched)) await setProductPublished(productStoreId, productId, false);
       return;
     }
     if (saved.unpublished) toast.warning(tDigital("unpublished"));
@@ -397,7 +404,7 @@ function AddProductForm({
             window.location.assign(getPathname({ href: addProductReturnHref(returnFrom, productStoreId) ?? productsHref(), locale }));
           }
         } else {
-          toast.error(result.error || tToast("failedToCreateProduct"));
+          toast.error(result.error === CATEGORY_KIND_MISMATCH ? tForm("categoryField.kindMismatch") : result.error || tToast("failedToCreateProduct"));
         }
       } catch (error) {
         console.error("Form submission error:", error);
@@ -431,7 +438,7 @@ function AddProductForm({
           });
           router.push(productsHref());
         } else {
-          toast.error(result.error || tToast("failedToUpdateProduct"));
+          toast.error(result.error === CATEGORY_KIND_MISMATCH ? tForm("categoryField.kindMismatch") : result.error || tToast("failedToUpdateProduct"));
         }
       } catch (error) {
         console.error("Form submission error:", error);
@@ -497,7 +504,7 @@ function AddProductForm({
     return (
       <BulkUrlImport
         urls={bulkUrls}
-        categories={categories}
+        categories={physicalCategories}
         sellerPricing={sellerPricing}
         // Back to where the links came from; the link screen shows them again.
         onExit={() => setMode("single")}
@@ -589,7 +596,7 @@ function AddProductForm({
         )}
         {!isEdit && urlStageOpen && (
           <UrlAddStage
-            categories={categories}
+            categories={physicalCategories}
             sellerPricing={sellerPricing}
             initialText={bulkUrls.join("\n")}
             onBack={() => onPickMethod?.("choose")}
@@ -752,7 +759,7 @@ function AddProductForm({
             <ImportDialog
               open={importOpen}
               onOpenChange={setImportOpen}
-              categories={categories}
+              categories={physicalCategories}
               sellerPricing={sellerPricing}
               onBulkUrls={(urls) => {
                 setBulkUrls(urls);

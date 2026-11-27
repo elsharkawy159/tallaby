@@ -12,8 +12,8 @@ import {
 } from "./setup-prompts.lib";
 
 const STORE = "33333333-3333-4333-8333-333333333333";
-const none: SetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false };
-const all: SetupFlags = { template: true, brand: true, product: true, publish: true, shipping: true, payments: true };
+const none: SetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false, domain: false, seo: false, wallet: false };
+const all: SetupFlags = { template: true, brand: true, product: true, publish: true, shipping: true, payments: true, domain: true, seo: true, wallet: true };
 const fresh = parseSetupPromptState(null);
 const withToast = (over: Partial<SetupPromptState> = {}): SetupPromptState => ({ ...fresh, toastStep: "product", ...over });
 

@@ -4,12 +4,13 @@
 
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 
-export type ProductsTab = "all" | "published" | "draft" | "lowStock" | "outOfStock";
+export type ProductsTab = "all" | "published" | "draft" | "lowStock" | "outOfStock" | "bundles";
 export type ProductsSort = "newest" | "priceAsc" | "priceDesc" | "stockAsc" | "name";
 export type ProductsViewMode = "grid" | "table";
 export type StockLevel = "in" | "low" | "out";
 
-export const PRODUCTS_TABS: ProductsTab[] = ["all", "published", "draft", "lowStock", "outOfStock"];
+/** "bundles" (F-07f): shown only while the store has one, or while it is open. */
+export const PRODUCTS_TABS: ProductsTab[] = ["all", "published", "draft", "lowStock", "outOfStock", "bundles"];
 export const PRODUCTS_SORTS: ProductsSort[] = ["newest", "priceAsc", "priceDesc", "stockAsc", "name"];
 
 export const PRODUCTS_PAGE_SIZES = [20, 50, 100, 200] as const;

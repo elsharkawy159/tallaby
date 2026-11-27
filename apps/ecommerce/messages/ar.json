@@ -236,9 +236,20 @@
     "suggestedTitle": "قد يعجبك أيضًا"
   },
   "checkout": {
-    "digitalNoCod": "الدفع عند الاستلام غير متاح للمنتجات الرقمية. اختر طريقة دفع أخرى.",
-    "digitalNoPaymentMethod": "لا يستطيع هذا المتجر استلام دفع المنتجات الرقمية حاليًا. تواصل مع المتجر.",
-    "digitalDownload": "تحميل رقمي",
+    "downsell": {
+      "title": "قبل أن تغادر",
+      "productBody": "هذا المنتج بسعر أقل بدلًا من «{product}».",
+      "swap": "استبدال المنتج",
+      "viewProduct": "عرض المنتج",
+      "couponBody": "خصم لك إذا أكملت طلبك الآن.",
+      "applyCoupon": "تطبيق الخصم",
+      "noThanks": "لا، شكرًا",
+      "swapped": "تم استبدال المنتج",
+      "failed": "لم يتم تطبيق العرض. حاول مجددًا.",
+      "percentOff": "خصم {value}%",
+      "amountOff": "خصم {value}",
+      "freeShipping": "توصيل مجاني"
+    },
     "offerLines": {
       "crossSell": "عرض مع المنتج",
       "quantityOffer": "عرض الكمية"
@@ -328,6 +339,8 @@
       "transferTitle": "أرسل العربون عبر {method}",
       "amountToSend": "العربون المطلوب إرساله",
       "payDeposit": "ادفع العربون",
+      "splitLine": "ادفع <now></now> الآن، والباقي <rest></rest> كاش عند الاستلام.",
+      "payAmountByCard": "ادفع <amount></amount> بالبطاقة",
       "orderPage": {
         "awaiting": "طلبك في انتظار العربون. ادفعه ليُشحن طلبك، وإلا يُلغى بعد 48 ساعة.",
         "reported": "أبلغنا المتجر أنك أرسلت العربون. سيُشحن طلبك بعد أن يؤكد التاجر استلامه.",
@@ -351,9 +364,14 @@
     "egyptOnly": "نوصّل داخل مصر فقط حاليًا.",
     "paymentNotInCurrency": "طريقة الدفع هذه غير متاحة بعملة هذا المتجر.",
     "noPaymentInCurrency": "لا يستطيع هذا المتجر استلام دفع هذا الطلب حاليًا، لأن الدفع عند الاستلام غير متاح هنا. تواصل مع المتجر.",
+    "digitalNoCod": "الدفع عند الاستلام غير متاح للمنتجات الرقمية. اختر طريقة دفع أخرى.",
+    "digitalNoPaymentMethod": "لا يستطيع هذا المتجر استلام دفع المنتجات الرقمية حاليًا. تواصل مع المتجر.",
+    "digitalDownload": "تحميل رقمي",
     "minOrderNotReachedIn": "الحد الأدنى للطلب في هذا المتجر {minimum}. أضف منتجات بقيمة {missing} لإتمام طلبك.",
     "zoneNoCod": "الدفع عند الاستلام غير متاح لهذا العنوان.",
     "orderNotAccepted": "لا يمكننا قبول هذا الطلب حاليًا. يُرجى التواصل مع المتجر مباشرةً.",
+    "countryNotAccepted": "يستقبل هذا المتجر الطلبات من الدول التي يوصّل إليها فقط. إن كان هذا خطأ، تواصل مع المتجر مباشرةً.",
+    "bundleUnavailable": "إحدى الحزم في سلتك غير متاحة حاليًا. احذفها من السلة لإتمام طلبك.",
     "tooManyOrders": "أرسلت طلبات كثيرة في وقت قصير. انتظر قليلًا وحاول مرة أخرى، أو تواصل مع المتجر مباشرةً.",
     "arrivesIn": "يصل خلال {min}–{max} أيام",
     "noPaymentMethodsAvailable": "لا توجد طريقة دفع متاحة لهذا الطلب في هذا المتجر. يرجى التواصل مع المتجر.",
@@ -462,6 +480,11 @@
       "copied": "تم النسخ",
       "copyFailed": "تعذّر النسخ، انسخه يدويًا من فضلك.",
       "openLink": "ادفع من رابط إنستاباي",
+      "openLinkAgain": "افتح إنستاباي مرة أخرى",
+      "newTab": "(يفتح في نافذة جديدة)",
+      "payAmount": "ادفع <amount></amount>",
+      "receiptPrompt": "دفعت؟ أرفق صورة إيصال التحويل",
+      "orderNote": "اكتب رقم الطلب <num>{number}</num> في ملاحظة التحويل",
       "checkName": "قبل تأكيد التحويل في {method}، تأكد أن اسم المستلم مطابق للاسم الموضح أعلاه.",
       "scanQr": "أو امسح رمز QR",
       "steps": {
@@ -508,6 +531,9 @@
       "seconds": "ثواني"
     }
   },
+  "storeWhatsAppButton": {
+    "ariaLabel": "كلّمنا على واتساب"
+  },
   "storeSalesPopup": {
     "someoneFrom": "شخص من {governorate} طلب",
     "someone": "شخص طلب",
@@ -543,6 +569,10 @@
       "percentOff": "وفّر {value}%",
       "amountOff": "وفّر {value} في القطعة",
       "changeInCart": "المنتج في سلتك. غيّر الكمية من هناك."
+    },
+    "bundle": {
+      "title": "ماذا تحتوي الحزمة",
+      "includes": "يشمل: {items}"
     },
     "restock": {
       "title": "أبلغني عند توفره",
@@ -584,9 +614,6 @@
     "photos": "صور المنتج"
   },
   "product": {
-    "digitalBadge": "منتج رقمي",
-    "digitalProduct": "منتج رقمي",
-    "digitalDownloadAfterPayment": "تحمّله بعد الدفع، بدون شحن.",
     "addToCart": "أضف إلى السلة",
     "adding": "جاري الإضافة...",
     "inCartCount": "{count} في السلة",
@@ -676,6 +703,9 @@
     "discountPercentOff": "خصم {percent}%",
     "badgeTrending": "رائج",
     "badgeSeasonal": "موسمي",
+    "digitalBadge": "منتج رقمي",
+    "digitalProduct": "منتج رقمي",
+    "digitalDownloadAfterPayment": "تحمّله بعد الدفع، بدون شحن.",
     "discountAvailableUntil": "الخصم متاح حتى:",
     "days": "أيام",
     "hours": "ساعات",

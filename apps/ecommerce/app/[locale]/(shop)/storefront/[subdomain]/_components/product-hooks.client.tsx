@@ -28,6 +28,7 @@ import { StorePieceChoices } from "./store-piece-choices.client";
 import { countPieces, resolvePieces } from "@/components/product-page/variant-options.lib";
 import { StoreRestockForm } from "./store-restock-form.client";
 import { StoreQuantityOffers } from "./store-quantity-offers.client";
+import { StoreBundleItems } from "./store-bundle-items.client";
 import { CustomerFieldsForm } from "@/components/product-page/customer-fields-form.client";
 import { unitPriceWithExtras } from "@workspace/lib/products/customer-fields";
 
@@ -244,10 +245,13 @@ export function StoreProductBuyBox({
       <StoreQuantityOffers productId={product.id} price={unitPriceWithExtras(price, customer.extrasPiastres)} stock={maxQuantity} quantity={quantity} floor={minOrder.floor} readOnly={inCart} onSelect={changeQuantity} />
     </>
   ) : null;
+  // What a bundle holds (0188, F-07f), shown whether or not it is in stock.
+  const bundle = <StoreBundleItems items={product.bundleItems} />;
   if (!stickyMobile) {
     if (!restock) {
       return (
         <>
+          {bundle}
           {tiers}
           {box("inline")}
           {choices && <div className="mt-4">{choices}</div>}
@@ -256,6 +260,7 @@ export function StoreProductBuyBox({
     }
     return (
       <div className="grid min-w-0 gap-3">
+        {bundle}
         {box("inline")}
         {restock}
       </div>
@@ -268,6 +273,7 @@ export function StoreProductBuyBox({
   return (
     <>
       <HideBottomNavOnScroll />
+      {bundle}
       {tiers}
       <div className="hidden md:block">{box("inline")}</div>
       {restock && <div className="md:mt-3">{restock}</div>}

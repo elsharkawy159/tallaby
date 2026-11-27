@@ -77,8 +77,8 @@ describe.skipIf(!TEST_DATABASE_URL)("pending carts (integration)", { timeout: 12
       await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${id}`);
       const sub = `pc-${id.slice(0, 8)}`;
       await db.execute(sql`
-        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
-        VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'pc@example.com', 'approved')
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, status)
+        VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'pc@example.com', 'approved')
       `);
     }
     for (const [id, owner, deleted] of [

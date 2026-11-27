@@ -28,7 +28,7 @@ import {
   stores,
 } from "@workspace/db";
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
-import { restoreStock, type StockLine } from "@workspace/db/inventory";
+import { orderStockLinesOf, restoreStock, type StockLine } from "@workspace/db/inventory";
 import { depositCutoff } from "./cod-deposit.lib";
 import { notifyOrderWhatsApp, sendOrderEventEmail } from "./notify";
 
@@ -212,18 +212,20 @@ export async function expireUnpaidDeposits(now: Date = new Date()): Promise<{ ex
           .update(orderItems)
           .set({ status: "cancelled", cancelledAt: stamp, updatedAt: stamp })
           .where(eq(orderItems.orderId, order.id))
-          .returning({ productId: orderItems.productId, variantId: orderItems.variantId, quantity: orderItems.quantity });
+          .returning({
+            productId: orderItems.productId,
+            variantId: orderItems.variantId,
+            quantity: orderItems.quantity,
+            bundleItems: orderItems.bundleItems,
+          });
         await tx
           .update(shipments)
           .set({ status: "cancelled", updatedAt: stamp })
           .where(and(eq(shipments.orderId, order.id), inArray(shipments.status, ["pending", "assigned"])));
         // A test order never took stock (F-76), so nothing goes back.
         if (!order.isTest) {
-          const stockLines: StockLine[] = lines.map((line) =>
-            line.variantId
-              ? { kind: "variant", id: line.variantId, quantity: line.quantity }
-              : { kind: "product", id: line.productId, quantity: line.quantity },
-          );
+          // A bundle line (0188, F-07f) puts back the items of its snapshot.
+          const stockLines: StockLine[] = orderStockLinesOf(lines);
           await restoreStock(tx, stockLines, { reason: "cancel", orderId: order.id, storeId: order.storeId });
         }
         await cancelPendingAffiliateCommission(tx, order.id);

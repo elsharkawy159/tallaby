@@ -40,17 +40,21 @@ export default function DashboardLayout({
 
         {/* Main Content Area */}
         <MainContentWrapper>
-          <Suspense fallback={<HeaderSkeleton />}>
-            <HeaderData />
-          </Suspense>
-          <Suspense fallback={null}>
-            <RestrictedBanner />
-          </Suspense>
-          {/* Replaced by the header Next step button (owner, 2026-11-18). */}
-          {/* <SetupPrompts /> */}
-          <AccountMoneyShell>
-            <main className="min-w-0 flex-1">{children}</main>
-          </AccountMoneyShell>
+          {/* Desktop: the header and the page are one rounded panel on the frame colour the sidebar shares (owner, 2026-11-27; .seller-panel in app/globals.css).
+              Its rounded border is drawn by the fixed viewport frame in MainContentWrapper, so it stays on screen while the window scrolls. */}
+          <div className="seller-panel flex min-w-0 flex-1 flex-col min-[1021px]:my-1 min-[1021px]:me-1">
+            <Suspense fallback={<HeaderSkeleton />}>
+              <HeaderData />
+            </Suspense>
+            <Suspense fallback={null}>
+              <RestrictedBanner />
+            </Suspense>
+            {/* Replaced by the header Next step button (owner, 2026-11-18). */}
+            {/* <SetupPrompts /> */}
+            <AccountMoneyShell>
+              <main className="min-w-0 flex-1">{children}</main>
+            </AccountMoneyShell>
+          </div>
         </MainContentWrapper>
         {/* Phones and tablets: Home, Products, Orders, Search (owner, 2026-11-18). Fixed, so no fallback is needed for layout. */}
         <Suspense fallback={null}>

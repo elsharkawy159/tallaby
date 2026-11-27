@@ -27,6 +27,7 @@ import { productShownInStore } from "@workspace/lib/stores/scope/server"
 import { isSwitchOn } from "@/lib/platform-switches.server"
 import { mergeProductWithTranslation, pickTranslationFromArray, type ProductLocale } from "@/lib/product-translations"
 import { cacheProfiles, createCachedQuery, productTags, storeTags } from "@workspace/cache"
+import { applyBundleAvailability } from "@workspace/lib/products/bundles/server"
 
 export interface ProductFilters {
   categoryId?: string;
@@ -84,8 +85,11 @@ export async function getProducts(filters: ProductFilters = {}) {
   // A shopper's free-text store search is read straight from the database: every
   // different text would otherwise be its own cache entry (a write each), read
   // again by almost no one. Same query, same store scoping, same result.
-  if (filters.storeId && filters.searchQuery) return readProducts(filters, catalogSplit)
-  return listProducts(filters, catalogSplit)
+  const result = filters.storeId && filters.searchQuery ? await readProducts(filters, catalogSplit) : await listProducts(filters, catalogSplit)
+  // A bundle's stock is its items' (0188, F-07f): read live after the cached list, one query set per list.
+  if (!filters.storeId || !result.data.some((row) => (row as { isBundle?: unknown }).isBundle === true)) return result
+  const data = await applyBundleAvailability(filters.storeId, result.data as unknown as Array<{ id: string; isBundle?: boolean | null }>)
+  return { ...result, data: data as unknown as typeof result.data }
 }
 
 /**

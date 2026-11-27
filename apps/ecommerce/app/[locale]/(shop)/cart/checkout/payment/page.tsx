@@ -90,7 +90,6 @@ export default async function CheckoutPaymentPage({
               currency={order.currency || "EGP"}
               amount={deposit.amountPiastres / 100}
               remainder={deposit.remainderPiastres / 100}
-              percent={deposit.percent}
               card={card}
               transfers={transfers}
             />

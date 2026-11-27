@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { readStoreSocialLinks } from "@workspace/lib/stores";
-import { SOCIAL_PLATFORMS } from "@workspace/store-sections/social";
 import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import { StoreSocialLinks } from "./social.client";
-import type { SocialRow } from "./social.dto";
+import { toSocialRows } from "./social.dto";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -21,12 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function WebsiteSocialPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadWebsiteStorePage(storeId);
-  const saved = readStoreSocialLinks(store.contact);
-  const linked = new Set(saved.map((link) => link.platform));
-  const rows: SocialRow[] = [
-    ...saved.map((link) => ({ platform: link.platform, value: link.value, enabled: link.enabled })),
-    ...SOCIAL_PLATFORMS.filter((p) => !linked.has(p.key)).map((p) => ({ platform: p.key, value: "", enabled: true })),
-  ];
+  const rows = toSocialRows(readStoreSocialLinks(store.contact));
   const contact = (store.contact ?? {}) as { whatsapp?: string; phone?: string };
 
   return (

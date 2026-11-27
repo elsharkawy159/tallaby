@@ -21,7 +21,7 @@ type Snapshot = { enabled: boolean; rows: PriceRoundingRow[] };
 
 const sameRows = (a: readonly PriceRoundingRow[], b: readonly PriceRoundingRow[]) => JSON.stringify(a) === JSON.stringify(b);
 
-/** The "Round prices" state (ROADMAP.md F-112a); saved by the General page's single save bar. */
+/** The "Round prices" state (ROADMAP.md F-112a); saved by the app page's save bar. */
 export function useStorePriceRounding(storeId: string, initial: PriceRoundingRule | null) {
   const t = useTranslations("storePriceRounding");
   const [saved, setSaved] = useState<Snapshot>(() => ({ enabled: initial?.enabled ?? false, rows: ruleToRows(initial) }));
@@ -86,7 +86,7 @@ function exampleFor(rows: readonly PriceRoundingRow[], index: number): { before:
 }
 
 /**
- * Store settings › General › Round prices (ROADMAP.md F-112): on/off, then up
+ * Store › Apps › Round prices (ROADMAP.md F-112; was in Store settings › General): on/off, then up
  * to 5 price ranges, each with a step and a direction. Applied when prices are
  * saved (F-112b); existing prices are not changed here.
  */

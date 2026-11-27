@@ -31,8 +31,8 @@ describe.skipIf(!TEST_DATABASE_URL)("order lock (integration)", { timeout: 90_00
     await db.execute(sql`INSERT INTO auth.users (id) VALUES (${sellerId})`);
     await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${sellerId}`);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone)
-      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'l@example.com', '01000000000')`);
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, support_phone)
+      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'l@example.com', '01000000000')`);
   }, 90_000);
 
   afterAll(async () => {
@@ -86,8 +86,8 @@ describe.skipIf(!TEST_DATABASE_URL)("order lock (integration)", { timeout: 90_00
       await db.execute(sql`INSERT INTO auth.users (id) VALUES (${id})`);
       await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${id}`);
       await db.execute(sql`
-        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone)
-        VALUES (${id}, ${code}, ${code}, ${code}, ${code}, 'individual', '{"country":"EG"}'::jsonb, 'l3@example.com', '01000000000')`);
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, support_phone)
+        VALUES (${id}, ${code}, ${code}, ${code}, ${code}, 'l3@example.com', '01000000000')`);
       await db.insert(sellerWallet).values({ sellerId: id, balance: "0", currency });
       return id;
     };
@@ -182,8 +182,8 @@ describe.skipIf(!TEST_DATABASE_URL)("order lock (integration)", { timeout: 90_00
     try {
       await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${lockedSeller}`);
       await db.execute(sql`
-        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone)
-        VALUES (${lockedSeller}, ${code}, ${code}, ${code}, ${code}, 'individual', '{"country":"EG"}'::jsonb, 'l2@example.com', '01000000000')`);
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, support_phone)
+        VALUES (${lockedSeller}, ${code}, ${code}, ${code}, ${code}, 'l2@example.com', '01000000000')`);
       await db.execute(sql`
         INSERT INTO stores (id, seller_id, name, subdomain, status) VALUES (${storeId}, ${lockedSeller}, 'QA lock', ${`qa-${code}`}, 'active')`);
       await db.execute(sql`

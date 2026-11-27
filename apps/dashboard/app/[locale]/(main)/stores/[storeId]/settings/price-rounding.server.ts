@@ -11,7 +11,7 @@ import type { PriceRoundingSaveResult } from "./price-rounding.dto";
 const saveLimiter = createRateLimiter({ limit: 30, windowMs: 10 * 60_000 });
 
 /**
- * Store settings › General › Round prices (ROADMAP.md F-112a). storeId is
+ * Store › Apps › Round prices (ROADMAP.md F-112a; moved from Store settings › General, owner 2026-11-27). storeId is
  * explicit and re-checked with requireStore; the rule is validated on the
  * server and saved in `stores.settings.priceRounding` (null removes it).
  * The cached storefront profile holds `stores.settings`, so it is purged.
@@ -33,7 +33,7 @@ export async function saveStorePriceRounding(storeId: string, input: unknown): P
       return { success: false, error: result.error === "store_read_only" ? "readOnly" : result.error === "not_found" ? "notFound" : "invalidInput" };
     }
 
-    revalidateDashboardPath(`/stores/${store.id}/settings`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/price-rounding/settings`);
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, rule: result.data };
   } catch (error) {

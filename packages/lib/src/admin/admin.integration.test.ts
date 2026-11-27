@@ -59,8 +59,6 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "adm@example.com",
       status: "approved",
       feeTrialEligible: false,

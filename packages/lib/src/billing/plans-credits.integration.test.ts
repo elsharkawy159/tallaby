@@ -62,8 +62,8 @@ describe.skipIf(!TEST_DATABASE_URL)("plans and credits (integration)", { timeout
     await db.execute(sql`INSERT INTO users (id, email, is_guest) VALUES (${id}, ${email}, false) ON CONFLICT DO NOTHING`);
     // Copied from an existing seller, so the fixture keeps up with required columns.
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, business_type, legal_address, support_email, status)
-      SELECT ${id}, 'QA credits', 'QA credits', ${`qa-${id.slice(0, 8)}`}, business_type, legal_address, ${email}, 'approved'
+      INSERT INTO sellers (id, business_name, display_name, slug, support_email, status)
+      SELECT ${id}, 'QA credits', 'QA credits', ${`qa-${id.slice(0, 8)}`}, ${email}, 'approved'
       FROM sellers LIMIT 1`);
     await db.insert(sellerWallet).values({ sellerId: id, balance: "0", currency: "USD" }).onConflictDoUpdate({ target: sellerWallet.sellerId, set: { currency: "USD", balance: "0" } });
   };

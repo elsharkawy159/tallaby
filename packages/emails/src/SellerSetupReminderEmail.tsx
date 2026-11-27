@@ -23,7 +23,8 @@ import {
  * Arabic by default (owner, 2026-11-13); English copy exists for the preview.
  */
 
-export type SetupReminderStepKey = "product" | "design" | "payments" | "shipping";
+/** The required home steps (owner, 2026-11-27); the optional domain and SEO steps are not reminded. */
+export type SetupReminderStepKey = "product" | "theme" | "identity" | "wallet";
 
 export interface SellerSetupReminderEmailProps {
   kind: "day1" | "day7";
@@ -32,7 +33,7 @@ export interface SellerSetupReminderEmailProps {
   storeName: string;
   /** The dashboard home, where the setup cards are (absolute). */
   setupUrl: string;
-  /** The four home steps for the seller's store, in order, with absolute links. Empty: no store yet. */
+  /** The required home steps for the seller's store, in order, with absolute links. Empty: no store yet. */
   steps: { key: SetupReminderStepKey; href: string; done: boolean }[];
   /** One-click "stop these reminders" link (absolute). */
   optOutUrl: string;
@@ -129,7 +130,7 @@ export const SellerSetupReminderEmail = ({
   const copy = getEmailMessages(locale).sellerSetupReminder;
   const text = copy[kind];
   const missing = steps.filter((step) => !step.done);
-  // No store yet (or nothing computed): the four steps are all still ahead.
+  // No store yet (or nothing computed): every required step is still ahead.
   const left = stepsLeftPhrase(locale, missing.length || 4);
   const name = sellerName.trim() || storeName;
   const vars = { name, storeName, steps: left };
@@ -172,7 +173,7 @@ export const SellerSetupReminderEmail = ({
           <SectionTitle f={f}>{copy.stepsTitle}</SectionTitle>
           <List
             f={f}
-            rows={(steps.length ? steps : (["product", "design", "payments", "shipping"] as const).map((key) => ({ key, href: setupUrl, done: false }))).map(
+            rows={(steps.length ? steps : (["product", "theme", "identity", "wallet"] as const).map((key) => ({ key, href: setupUrl, done: false }))).map(
               (step) => ({
                 title: copy.steps[step.key][0],
                 body: copy.steps[step.key][1],

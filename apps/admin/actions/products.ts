@@ -26,6 +26,8 @@ import {
 } from "@workspace/db/categories";
 import { syncProductVariants } from "@workspace/db/products";
 import { resolveProductSlug } from "@workspace/lib/products/slug/server";
+import { categoryMatchesProductType } from "@workspace/lib/products/category-kind";
+import { loadCategoryKind } from "@workspace/lib/products/category-kind/server";
 import {
   normalizeNullablePrice,
   normalizePrice,
@@ -435,6 +437,16 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
 
     if (data.brandId !== undefined) productUpdate.brandId = data.brandId || null;
     if (data.categoryId !== undefined) productUpdate.categoryId = data.categoryId;
+    // F-108e (0191): the Tallaby category must be of the product's type.
+    if (data.categoryId) {
+      const [kind, current] = await Promise.all([
+        loadCategoryKind(data.categoryId),
+        db.query.products.findFirst({ where: eq(products.id, productId), columns: { productType: true } }),
+      ]);
+      if (kind && !categoryMatchesProductType(kind, current?.productType)) {
+        return { success: false, error: "That category is for the other product type (physical or digital). Pick another." };
+      }
+    }
     if (data.status !== undefined) productUpdate.status = data.status;
     if (data.isPlatformChoice !== undefined)
       productUpdate.isPlatformChoice = data.isPlatformChoice;

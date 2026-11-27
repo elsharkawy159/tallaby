@@ -243,6 +243,8 @@ async function loadGiftChoices(
           inArray(products.id, ids),
           eq(products.status, "active"),
           isNull(products.deletedAt),
+          // A bundle (0188, F-07f) is never a free gift (giftUnitAvailable refuses it too).
+          eq(products.isBundle, false),
           productShownInStore({ storeId, catalogSplit }),
         ),
       ),

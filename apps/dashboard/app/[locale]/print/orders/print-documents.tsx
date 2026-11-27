@@ -4,6 +4,7 @@ import { pickingList } from "./print-orders.lib";
 import { OrderBarcode } from "./order-barcode";
 import type { PrintOrder, PrintSender } from "./print-orders.types";
 import { describeCustomerInputs, parseCustomerInputsSnapshot } from "@workspace/lib/products/customer-fields";
+import { parseBundleSnapshot } from "@workspace/lib/products/bundles";
 
 /** A translator for the `orders` namespace (createTranslator), in the printout's language. */
 export type PrintT = {
@@ -12,6 +13,26 @@ export type PrintT = {
 };
 
 type DocProps = { order: PrintOrder; t: PrintT; locale: "ar" | "en" };
+
+/** A bundle line's items as sold (0188, F-07f): units to pack for the whole line. */
+function PrintBundleItems({ value, lineQuantity, t }: { value: unknown; lineQuantity: number; t: PrintT }) {
+  const items = parseBundleSnapshot(value);
+  if (!items) return null;
+  return (
+    <div className="mt-0.5 text-xs text-neutral-800">
+      <p className="text-neutral-600">{t("details.bundleIncludes")}</p>
+      <ul>
+        {items.map((item) => (
+          <li key={`${item.productId}:${item.variantId ?? ""}`} className="break-words" dir="auto">
+            <span className="font-semibold tabular-nums">{item.quantity * lineQuantity}×</span> {item.name}
+            {item.variantName && <span className="text-neutral-600"> · {item.variantName}</span>}
+            {item.sku && <span className="text-neutral-500"> · {t("print.sku", { sku: item.sku })}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 /** A line's customer requirements (F-91) as plain text: "Name: Omar", photos as "2 photos attached". */
 function PrintCustomerInputs({ value, t, locale }: { value: unknown; t: PrintT; locale: "ar" | "en" }) {
@@ -180,6 +201,7 @@ export function InvoiceDocument({ order, t, locale }: DocProps) {
                     {line.sku && t("print.sku", { sku: line.sku })}
                   </p>
                 )}
+                <PrintBundleItems value={line.bundleItems} lineQuantity={line.quantity} t={t} />
                 <PrintCustomerInputs value={line.customerInputs} t={t} locale={locale} />
               </td>
               <td className="py-2 text-center tabular-nums">{line.quantity}</td>
@@ -260,6 +282,7 @@ export function SlipDocument({ order, t, locale }: DocProps) {
                 <span className="font-medium">{line.productName}</span>
                 {line.variantName && <span className="text-neutral-600"> · {line.variantName}</span>}
                 {line.sku && <span className="block text-[10px] text-neutral-500">{t("print.sku", { sku: line.sku })}</span>}
+                <PrintBundleItems value={line.bundleItems} lineQuantity={line.quantity} t={t} />
                 <PrintCustomerInputs value={line.customerInputs} t={t} locale={locale} />
               </span>
             </li>

@@ -90,20 +90,6 @@ export const getRatingDisplay = (seller: Seller): string => {
   return rating.toFixed(1);
 };
 
-export const getBusinessTypeOptions = (): {
-  value: string;
-  label: string;
-}[] => {
-  return [
-    { value: "Sole Proprietorship", label: "Sole Proprietorship" },
-    { value: "Partnership", label: "Partnership" },
-    { value: "LLC", label: "LLC" },
-    { value: "Corporation", label: "Corporation" },
-    { value: "Non-Profit", label: "Non-Profit" },
-    { value: "Other", label: "Other" },
-  ];
-};
-
 export const getStatusOptions = (): {
   value: SellerStatus;
   label: string;

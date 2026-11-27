@@ -1,12 +1,14 @@
 /**
  * The header's "Next step" button (owner, 2026-11-18). It replaced the guided
  * setup prompts (setup-prompts.*) in the layout: while the home setup isn't
- * finished it links to the next open home step (setup-checklist.lib.ts, same
- * order: product, design, shipping, payments); once it is, the same slot opens
- * the store in a new tab.
+ * finished it links to the first open required home step
+ * (setup-checklist.lib.ts, same order: product, theme, identity, wallet; the
+ * optional domain and SEO steps are never "next", owner 2026-11-27); once it
+ * is, the same slot opens the store in a new tab.
  */
 
-import { buildHomeSteps, type HomeStepKey, type SetupFlags } from "./setup-checklist.lib";
+import { STORE_SETUP_STEP_KEYS } from "@workspace/lib/sellers";
+import { buildHomeSteps, nextHomeStep, type HomeStepKey, type SetupFlags } from "./setup-checklist.lib";
 
 /** What the server says about the selected store's setup. */
 export type SetupNextStep = { done: false; key: HomeStepKey; href: string } | { done: true };
@@ -17,11 +19,11 @@ export type HeaderSetupAction =
   | { kind: "visit"; href: string }
   | null;
 
-const HOME_STEP_KEYS: readonly HomeStepKey[] = ["product", "design", "shipping", "payments"];
+const HOME_STEP_KEYS: readonly HomeStepKey[] = STORE_SETUP_STEP_KEYS;
 
-/** The first open home step, in the home checklist's order, or done. */
+/** The first open required home step, in the home checklist's order, or done. */
 export function pickSetupNextStep(flags: SetupFlags, storeId: string | null): SetupNextStep {
-  const next = buildHomeSteps(flags, storeId).find((step) => !step.done);
+  const next = nextHomeStep(buildHomeSteps(flags, storeId));
   return next ? { done: false, key: next.key, href: next.href } : { done: true };
 }
 

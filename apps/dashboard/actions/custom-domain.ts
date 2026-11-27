@@ -114,7 +114,6 @@ async function invalidate(store: CurrentStore, domain: string) {
     from: "dashboard",
     mode: "action",
   });
-  revalidateDashboardPath("/settings");
   revalidateDashboardPath("/stores/[storeId]/website/domain", "layout");
 }
 

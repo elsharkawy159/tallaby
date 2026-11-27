@@ -57,6 +57,10 @@
       "types": "./src/shipping/store-quote.ts",
       "default": "./src/shipping/store-quote.ts"
     },
+    "./shipping/mode": {
+      "types": "./src/shipping/shipping-mode.lib.ts",
+      "default": "./src/shipping/shipping-mode.lib.ts"
+    },
     "./shipping/bosta": {
       "types": "./src/shipping/bosta/index.ts",
       "default": "./src/shipping/bosta/index.ts"
@@ -373,6 +377,14 @@
       "types": "./src/products/customer-fields.lib.ts",
       "default": "./src/products/customer-fields.lib.ts"
     },
+    "./products/bundles": {
+      "types": "./src/products/bundles.lib.ts",
+      "default": "./src/products/bundles.lib.ts"
+    },
+    "./products/bundles/server": {
+      "types": "./src/products/bundles.server.ts",
+      "default": "./src/products/bundles.server.ts"
+    },
     "./products/price-rounding": {
       "types": "./src/products/price-rounding.lib.ts",
       "default": "./src/products/price-rounding.lib.ts"
@@ -385,9 +397,21 @@
       "types": "./src/products/price-rounding.server.ts",
       "default": "./src/products/price-rounding.server.ts"
     },
+    "./products/category-kind": {
+      "types": "./src/products/category-kind.lib.ts",
+      "default": "./src/products/category-kind.lib.ts"
+    },
+    "./products/category-kind/server": {
+      "types": "./src/products/category-kind.server.ts",
+      "default": "./src/products/category-kind.server.ts"
+    },
     "./products/preorder": {
       "types": "./src/products/preorder.lib.ts",
       "default": "./src/products/preorder.lib.ts"
+    },
+    "./products/digital-publish/server": {
+      "types": "./src/products/digital-publish.server.ts",
+      "default": "./src/products/digital-publish.server.ts"
     },
     "./products/customer-fields/server": {
       "types": "./src/products/customer-fields.server.ts",
@@ -401,9 +425,13 @@
       "types": "./src/size-charts/size-chart.server.ts",
       "default": "./src/size-charts/size-chart.server.ts"
     },
-    "./products/digital-publish/server": {
-      "types": "./src/products/digital-publish.server.ts",
-      "default": "./src/products/digital-publish.server.ts"
+    "./downsell": {
+      "types": "./src/downsell/downsell.lib.ts",
+      "default": "./src/downsell/downsell.lib.ts"
+    },
+    "./downsell/server": {
+      "types": "./src/downsell/downsell.server.ts",
+      "default": "./src/downsell/downsell.server.ts"
     },
     "./whatsapp": {
       "types": "./src/whatsapp/index.ts",
@@ -501,6 +529,10 @@
       "types": "./src/stores/min-order.lib.ts",
       "default": "./src/stores/min-order.lib.ts"
     },
+    "./stores/order-countries": {
+      "types": "./src/stores/order-countries.lib.ts",
+      "default": "./src/stores/order-countries.lib.ts"
+    },
     "./stores/blocked-phones": {
       "types": "./src/stores/blocked-phones.lib.ts",
       "default": "./src/stores/blocked-phones.lib.ts"
@@ -520,6 +552,14 @@
     "./stores/sales-popup/server": {
       "types": "./src/stores/sales-popup.server.ts",
       "default": "./src/stores/sales-popup.server.ts"
+    },
+    "./stores/top-loader": {
+      "types": "./src/stores/top-loader.lib.ts",
+      "default": "./src/stores/top-loader.lib.ts"
+    },
+    "./stores/whatsapp-button": {
+      "types": "./src/stores/whatsapp-button.lib.ts",
+      "default": "./src/stores/whatsapp-button.lib.ts"
     },
     "./stores/niche": {
       "types": "./src/stores/store-niche.lib.ts",

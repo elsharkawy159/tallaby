@@ -50,6 +50,24 @@ import {
   type CustomerInputsSnapshot,
 } from "@workspace/lib/products/customer-fields";
 import { customerUploadsAreValid, signCustomerUploadViews } from "@workspace/lib/products/customer-fields/server";
+import { bundleAvailabilityFor } from "@workspace/lib/products/bundles/server";
+import { withCartBundles } from "@/lib/products/bundle-storefront.server";
+
+/**
+ * The stock a cart line is checked against. A bundle (0188, F-07f) holds none
+ * (its row is never tracked): it is limited by its items, read live from the
+ * cart's store (the bundle's own on a marketplace cart); null = every item is
+ * unlimited. Any other product keeps its own `track_stock` and `quantity`.
+ */
+async function cartStockOf(
+  product: { id: string; isBundle: boolean; trackStock: boolean; quantity: string; storeId: string | null },
+  cartStoreId: string | null,
+): Promise<{ trackStock: boolean; quantity: string | number }> {
+  if (!product.isBundle) return { trackStock: product.trackStock, quantity: product.quantity };
+  const storeId = cartStoreId ?? product.storeId;
+  const available = storeId ? ((await bundleAvailabilityFor(storeId, [product.id])).get(product.id) ?? 0) : 0;
+  return available == null ? { trackStock: false, quantity: product.quantity } : { trackStock: true, quantity: available };
+}
 
 type ProductPrice = {
   base: number;
@@ -236,6 +254,8 @@ export const getCartItems = async () => {
 
   // Customer requirements (F-91): the line's own photos as short-lived links
   // (the visitor's own cart, never cached), for thumbnails in the cart.
+  // Bundles (0188, F-07f): live stock on the line's product (its quantity cap) and its items ("Includes: …").
+  const linesWithBundles = await withCartBundles(itemsWithFixedPrices, cart.storeId, locale);
   const uploadPaths = itemsWithFixedPrices.flatMap((item) => snapshotFiles(parseCustomerInputsSnapshot(item.customerInputs)));
   const customerUploadViews = uploadPaths.length ? await signCustomerUploadViews(uploadPaths).catch(() => ({})) : {};
 
@@ -252,7 +272,7 @@ export const getCartItems = async () => {
     success: true,
     data: {
       cart,
-      items: itemsWithFixedPrices as Array<(typeof itemsWithFixedPrices)[number] & { product: { id: string; title: string; slug: string; images: unknown; sellerId: string } }>,
+      items: linesWithBundles as Array<(typeof linesWithBundles)[number] & { product: { id: string; title: string; slug: string; images: unknown; sellerId: string } }>,
       subtotal,
       itemCount,
       customerUploadViews: customerUploadViews as Record<string, string>,
@@ -332,6 +352,9 @@ export async function addToCart(
     return { success: false, error: "This product isn't sold in this store" };
   }
 
+  // A bundle's stock is its items' (0188, F-07f); any other product its own.
+  const stock = await cartStockOf(product, cart.storeId);
+
   // The seller's minimum (0151): a card's single unit becomes the minimum, and a
   // product that can't reach it can't be added. The order checks it again.
   const minimum = normalizeMinOrderQuantity(product.minOrderQuantity);
@@ -340,10 +363,10 @@ export async function addToCart(
       db.select({ id: productVariants.id, stock: productVariants.stock }).from(productVariants).where(eq(productVariants.productId, productId)),
       db.select().from(cartItems).where(and(eq(cartItems.cartId, cart.id), eq(cartItems.productId, productId))),
     ]);
-    const tracked = product.trackStock !== false;
-    const total = availableUnits({ trackStock: product.trackStock, productQuantity: product.quantity, variantStocks: variantRows.map((row) => row.stock) });
+    const tracked = stock.trackStock !== false;
+    const total = availableUnits({ trackStock: stock.trackStock, productQuantity: stock.quantity, variantStocks: variantRows.map((row) => row.stock) });
     if (total < minimum) return { success: false, error: "Insufficient stock" };
-    const lineStock = varId ? variantRows.find((row) => row.id === varId)?.stock : product.quantity;
+    const lineStock = varId ? variantRows.find((row) => row.id === varId)?.stock : stock.quantity;
     qty = addQuantityForMinimum({
       requested: qty,
       minimum,
@@ -388,7 +411,7 @@ export async function addToCart(
     };
   } else {
     // Check product stock if no variant
-    if (product.trackStock !== false && Number(product.quantity) < qty) {
+    if (stock.trackStock !== false && Number(stock.quantity) < qty) {
       return { success: false, error: "Insufficient stock" };
     }
   }
@@ -559,11 +582,13 @@ export async function updateCartItem(itemId: string, quantity: number) {
         columns: { stock: true },
       })
     : null;
+  // A bundle's stock is its items' (0188, F-07f).
+  const stock = await cartStockOf(item.product, cart.storeId);
   if (
     !cartLineHasStock({
       quantity,
-      trackStock: item.product.trackStock,
-      productQuantity: item.product.quantity,
+      trackStock: stock.trackStock,
+      productQuantity: stock.quantity,
       hasVariant: Boolean(variantId),
       variantStock: variant?.stock,
     })

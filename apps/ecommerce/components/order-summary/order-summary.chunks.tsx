@@ -14,6 +14,7 @@ import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
 import { CustomerInputsLines } from '@/components/cart/customer-inputs-lines.client'
+import { BundleIncludesLine } from '@/components/cart/bundle-includes-line.client'
 import { cartItemFloor } from '@/lib/cart-min-order.lib'
 import Image from 'next/image'
 import { cn, getPublicUrl } from '@workspace/ui/lib/utils'
@@ -50,8 +51,8 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
   const currencyLabel = useCurrencyLabel()
   const tCommon = useTranslations('common')
   const tSimple = useTranslations('checkout.simpleForm')
-  const minOrderLines = items.map((item) => ({ ...item, productId: item.product?.id ?? item.id }))
   const tCheckout = useTranslations('checkout')
+  const minOrderLines = items.map((item) => ({ ...item, productId: item.product?.id ?? item.id }))
 
   return (
     <div className='space-y-0 mb-2 md:mb-3'>
@@ -92,6 +93,8 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
                   {variantTitle}
                 </p>
               )}
+              {/* A bundle's items (0188, F-07f). */}
+              <BundleIncludesLine items={item.bundleItems} className='mt-0.5' />
               {/* Customer requirements (F-91), as filled. */}
               <CustomerInputsLines value={item.customerInputs} className='mt-1' />
               {item.giftRuleId ? (
@@ -162,13 +165,13 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
                   />
                 </p>
               )}
-            </div>
-            <div
-              className='text-xs md:text-sm font-semibold text-gray-900 whitespace-nowrap'
               {/* A digital product is downloaded after payment, never shipped (F-108b). */}
               {item.product?.productType === 'digital' && (
                 <p className='mt-1 text-xs text-muted-foreground'>{tCheckout('digitalDownload')}</p>
               )}
+            </div>
+            <div
+              className='text-xs md:text-sm font-semibold text-gray-900 whitespace-nowrap'
               dangerouslySetInnerHTML={{
                 __html: formatPrice(lineTotal, locale, 'sm', currencyLabel),
               }}

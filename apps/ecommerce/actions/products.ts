@@ -20,6 +20,7 @@ import {
 } from "@workspace/db"
 import { productShownInStore } from "@workspace/lib/stores/scope/server"
 import { getProducts } from "@/lib/products/product-list.server"
+import { withProductPageBundles } from "@/lib/products/bundle-storefront.server"
 import { isSwitchOn } from "@/lib/platform-switches.server"
 import {
   getProductIdBySlug,
@@ -53,7 +54,10 @@ export async function searchProductsByText(query: string, locale: ProductLocale 
  */
 export async function getProductBySlug(sellerId: string, storeId: string, slug: string, locale: ProductLocale = "en") {
   const catalogSplit = await isSwitchOn("stores_catalog_split")
-  return loadProductBySlug(sellerId, storeId, slug, locale, catalogSplit)
+  const result = await loadProductBySlug(sellerId, storeId, slug, locale, catalogSplit)
+  // Bundles (0188, F-07f): live stock and the "What's in the bundle" items, after the cached read.
+  if (!result.success || !result.data) return result
+  return { ...result, data: await withProductPageBundles(storeId, result.data, locale) }
 }
 
 const loadProductBySlug = createCachedQuery({

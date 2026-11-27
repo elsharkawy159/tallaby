@@ -73,14 +73,14 @@ export async function uploadOwnFolderFile (
 }
 
 /**
- * Validates and uploads one seller image (logo, banner, document scan) to the
+ * Validates and uploads one seller image (logo or banner) to the
  * seller's own folder of the `sellers` bucket (`<folder>/<sellerId>/<file>`).
  * Resolves to its public URL, or null after showing an error toast.
  */
 export function useSellerUpload ({
   folder,
 }: {
-  folder: 'logos' | 'banners' | 'documents'
+  folder: 'logos' | 'banners'
 }) {
   const t = useTranslations('inputs.sellerImage')
   const [isUploading, setIsUploading] = useState(false)

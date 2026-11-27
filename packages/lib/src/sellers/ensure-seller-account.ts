@@ -95,8 +95,6 @@ export async function ensureSellerAccount(
           displayName,
           slug,
           subdomain,
-          businessType: "individual",
-          legalAddress: { country: "EG" },
           supportEmail: input.email ?? "",
           supportPhone: phone,
           status: "approved",

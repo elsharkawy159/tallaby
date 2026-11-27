@@ -7,7 +7,7 @@ export default defineApp({
   kind: "app",
   category: "tracking",
   mechanism: "feed",
-  name: { ar: "كتالوج المنتجات للإعلانات", en: "Product feeds" },
+  name: { ar: "كتالوج الإعلانات (Product feed)", en: "Product feeds" },
   vendor: { ar: "Meta · Google · TikTok", en: "Meta · Google · TikTok" },
   summary: {
     ar: "رابط بمنتجات متجرك تضيفه في Meta وGoogle Merchant Center وTikTok لإعلانات الكتالوج.",

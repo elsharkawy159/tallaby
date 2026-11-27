@@ -24,7 +24,11 @@ import {
   decrementStock,
   ensureStockAtLeast,
   InsufficientStockError,
+  mergeStockLines,
+  orderLineStockLines,
+  orderStockLinesOf,
   restoreStock,
+  stockResultSource,
   type StockLine,
   type StockResult,
 } from "@workspace/db/inventory";
@@ -32,6 +36,7 @@ import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { notifyOrderWhatsApp, sendOrderEventEmail } from "@workspace/lib/orders";
 import { autoShipOrderWithBosta } from "@workspace/lib/shipping/bosta-ship";
 import { TALLABY_PAY_REFUND_REASONS } from "@workspace/lib/tallaby-pay";
+import { parseBundleSnapshot } from "@workspace/lib/products/bundles";
 import { countOpenTallabyPaySales, requestTallabyPayOrderRefund } from "@workspace/lib/tallaby-pay/server";
 import { AccessError, requireOrderSeller, requireOrdersSeller } from "@/lib/auth/require-seller.server";
 import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment";
@@ -109,6 +114,7 @@ async function loadOrder(orderId: string, sellerId: string) {
           variantId: true,
           quantity: true,
           fulfillmentType: true,
+          bundleItems: true,
         },
         with: { product: { columns: { storeId: true, categoryId: true, brandId: true } } },
       },
@@ -251,31 +257,33 @@ async function cancelOrder(
   await notifyOrderWhatsApp(order.id, "order_cancelled");
 }
 
+/** A bundle line (0188, F-07f) moves the items of its snapshot; any other line its own row. */
 function orderStockLines(order: LoadedOrder["order"]): StockLine[] {
-  return order.orderItems.map((item) =>
-    item.variantId
-      ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
-      : { kind: "product" as const, id: item.productId, quantity: item.quantity },
-  );
+  return orderStockLinesOf(order.orderItems);
 }
 
 async function invalidateOrderStock(order: LoadedOrder["order"], stockResults: StockResult[]) {
   if (stockResults.length === 0) return;
   await applyInvalidation(
     invalidateProductInventory(
-      stockResults.map((r) => {
-        const item = order.orderItems.find((i) => (i.variantId ?? i.productId) === r.id)!;
-        return {
-          snapshot: {
-            id: item.productId,
-            sellerId: item.sellerId,
-            // The product's own store, else the order's (F-87c); the seller tag still covers every store until the split.
-            storeId: item.product?.storeId ?? order.storeId ?? null,
-            categoryId: item.product?.categoryId ?? null,
-            brandId: item.product?.brandId ?? null,
+      stockResults.flatMap((r) => {
+        const source = stockResultSource(order.orderItems, r.id);
+        if (!source) return [];
+        const item = source.line;
+        return [
+          {
+            snapshot: {
+              id: source.productId,
+              sellerId: item.sellerId,
+              // The product's own store, else the order's (F-87c); the seller tag still covers every store until the split.
+              storeId: item.product?.storeId ?? order.storeId ?? null,
+              // A bundle item's own category and brand aren't loaded: its product and store tags cover it.
+              categoryId: source.bundleItem ? null : (item.product?.categoryId ?? null),
+              brandId: source.bundleItem ? null : (item.product?.brandId ?? null),
+            },
+            stockBoundaryCrossed: r.stockBoundaryCrossed,
           },
-          stockBoundaryCrossed: r.stockBoundaryCrossed,
-        };
+        ];
       }),
     ),
     { from: "dashboard", mode: "action" },
@@ -546,11 +554,16 @@ async function loadStockShortage(orderId: string, sellerId: string): Promise<Sto
       productStock: products.quantity,
       trackStock: products.trackStock,
       variantStock: productVariants.stock,
+      productId: orderItems.productId,
+      bundleItems: orderItems.bundleItems,
     })
     .from(orderItems)
     .leftJoin(products, eq(products.id, orderItems.productId))
     .leftJoin(productVariants, eq(productVariants.id, orderItems.variantId))
     .where(and(eq(orderItems.orderId, orderId), eq(orderItems.sellerId, sellerId)));
+
+  // A bundle line (0188, F-07f) takes its items' stock: list those, from the order's snapshot.
+  if (lines.some((line) => parseBundleSnapshot(line.bundleItems))) return loadBundleStockShortage(lines, sellerId);
 
   return lines.flatMap((line) => {
     // An unlimited product (0138, F-51) is never short.
@@ -565,6 +578,60 @@ async function loadStockShortage(orderId: string, sellerId: string): Promise<Sto
         have: Math.max(0, have),
       },
     ];
+  });
+}
+
+/**
+ * The shortage of an order with a bundle line: every line expanded into the
+ * stock rows it takes (a bundle's snapshot items × the line's quantity), equal
+ * rows merged as `decrementStock` sees them, read in one query per table for
+ * the session seller's products only.
+ */
+async function loadBundleStockShortage(
+  lines: { productId: string; variantId: string | null; need: number; title: string; variantName: string | null; bundleItems: unknown }[],
+  sellerId: string,
+): Promise<StockShortage[]> {
+  const titles = new Map<string, string>();
+  const keyOf = (productId: string, variantId: string | null) => `${productId}:${variantId ?? ""}`;
+  for (const line of lines) {
+    const snapshot = parseBundleSnapshot(line.bundleItems);
+    if (snapshot) {
+      for (const item of snapshot) {
+        const key = keyOf(item.productId, item.variantId);
+        if (!titles.has(key)) titles.set(key, item.variantName ? `${item.name} (${item.variantName})` : item.name);
+      }
+    } else {
+      const key = keyOf(line.productId, line.variantId);
+      if (!titles.has(key)) titles.set(key, line.variantName ? `${line.title} (${line.variantName})` : line.title);
+    }
+  }
+  const rows = mergeStockLines(
+    lines.flatMap((line) => orderLineStockLines({ productId: line.productId, variantId: line.variantId, quantity: line.need, bundleItems: line.bundleItems })),
+  );
+  const productIds = [...new Set(rows.map((row) => row.productId))];
+  const variantIds = [...new Set(rows.flatMap((row) => (row.variantId ? [row.variantId] : [])))];
+  const [productStock, variantStock] = await Promise.all([
+    db
+      .select({ id: products.id, quantity: products.quantity, trackStock: products.trackStock })
+      .from(products)
+      .where(and(inArray(products.id, productIds), eq(products.sellerId, sellerId))),
+    variantIds.length
+      ? db
+          .select({ id: productVariants.id, productId: productVariants.productId, stock: productVariants.stock })
+          .from(productVariants)
+          .where(inArray(productVariants.id, variantIds))
+      : Promise.resolve([]),
+  ]);
+  return rows.flatMap((row) => {
+    const product = productStock.find((p) => p.id === row.productId);
+    // Not this seller's product, or unlimited (0138, F-51): never short.
+    if (!product || product.trackStock === false) return [];
+    const variant = row.variantId ? variantStock.find((v) => v.id === row.variantId && v.productId === row.productId) : null;
+    if (row.variantId && !variant) return [];
+    const have = variant ? variant.stock : Number(product.quantity ?? 0);
+    // An untracked (null-stock) variant is never short.
+    if (have === null || have >= row.quantity) return [];
+    return [{ title: titles.get(keyOf(row.productId, row.variantId)) ?? "", need: row.quantity, have: Math.max(0, have) }];
   });
 }
 

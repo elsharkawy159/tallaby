@@ -4,6 +4,8 @@ export interface Category {
   slug: string | null;
   parentId: string | null;
   level: number | null;
+  /** "physical" | "digital" (0191, F-108e). */
+  productKind?: string | null;
   imageUrl: string | null;
   locale: "en" | "ar";
   productCount: number;

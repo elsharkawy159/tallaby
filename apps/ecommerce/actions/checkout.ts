@@ -45,6 +45,7 @@ import { getUserWalletSummary } from "@workspace/db/wallet";
 import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 import { getOrderEmailField } from "@workspace/lib/orders/notification-email/server";
 import { visibleCheckoutFields } from "@workspace/lib/stores/checkout-form";
+import { withCartBundles } from "@/lib/products/bundle-storefront.server";
 
 const cartWithShippingItems = {
   cartItems: {
@@ -59,6 +60,9 @@ const cartWithShippingItems = {
           dimensions: true,
           minOrderQuantity: true,
           images: true,
+          // Bundles (0188, F-07f): the summary lists a bundle's items.
+          isBundle: true,
+          storeId: true,
         },
         with: {
           productTranslations: {
@@ -242,7 +246,8 @@ export async function getCheckoutData() {
     }
 
     const locale = (await getLocale()) as ProductLocale;
-    const localizedCartItems = localizeCartItems(cart.cartItems, locale);
+    // A bundle line lists its items in the summary (0188, F-07f).
+    const localizedCartItems = await withCartBundles(localizeCartItems(cart.cartItems, locale), cart.storeId, locale);
     const localizedCart = { ...cart, currency: scope?.currency ?? cart.currency, cartItems: localizedCartItems };
 
     const addresses = await db.query.userAddresses.findMany({
@@ -372,13 +377,13 @@ export async function getCheckoutData() {
         currencyLabel: scope ? (await getStoreCurrencyLabel(scope.storeId)) : "EGP",
         orderEmail: emailField?.show && !formAsksEmail ? { lastEmail: emailField.lastEmail } : null,
         whatsappOptIn,
+        // F-108b: the checkout hides cash on delivery (placeOrderFromCart refuses it too).
+        digitalNoCod: hasDigitalProduct,
       },
     };
   } catch (error) {
     console.error("Error getting checkout data:", error);
     return { success: false, error: "Failed to get checkout data" };
-        // F-108b: the checkout hides cash on delivery (placeOrderFromCart refuses it too).
-        digitalNoCod: hasDigitalProduct,
   }
 }
 

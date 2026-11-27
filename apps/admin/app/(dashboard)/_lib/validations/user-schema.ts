@@ -93,19 +93,7 @@ export const sellerSchema = z.object({
   logoUrl: z.string().url("Logo URL must be a valid URL").optional(),
   bannerUrl: z.string().url("Banner URL must be a valid URL").optional(),
   taxId: z.string().max(50).optional(),
-  businessType: z
-    .string()
-    .min(1, "Business type is required")
-    .max(50, "Business type must be less than 50 characters"),
   registrationNumber: z.string().max(50).optional(),
-  legalAddress: z.object({
-    addressLine1: z.string().min(1, "Address line 1 is required"),
-    addressLine2: z.string().optional(),
-    city: z.string().min(1, "City is required"),
-    state: z.string().min(1, "State is required"),
-    postalCode: z.string().optional().default(""),
-    country: z.string().min(1, "Country is required"),
-  }),
   status: z
     .enum(["pending", "approved", "suspended", "restricted"])
     .default("pending"),
@@ -121,7 +109,6 @@ export const sellerSchema = z.object({
   supportPhone: z.string().max(20).optional(),
   feeStructure: z.record(z.string(), z.any()).optional(),
   taxInformation: z.record(z.string(), z.any()).optional(),
-  paymentDetails: z.record(z.string(), z.any()).optional(),
   fulfillmentOptions: z.array(z.string()).optional(),
   payoutSchedule: z.string().default("biweekly"),
   stripeAccountId: z.string().optional(),

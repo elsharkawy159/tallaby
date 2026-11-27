@@ -4,7 +4,6 @@ import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
 import { storeUrl } from "@workspace/lib/storefront";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StoreCheckoutSettingsForm } from "./checkout-settings.client";
-import { StoreCrossSellSwitch } from "./cross-sell-switch.client";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -17,6 +16,7 @@ export default async function StoreCheckoutSettingsPage({ params }: { params: Pr
   const contact = (store.contact ?? {}) as { whatsapp?: string; phone?: string };
   const readOnly = store.status !== "active";
 
+  // The cross-sell switch moved to Marketing tools › Cross-selling (an App Center app, owner 2026-11-27).
   return (
     <div className="flex flex-col gap-4">
       <StoreCheckoutSettingsForm
@@ -28,8 +28,6 @@ export default async function StoreCheckoutSettingsPage({ params }: { params: Pr
         hasWhatsapp={Boolean(contact.whatsapp || contact.phone)}
         readOnly={readOnly}
       />
-      {/* Saves at once, as it always did, so it stays outside the save bar's form. */}
-      <StoreCrossSellSwitch storeId={store.id} initial={store.crossSellEnabled} readOnly={readOnly} />
     </div>
   );
 }

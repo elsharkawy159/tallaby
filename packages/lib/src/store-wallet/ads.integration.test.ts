@@ -58,8 +58,6 @@ describe.skipIf(!TEST_DATABASE_URL)("ads paid from the store wallet (integration
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "ad@example.com",
       status: "approved",
     });

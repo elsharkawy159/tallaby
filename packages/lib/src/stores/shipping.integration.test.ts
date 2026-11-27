@@ -189,4 +189,30 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping (integration)", () => {
       error: "invalid_input",
     });
   });
+it("saves how the store delivers without touching zones or settings.shipping, and infers it for older stores", async () => {
+    // a1 has zones and no saved mode: it reads as "self"; a2 has neither: not chosen yet.
+    expect(await getStoreShippingMode(w.a.sellerId, w.a.a1, db)).toBe("self");
+    expect(await getStoreShippingMode(w.a.sellerId, w.a.a2, db)).toBeNull();
+    // Another seller never reads or writes it.
+    expect(await getStoreShippingMode(w.b.sellerId, w.a.a1, db)).toBeNull();
+    expect(await updateStoreShippingMode(w.b.sellerId, w.b.sellerId, w.a.a2, "self", db)).toEqual({ success: false, error: "not_found" });
+    expect(await updateStoreShippingMode(w.a.sellerId, w.a.sellerId, w.a.a2, "tallaby", db)).toEqual({ success: false, error: "invalid_input" });
+
+    const before = await getStoreShipping(w.a.sellerId, w.a.a1, db);
+    expect(await updateStoreShippingMode(w.a.sellerId, w.a.sellerId, w.a.a1, "company", db)).toEqual({ success: true, data: "company" });
+    expect(await getStoreShippingMode(w.a.sellerId, w.a.a1, db)).toBe("company");
+    expect(await updateStoreShippingMode(w.a.sellerId, w.a.sellerId, w.a.a1, "self", db)).toEqual({ success: true, data: "self" });
+    expect(await getStoreShippingMode(w.a.sellerId, w.a.a1, db)).toBe("self");
+    // Switching deletes nothing and leaves the strict shipping settings as they were.
+    expect(await getStoreShipping(w.a.sellerId, w.a.a1, db)).toEqual(before);
+
+    const audit = await db
+      .select({ action: DB_SCHEMA.storeSettingsAudit.action, changes: DB_SCHEMA.storeSettingsAudit.changes })
+      .from(DB_SCHEMA.storeSettingsAudit)
+      .where(and(eq(DB_SCHEMA.storeSettingsAudit.storeId, w.a.a1), eq(DB_SCHEMA.storeSettingsAudit.section, "shipping")))
+      .orderBy(DB_SCHEMA.storeSettingsAudit.createdAt);
+    const modes = audit.filter((a) => a.action.startsWith("mode_"));
+    expect(modes.map((a) => a.action)).toEqual(["mode_company", "mode_self"]);
+    expect(modes[0]!.changes).toEqual({ before: { shippingMode: null }, after: { shippingMode: "company" } });
+  });
 });

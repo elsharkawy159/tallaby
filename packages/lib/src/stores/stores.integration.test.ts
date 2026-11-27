@@ -49,8 +49,6 @@ describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", { timeout: 120_000 }
         displayName: `IT Seller ${i}`,
         slug: `it-${tag}-seller-${i}`,
         subdomain: sub(`primary-${i}`),
-        businessType: "individual",
-        legalAddress: { country: "EG" },
         supportEmail: "it@example.com",
         status: "approved" as const,
       })),

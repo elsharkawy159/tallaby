@@ -44,8 +44,6 @@ describe.skipIf(!TEST_DATABASE_URL)("store setup reminders (integration)", { tim
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "sr@example.com",
       status: "approved",
     });

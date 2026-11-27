@@ -65,8 +65,8 @@ describe.skipIf(!TEST_DATABASE_URL)("store app billing (integration)", { timeout
     await db.execute(sql`INSERT INTO auth.users (id, email, aud, role) VALUES (${id}, ${email}, 'authenticated', 'authenticated')`);
     await db.execute(sql`INSERT INTO users (id, email, is_guest) VALUES (${id}, ${email}, false) ON CONFLICT DO NOTHING`);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, business_type, legal_address, support_email, status)
-      SELECT ${id}, 'QA apps', 'QA apps', ${`qa-${id.slice(0, 8)}`}, business_type, legal_address, ${email}, 'approved'
+      INSERT INTO sellers (id, business_name, display_name, slug, support_email, status)
+      SELECT ${id}, 'QA apps', 'QA apps', ${`qa-${id.slice(0, 8)}`}, ${email}, 'approved'
       FROM sellers LIMIT 1`);
     await db.insert(sellerWallet).values({ sellerId: id, balance: "0", currency: "USD" }).onConflictDoUpdate({ target: sellerWallet.sellerId, set: { currency: "USD", balance: "0" } });
   };

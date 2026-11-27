@@ -36,9 +36,9 @@ describe.skipIf(!TEST_DATABASE_URL)("welcome gift (integration)", { timeout: 60_
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     // Raw insert: the schema can be ahead of staging (another session's 0113 columns).
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status,
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, status,
                            fee_trial_eligible, welcome_gift_eligible)
-      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'wg@example.com', 'approved',
+      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'wg@example.com', 'approved',
               false, ${opts.giftEligible})
     `);
     const [store] = await db.select({ id: s.stores.id }).from(s.stores).where(eq(s.stores.sellerId, id));

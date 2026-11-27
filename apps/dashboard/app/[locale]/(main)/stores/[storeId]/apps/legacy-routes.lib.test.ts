@@ -23,6 +23,12 @@ describe("old app URLs (F-93)", () => {
     expect(getAppBySlug("google-sheets")?.settingsRoute).toBe("google_sheets");
   });
 
+  it("sends the old Store settings › Sales pop-up page to its app (owner, 2026-11-27)", () => {
+    const route = LEGACY_APP_ROUTES.find((r) => r.from === "/stores/[storeId]/settings/sales-popup");
+    expect(route).toMatchObject({ to: "/stores/[storeId]/apps/sales-popup/settings", how: "redirect" });
+    expect(getAppBySlug("sales-popup")?.settingsRoute).toBe("sales_popup");
+  });
+
   it("gives every built app a settings page or an install-only overview", () => {
     for (const app of APPS) if (app.status === "live") expect(app.settingsRoute !== null || app.installMode === "toggle", app.id).toBe(true);
   });

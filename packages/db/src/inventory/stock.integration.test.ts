@@ -88,8 +88,6 @@ describe.skipIf(!TEST_DATABASE_URL)("inventory concurrency (integration)", () =>
       businessName: "Test Seller",
       displayName: "Test Seller",
       slug: `test-seller-${randomUUID()}`,
-      businessType: "individual",
-      legalAddress: {},
       supportEmail: "test@example.com",
     });
 

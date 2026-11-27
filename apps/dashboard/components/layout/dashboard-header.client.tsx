@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight, Menu, Plus } from "lucide-react";
+import { Menu, Plus } from "lucide-react";
 import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
@@ -11,7 +11,6 @@ import { useSidebarStore } from "@/stores/sidebar.store";
 import type { SetupNextStep } from "@/app/[locale]/(main)/_components/setup-next-step.lib";
 import { CommandPalette } from "./command-palette.client";
 import { OPEN_COMMAND_PALETTE_EVENT } from "./command-palette.lib";
-import { resolveDashboardRoute } from "./dashboard-routes.lib";
 import { HeaderNextStep } from "./header-next-step.client";
 import { InstallAppButton } from "./install-app-button.client";
 import { LanguageToggle } from "./language-toggle.client";
@@ -20,14 +19,13 @@ import { ThemeToggle } from "./theme-toggle.client";
 
 /**
  * The top bar (`.top`). It follows the design's widths: up to 1020px the
- * labels go, up to 720px the title goes, and at 600px and below the
- * language, theme and install buttons move into the sidebar drawer.
+ * labels go, and at 600px and below the language, theme and install buttons
+ * move into the sidebar drawer. No page title or breadcrumb (owner, 2026-11-27).
  */
 export function DashboardHeader({
   walletBalance,
   walletCurrency,
   storeLink,
-  siteLive,
   storeId,
   setupNextStep,
   userId,
@@ -35,8 +33,6 @@ export function DashboardHeader({
   walletBalance: number | null;
   walletCurrency: string;
   storeLink: { url: string; host: string; href: string } | null;
-  /** The selected store's site is published. */
-  siteLive: boolean;
   /** The selected store (navigation only): where the palette's Products links go (F-87c). */
   storeId: string | null;
   /** The selected store's next home setup step, or done (setup-next-step.lib.ts). */
@@ -46,11 +42,17 @@ export function DashboardHeader({
 }) {
   const t = useTranslations("header");
   const locale = useLocale();
-  const tNav = useTranslations("nav");
   const pathname = usePathname();
-  const route = resolveDashboardRoute(pathname);
   const setMobileOpen = useSidebarStore((state) => state.setMobileOpen);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   // The search button is hidden for now (owner, 2026-11-18), so its OS shortcut hint is too; Ctrl/⌘K still works.
   // The shortcut hint depends on the OS; resolve after mount to keep SSR markup stable.
   // const [isMac, setIsMac] = useState(false);
@@ -74,30 +76,22 @@ export function DashboardHeader({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 flex h-[68px] items-center gap-2.5 border-b border-(--s-topbar-line) bg-(--s-topbar) px-7 backdrop-blur-[14px] backdrop-saturate-[1.4] max-[1020px]:px-4 max-[600px]:h-[60px] max-[600px]:gap-1.5 max-[600px]:px-2.5 print:hidden">
+    <header
+      className={cn(
+        "sticky top-0 z-30 flex h-[68px] items-center gap-2.5 border-b border-(--s-topbar-line) bg-(--s-topbar) px-7 backdrop-blur-[14px] backdrop-saturate-[1.4] transition-[background-color,border-color] duration-200 max-[1020px]:px-4 max-[600px]:h-[60px] max-[600px]:gap-1.5 max-[600px]:px-2.5 print:hidden",
+        // Desktop: sticks 8px down, inside the viewport frame (MainContentWrapper), and is 60px tall so it still ends at 68px, where the pages' sticky bars start.
+        "min-[1021px]:top-1 min-[1021px]:h-[60px]",
+        // Desktop: clear at the top of the page, its usual glass once the page scrolls (owner, 2026-11-27).
+        !scrolled && "min-[1021px]:border-transparent min-[1021px]:bg-transparent min-[1021px]:backdrop-blur-none",
+      )}
+    >
       <IconButton onClick={() => setMobileOpen(true)} aria-label={t("openMenu")} className="min-[1021px]:hidden">
         <Menu />
       </IconButton>
 
-      <div className="flex min-w-0 items-center gap-2.5 whitespace-nowrap max-[720px]:hidden">
-        {route.parent && (
-          <span className="flex items-center gap-1.5 text-[13px] text-(--s-subtle) max-[1020px]:hidden">
-            {route.parentHref ? (
-              <Link href={route.parentHref} className="text-(--s-subtle) no-underline hover:text-(--s-ink)">
-                {tNav(route.parent)}
-              </Link>
-            ) : (
-              tNav(route.parent)
-            )}
-            <ChevronRight aria-hidden className="size-3.5 rtl:rotate-180" />
-          </span>
-        )}
-        <b className="truncate text-[15px] font-bold text-(--s-ink)">{tNav(route.title)}</b>
-      </div>
-
-      {/* The next setup step, then "Visit store" (owner, 2026-11-18). Always rendered: it keeps the actions at the end. */}
+      {/* The next setup step (owner, 2026-11-18; "Visit store" is the sidebar's eye since 2026-11-27). Always rendered: it keeps the actions at the end. */}
       <div className="mx-auto flex min-w-0 flex-[1_1_0] justify-center max-[720px]:justify-start">
-        <HeaderNextStep key={storeId ?? "none"} initial={setupNextStep} storeHref={storeLink?.href ?? null} siteLive={siteLive} />
+        <HeaderNextStep key={storeId ?? "none"} initial={setupNextStep} storeHref={storeLink?.href ?? null} />
       </div>
 
       {/* Search hidden for now (owner, 2026-11-18): Ctrl/⌘K and the bottom nav's Search still open the palette.

@@ -256,6 +256,16 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
     });
   };
 
+  // InstaPay: open Tallaby's payment link in the click itself (a tab opened
+  // after the server call would be blocked as a pop-up). Only for a valid form,
+  // so a validation error doesn't open it.
+  const openInstapayLink = () => {
+    const values = form.getValues();
+    if (values.paymentMethod !== "instapay" || !topUpFormSchema.safeParse(values).success) return;
+    const link = getManualPaymentMethodConfig("instapay")?.paymentLink;
+    if (link) window.open(link, "_blank", "noopener,noreferrer");
+  };
+
   const methodConfig = pendingTopUp
     ? getManualPaymentMethodConfig(pendingTopUp.paymentMethod)
     : undefined;
@@ -341,19 +351,12 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
                   </p>
                 )}
                 {methodConfig.paymentLink && (
-                  <p>
-                    <span className="font-medium text-muted-foreground">
-                      {tCheckout("instapayLink")}:
-                    </span>{" "}
-                    <a
-                      href={methodConfig.paymentLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline break-all"
-                    >
-                      {methodConfig.paymentLink}
+                  <Button asChild variant="outline" className="w-full gap-2">
+                    <a href={methodConfig.paymentLink} target="_blank" rel="noopener noreferrer">
+                      <Image src={methodConfig.logo} alt="" width={20} height={20} className="size-5 object-contain" />
+                      {tCheckout("transfer.openLink")}
                     </a>
-                  </p>
+                  </Button>
                 )}
               </div>
             )}
@@ -488,7 +491,7 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
                 >
                   {t("cancel")}
                 </Button>
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" disabled={isPending} onClick={openInstapayLink}>
                   {isPending ? t("submitting") : t("continueToPayment")}
                 </Button>
               </div>

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { cookies } from "next/headers";
-import { ArrowLeft, Check, CreditCard, FileText, Package, Palette, Truck } from "lucide-react";
+import { ArrowLeft, Check, FileText, Fingerprint, Globe, Package, Palette, Search, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SellerButton } from "@/components/seller-ui";
@@ -11,21 +11,21 @@ import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { SetupDismissible } from "./setup-dismiss.client";
 import { SetupStepsToggle } from "./setup-steps-toggle.client";
 
-import { buildHomeSteps, homeStepBlocker, isSetupDone, type HomeStepKey } from "./setup-checklist.lib";
+import { buildHomeSteps, isSetupDone, nextHomeStep, type HomeStepKey } from "./setup-checklist.lib";
 
 export const HOME_STEP_ICONS: Record<HomeStepKey, LucideIcon> = {
   product: Package,
-  design: Palette,
-  payments: CreditCard,
-  shipping: Truck,
+  theme: Palette,
+  identity: Fingerprint,
+  domain: Globe,
+  seo: Search,
+  wallet: Wallet,
 };
 
 /** Decorative step pictures (docs/dashboard-photos.md §3.1); a key without one keeps its icon. */
 export const HOME_STEP_IMAGES: Partial<Record<HomeStepKey, string>> = {
   product: "/illustrations/onboarding/setup-product.png",
-  design: "/illustrations/onboarding/setup-design.png",
-  payments: "/illustrations/onboarding/setup-payments.png",
-  shipping: "/illustrations/onboarding/setup-shipping.png",
+  theme: "/illustrations/onboarding/setup-design.png",
 };
 
 /** Length of the progress ring's circle (r = 36). */
@@ -37,8 +37,9 @@ export function isSetupComplete(snapshot: HomeSnapshot) {
 
 /**
  * "Get your store ready" guide (`.setup`) on the normal home (a seller with
- * orders but a step still open): a dark card with a progress ring and the four
- * step cards (setup-checklist.lib.ts). Hidden when every step is done or the
+ * orders but a step still open): a dark card with a progress ring (required
+ * steps only) and the six step cards (setup-checklist.lib.ts); none is locked
+ * (owner, 2026-11-27). Hidden when every required step is done or the
  * seller dismissed it. A seller with no real order and setup open gets the
  * setup-only home instead (setup-home.data.tsx), which can't be dismissed.
  * On a phone only the next step shows until the seller asks for the rest.
@@ -58,10 +59,11 @@ export async function SetupChecklistData() {
     icon: HOME_STEP_ICONS[task.key],
     image: HOME_STEP_IMAGES[task.key],
   }));
-  const required = TASKS;
+  // The ring counts the required steps only; domain and SEO are optional (owner, 2026-11-27).
+  const required = TASKS.filter((task) => !task.optional);
   const doneCount = required.filter((task) => task.done).length;
-  // The first open step in the recommended order is the one to do next.
-  const nextKey = TASKS.find((task) => !task.done)?.key;
+  // The first open required step in the recommended order is the one to do next.
+  const nextKey = nextHomeStep(TASKS)?.key;
 
   return (
     <SetupDismissible>
@@ -112,23 +114,21 @@ export async function SetupChecklistData() {
               <FileText aria-hidden className="mt-[3px] size-[15px] shrink-0" />
               <span>
                 {t("policies.note")}{" "}
-                <Link href="/settings#policies" className="font-bold text-accent no-underline hover:underline">
+                <Link href="/settings/policies" className="font-bold text-accent no-underline hover:underline">
                   {t("policies.link")}
                 </Link>
               </span>
             </p>
           </div>
 
-          <ol id="setup-steps" className="relative grid grid-cols-4 gap-2.5 max-[1180px]:grid-cols-2 max-[600px]:grid-cols-1">
+          <ol id="setup-steps" className="relative grid grid-cols-3 gap-2.5 max-[1180px]:grid-cols-2 max-[600px]:grid-cols-1">
             {TASKS.map((task, i) => {
               const done = task.done;
               const next = task.key === nextKey;
-              const blocker = homeStepBlocker(TASKS, task.key, snapshot.setup);
-              // The whole card opens the step (owner, 2026-11-26); a done or waiting step isn't a link.
-              const clickable = !done && !blocker;
+              // The whole card opens the step (owner, 2026-11-26); no step is locked and a done one keeps its link (owner, 2026-11-27).
               const cardClass = cn(
                 "relative flex min-h-[178px] w-full flex-col gap-2 rounded-[20px] border border-white/10 bg-white/6 p-4 text-inherit no-underline max-[720px]:min-h-0",
-                clickable && !next && "transition-colors duration-150 hover:border-white/25 hover:bg-white/10",
+                !next && "transition-colors duration-150 hover:border-white/25 hover:bg-white/10",
                 done && "border-dashed bg-transparent",
                 next &&
                   "-translate-y-1 border-(--s-surface) bg-(--s-surface) text-(--s-ink) shadow-[0_18px_40px_rgb(0_0_0/0.18)] max-[1180px]:translate-y-0",
@@ -136,7 +136,7 @@ export async function SetupChecklistData() {
               const body = (
                 <>
                   {next && (
-                    // On the card's edge: a four-column row is too narrow to share a line with the icon.
+                    // On the card's edge: a three-column row is too narrow to share a line with the icon.
                     <span className="absolute -top-2.5 start-3.5 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-(--tallaby-teal-900)">
                       {t("nextStep")}
                     </span>
@@ -168,6 +168,11 @@ export async function SetupChecklistData() {
                   </div>
                   <b className={cn("text-sm font-bold leading-normal", done && "text-[#d9e7ea]")}>
                     {t(`tasks.${task.key}.title`)}
+                    {task.optional && (
+                      <span className="ms-1.5 inline-block rounded-full bg-white/10 px-2 py-px align-middle text-[10.5px] font-bold text-[#c6d8dc]">
+                        {t("optional")}
+                      </span>
+                    )}
                     {done && <span className="sr-only"> — {t("done")}</span>}
                   </b>
                   <small className={cn("text-pretty text-xs leading-[1.6] text-[#a9c3c9]", next && "text-(--s-muted)")}>
@@ -179,17 +184,6 @@ export async function SetupChecklistData() {
                         <Check className="size-3.5" aria-hidden />
                         {t("stepDone")}
                       </span>
-                    ) : blocker ? (
-                      // Waits for an earlier step (owner, 2026-11-25): no link, and what to do first.
-                      <div className="flex flex-col gap-1.5">
-                        <span
-                          aria-disabled
-                          className="inline-flex h-[34px] cursor-not-allowed items-center self-start rounded-full border border-white/10 px-3 text-[12.5px] font-bold text-white/45 max-[600px]:h-10"
-                        >
-                          {t(`tasks.${task.key}.cta`)}
-                        </span>
-                        <small className="text-pretty text-xs text-[#a9c3c9]">{t(`locked.${blocker}`)}</small>
-                      </div>
                     ) : next ? (
                       <SellerButton asChild size="sm">
                         <span>
@@ -208,13 +202,9 @@ export async function SetupChecklistData() {
               );
               return (
                 <li key={task.key} className={cn("flex", nextKey && !next && "max-[600px]:hidden max-[600px]:group-data-open/setup:flex")}>
-                  {clickable ? (
-                    <Link href={task.href} className={cardClass}>
-                      {body}
-                    </Link>
-                  ) : (
-                    <div className={cardClass}>{body}</div>
-                  )}
+                  <Link href={task.href} className={cardClass}>
+                    {body}
+                  </Link>
                 </li>
               );
             })}

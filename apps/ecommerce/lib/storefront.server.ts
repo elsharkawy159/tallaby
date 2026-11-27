@@ -36,7 +36,6 @@ import {
   type StorefrontLocale,
 } from "@workspace/lib/storefront";
 import { customDomainPublicHostSql, findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
-import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
@@ -47,6 +46,8 @@ import { getTallabyPaySettings } from "@workspace/lib/tallaby-pay/server";
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
 import { parseStoreSalesPopup } from "@workspace/lib/stores/sales-popup";
+import { parseStoreTopLoader } from "@workspace/lib/stores/top-loader";
+import { parseStoreWhatsAppButton } from "@workspace/lib/stores/whatsapp-button";
 import { loadingScreenView } from "@workspace/lib/stores/loading-screen";
 import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
 import { parseCodDeposit } from "@workspace/lib/orders/cod-deposit";
@@ -234,7 +235,6 @@ export function getStorefrontBySubdomain(subdomain: string) {
           isVerified: sellers.isVerified,
           joinDate: sellers.joinDate,
           freeDelivery: sellers.freeDelivery,
-          legalAddress: sellers.legalAddress,
         })
         .from(stores)
         .innerJoin(sellers, eq(sellers.id, stores.sellerId))
@@ -256,8 +256,6 @@ export function getStorefrontBySubdomain(subdomain: string) {
         .limit(1);
 
       const contact = (row.contact ?? {}) as { email?: string; phone?: string; whatsapp?: string };
-      // Only the governorate is public; the rest of the legal address is not.
-      const state = (row.legalAddress as { state?: string } | null)?.state;
       return {
         id: row.sellerId,
         /** When the seller signed up: the no-query fast path of `isStoreBillingOffline`. */
@@ -291,7 +289,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         currencyLabel: parseStoreCurrency(row.settings).label,
         /** The store's currency: what its orders are placed in (ROADMAP.md F-61). */
         currency: parseStoreCurrency(row.settings).currency,
-        governorate: normalizeGovernorate(state),
+        // The seller legal address is no longer collected (owner, 2026-11-27), so no governorate.
+        governorate: null as string | null,
         /** The store's own domain once live (faster-eg.com), else null. */
         customDomain: domain?.domain ?? null,
         /** Enabled social links (Website › Social media, P4-15), read live from the store row. */
@@ -301,6 +300,10 @@ export function getStorefrontBySubdomain(subdomain: string) {
         app: parseStoreApp(row.settings),
         /** Store settings › Sales pop-up (ROADMAP.md F-22): on/off, delay and pages. */
         salesPopup: parseStoreSalesPopup(row.settings),
+        /** Apps › Top loader (owner, 2026-11-27): on by default; off, or a custom #rrggbb colour. */
+        topLoader: parseStoreTopLoader(row.settings),
+        /** Apps › WhatsApp button (owner, 2026-11-27): its settings; shown only while the app is installed (read apart). */
+        whatsappButton: parseStoreWhatsAppButton(row.settings),
         /** Website › Design › Loading screen (ROADMAP.md F-96): null when off or invalid; media only from this store's own folder. */
         loadingScreen: loadingScreenView(row.settings, {
           sellerId: row.sellerId,
@@ -323,8 +326,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         defaultLocale: storeBaseLocale(row.defaultLocale),
       };
     },
-    // v19: + loadingScreen (F-96). v18: + sellerCreatedAt (billing offline fast path). v17: + defaultLocale (unprefixed address language). v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v19-${subdomain}`],
+    // v21: + whatsappButton (WhatsApp button app). v20: + topLoader (Top loader app). v19: + loadingScreen (F-96). v18: + sellerCreatedAt (billing offline fast path). v17: + defaultLocale (unprefixed address language). v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v21-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

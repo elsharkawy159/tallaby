@@ -20,7 +20,7 @@ const KEYS: BottomNavKey[] = ["dashboard", "products", "ordersGroup"];
  * group then still belongs to that group, not to Products or Orders.
  */
 export function bottomNavEntries(storeId: string | null): ResolvedEntry[] {
-  return resolveSidebar(SIDEBAR_CONFIG, { storeId, features: { storeBuilder: true } });
+  return resolveSidebar(SIDEBAR_CONFIG, { storeId, features: { storeBuilder: true, selfDelivery: true } });
 }
 
 /** Home, Products and Orders with the sidebar's own hrefs (Products is store-scoped, /products with no store). */

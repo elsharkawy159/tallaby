@@ -7,8 +7,9 @@ export const instant = false;
 /**
  * Store-less `/settings/<store settings page>/…` link (`/settings/payments`):
  * the same page of the sidebar's selected store (storeless-routes.lib.ts).
- * `/settings`, `/settings/plan` and `/settings/fulfillment` are their own
- * pages and never reach here; any other path 404s.
+ * `/settings` (a redirect to Store settings), `/settings/plan` and
+ * `/settings/fulfillment` are their own pages and never reach here; any
+ * other path 404s.
  */
 export default async function StorelessStoreSettingsPage({
   params,

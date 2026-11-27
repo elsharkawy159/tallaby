@@ -5,6 +5,7 @@ import { productShownInStore } from "@workspace/lib/stores/scope/server";
 import { activeCartWhere, getCartScope, isRequestStoreOffline, type CartScope } from "@/lib/storefront.server";
 import { isSwitchOn } from "@/lib/platform-switches.server";
 import { buildReorderLines, reorderCartKey, type ReorderPlan, type ReorderProduct } from "./reorder.lib";
+import { applyBundleAvailability } from "@workspace/lib/products/bundles/server";
 
 /**
  * "Order again" (ROADMAP.md F-01e, store part). Only on a store host, only
@@ -39,7 +40,7 @@ export async function planReorder(orderId: string, { userId, scope }: Owned): Pr
   if (!ids.length) return { lines: [], skipped: [], capped: 0 };
   const catalogSplit = await isSwitchOn("stores_catalog_split");
 
-  const [rows, variants, cart] = await Promise.all([
+  const [productRows, variants, cart] = await Promise.all([
     db
       .select({
         id: products.id,
@@ -48,6 +49,7 @@ export async function planReorder(orderId: string, { userId, scope }: Owned): Pr
         deletedAt: products.deletedAt,
         quantity: products.quantity,
         trackStock: products.trackStock,
+        isBundle: products.isBundle,
         // What the store shows (productInStore, scope shown): every product in "all" mode, its picks in
         // "selected" mode, its own products after the catalog split. Nested, so this no-join select keeps
         // the table name on the outer columns (packages/db/src/drizzle/outer-column.test.ts).
@@ -66,6 +68,8 @@ export async function planReorder(orderId: string, { userId, scope }: Owned): Pr
       .where(activeCartWhere(userId, scope)),
   ]);
 
+  // A bundle's stock is its items' (0188, F-07f).
+  const rows = await applyBundleAvailability(scope.storeId, productRows);
   const list: ReorderProduct[] = rows.map((row) => ({
     id: row.id,
     sellerId: row.sellerId,

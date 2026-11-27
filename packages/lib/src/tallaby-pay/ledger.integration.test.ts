@@ -36,9 +36,9 @@ describe.skipIf(!TEST_DATABASE_URL)("Tallaby Pay ledger (integration)", { timeou
     created.push(sellerId);
     // Plain SQL: only the columns it sets, so a later unrelated sellers column never breaks it.
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address,
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain,
         support_email, status)
-      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb,
+      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub},
         ${`${sub}@example.com`}, 'approved')
     `);
     const [store] = await db.select({ id: s.stores.id }).from(s.stores).where(eq(s.stores.sellerId, sellerId));

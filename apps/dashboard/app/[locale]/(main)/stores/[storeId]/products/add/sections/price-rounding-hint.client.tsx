@@ -58,7 +58,7 @@ export function PriceRoundingHint({
           <MoneyText locale={locale}>{line}</MoneyText>
         </span>
       ))}
-      <Link href={`/stores/${storeId}/settings`} className="font-semibold text-(--s-primary) underline-offset-2 hover:underline">
+      <Link href={`/stores/${storeId}/apps/price-rounding/settings`} className="font-semibold text-(--s-primary) underline-offset-2 hover:underline">
         {t("settingsLink")}
       </Link>
     </p>

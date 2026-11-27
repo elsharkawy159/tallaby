@@ -27,10 +27,10 @@ const limiter = createRateLimiter({ limit: 300, windowMs: 10 * 60_000 });
 
 export type SignedUploadResult = { success: true; token: string } | { success: false; error: "notAllowed" | "invalidPath" | "generic" };
 
-/** Public `sellers` bucket: logos, banners and document scans, each under `<folder>/<sellerId>/` (0152's policies). */
+/** Public `sellers` bucket: logos and banners, each under `<folder>/<sellerId>/` (0152's policies). Seller documents were removed (owner, 2026-11-27). */
 // ("use server" files may export only async functions.)
 const SELLERS_BUCKET = "sellers";
-const SELLERS_BUCKET_FOLDERS = new Set(["logos", "banners", "documents"]);
+const SELLERS_BUCKET_FOLDERS = new Set(["logos", "banners"]);
 // `<Date.now()>-<slug>.<ext>`, the name `generateImageName` makes.
 const SELLERS_FILE_NAME_RE = /^\d{10,16}-[a-z0-9-]{0,200}\.[A-Za-z0-9]{1,16}$/;
 

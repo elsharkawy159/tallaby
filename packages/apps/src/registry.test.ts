@@ -94,7 +94,7 @@ describe("app manifests", () => {
   });
 
   it("groups apps by category in order", () => {
-    expect(appsInCategory("storefront").map((a) => a.id)).toEqual(["size_chart", "qr_codes", "remove_branding"]);
+    expect(appsInCategory("storefront").map((a) => a.id)).toEqual(["size_chart", "qr_codes", "remove_branding", "store_app", "languages", "shoppable_gallery", "top_loader", "whatsapp_button"]);
     expect(appsInCategory("shipping").map((a) => a.id)).toEqual(["bosta", "wassalha", "mylerz", "jt_express", "aramex"]);
   });
 

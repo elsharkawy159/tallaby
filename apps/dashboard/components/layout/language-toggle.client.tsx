@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Languages, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { useSwitchLocale } from "./use-switch-locale.client";
 
 /** Each option is labelled in its own language so it's readable by whoever needs it. */
@@ -24,13 +25,12 @@ export function LanguageToggle({ row = false, labelled = false }: { row?: boolea
 
   const onClick = () => switchTo(target.value);
 
-  return (
+  const button = (
     <button
       type="button"
       onClick={onClick}
       disabled={isPending}
       lang={target.value}
-      title={t("language")}
       aria-label={`${t("language")}: ${target.label}`}
       className={cn(
         "flex shrink-0 cursor-pointer items-center transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) disabled:opacity-60",
@@ -51,5 +51,13 @@ export function LanguageToggle({ row = false, labelled = false }: { row?: boolea
         <span className={cn("font-montserrat", !labelled && "max-[1020px]:hidden")}>{target.label}</span>
       )}
     </button>
+  );
+
+  if (row || labelled) return button;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent>{t("language")}</TooltipContent>
+    </Tooltip>
   );
 }

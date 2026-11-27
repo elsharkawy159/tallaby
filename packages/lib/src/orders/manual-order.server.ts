@@ -17,7 +17,7 @@ import {
   users,
 } from "@workspace/db";
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
-import { restoreStock, type StockLine } from "@workspace/db/inventory";
+import { orderStockLinesOf, restoreStock, type StockLine } from "@workspace/db/inventory";
 import { chargeOrderPlacementFee } from "@workspace/db/wallet";
 import { resolveGovernorateSelectValue } from "../address/address.lib";
 import { storeSellsProduct } from "../stores/catalog.server";
@@ -42,6 +42,7 @@ import {
 } from "./manual-order.lib";
 import { minOrderShortfalls } from "./min-order-quantity.lib";
 import { placeOrderFromCart, type PlaceOrderInventoryItem } from "./place-order";
+import { bundleAvailabilityFor } from "../products/bundles.server";
 
 type Actor = { sellerId: string; actorId: string; storeId: string };
 
@@ -103,6 +104,12 @@ async function resolveLines(
       };
     }
     if (product.trackStock !== false && stock < line.quantity) return { ok: false, error: "insufficientStock" };
+    // A bundle (0188, F-07f) holds no stock: its items' stock decides. Checkout
+    // takes it from the items and refuses a bundle it can't sell.
+    if (product.isBundle) {
+      const available = (await bundleAvailabilityFor(storeId, [product.id])).get(product.id);
+      if (available != null && available < line.quantity) return { ok: false, error: "insufficientStock" };
+    }
 
     resolved.push({
       productId: line.productId,
@@ -406,16 +413,14 @@ export async function expireManualOrderLinks(now: Date = new Date()): Promise<{ 
             productId: orderItems.productId,
             variantId: orderItems.variantId,
             quantity: orderItems.quantity,
+            bundleItems: orderItems.bundleItems,
           });
         await tx
           .update(shipments)
           .set({ status: "cancelled", updatedAt: stamp })
           .where(and(eq(shipments.orderId, order.id), inArray(shipments.status, ["pending", "assigned"])));
-        const stockLines: StockLine[] = lines.map((line) =>
-          line.variantId
-            ? { kind: "variant", id: line.variantId, quantity: line.quantity }
-            : { kind: "product", id: line.productId, quantity: line.quantity },
-        );
+        // A bundle line (0188, F-07f) puts back the items of its snapshot.
+        const stockLines: StockLine[] = orderStockLinesOf(lines);
         await restoreStock(tx, stockLines, { reason: "cancel", orderId: order.id, storeId: order.storeId });
         await cancelPendingAffiliateCommission(tx, order.id);
         return true;

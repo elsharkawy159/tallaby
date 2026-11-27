@@ -306,7 +306,7 @@ export interface TransactionalCopy {
     stepsTitle: string;
     done: string;
     steps: Record<
-      "product" | "design" | "payments" | "shipping",
+      "product" | "theme" | "identity" | "wallet",
       [string, string]
     >;
     reasonsTitle: string;
@@ -676,13 +676,10 @@ export const transactionalEn: TransactionalCopy = {
     stepsTitle: "What's left",
     done: "Done",
     steps: {
-      product: ["Add your first product", "Photos, price and stock"],
-      design: [
-        "Choose your store design",
-        "A ready template, your logo and colours",
-      ],
-      payments: ["Set up payments", "Cash on delivery or online payment"],
-      shipping: ["Set up shipping", "Delivery areas and prices"],
+      product: ["Add your products", "Photos, prices and categories"],
+      theme: ["Choose your theme", "A ready design you can edit"],
+      identity: ["Set your store identity", "Your logo, colours and fonts"],
+      wallet: ["Top up your wallet", "Your first top-up keeps your orders showing"],
     },
     reasonsTitle: "Why finish now",
     reasons: {
@@ -1069,10 +1066,10 @@ export const transactionalAr: TransactionalCopy = {
     stepsTitle: "اللي فاضل",
     done: "تم",
     steps: {
-      product: ["ضيف أول منتج", "الصور والسعر والكمية"],
-      design: ["اختار شكل متجرك", "قالب جاهز ولوجو وألوان متجرك"],
-      payments: ["جهّز طرق الدفع", "الدفع عند الاستلام أو أونلاين"],
-      shipping: ["جهّز الشحن", "مناطق التوصيل وأسعارها"],
+      product: ["ضيف منتجاتك وأقسامها", "الصور والسعر وقسم كل منتج"],
+      theme: ["اختار ثيم متجرك", "تصميم جاهز تعدّل عليه براحتك"],
+      identity: ["جهّز هوية متجرك", "اللوجو والألوان والخطوط"],
+      wallet: ["اشحن محفظتك", "أول شحنة وطلباتك تفضل ظاهرة لك"],
     },
     reasonsTitle: "ليه تكمّل دلوقتي",
     reasons: {

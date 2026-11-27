@@ -31,8 +31,8 @@ describe.skipIf(!TEST_DATABASE_URL)("back-in-stock alerts (integration)", { time
     await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
-      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'sa@example.com', 'approved')
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, status)
+      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'sa@example.com', 'approved')
     `);
     const [store] = rows<{ id: string }>(await db.execute(sql`SELECT id FROM stores WHERE seller_id = ${id} LIMIT 1`));
     if (published) await db.execute(sql`UPDATE stores SET site_status = 'published' WHERE id = ${store!.id}`);

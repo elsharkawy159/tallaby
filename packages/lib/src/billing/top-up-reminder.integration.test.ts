@@ -38,8 +38,6 @@ describe.skipIf(!TEST_DATABASE_URL)("top-up reminder (integration)", { timeout: 
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "tur@example.com",
       status: "approved",
     });

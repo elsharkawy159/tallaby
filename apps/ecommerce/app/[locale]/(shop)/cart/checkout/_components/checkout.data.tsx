@@ -73,6 +73,7 @@ import {
   type StoreCheckoutForm,
 } from "@workspace/lib/stores/checkout-form";
 import { StoreCheckoutFields, type StoreCheckoutAnswers } from "./store-checkout-fields.client";
+import { CheckoutDownsell } from "./checkout-downsell.client";
 import { checkMinOrder, itemsSubtotalPiastres, type StoreMinOrder } from "@workspace/lib/stores/min-order";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 
@@ -159,10 +160,10 @@ export const CheckoutData = ({
   // methods); null on the marketplace, which offers everything.
   const storePayments: StorefrontCheckoutPayments | null =
     checkoutData.storePayments ?? null;
-  const codAllowed =
   // A cart with a digital product takes no cash on delivery (F-108b); the server
   // already left it out of a store's methods and refuses it on the order.
   const digitalNoCod = checkoutData.digitalNoCod === true;
+  const codAllowed =
     !digitalNoCod && (!storePayments || storePayments.methods.includes("cash_on_delivery"));
   const manualMethods = useMemo(
     () =>
@@ -740,6 +741,10 @@ export const CheckoutData = ({
             </SimpleCheckoutForm>
             {isStorefront && (
               <p className="-mt-2 px-1 text-xs text-gray-500 md:-mt-4">{t("leadConsent")}</p>
+            )}
+            {/* Store websites only: one offer when the shopper tries to leave (F-116). */}
+            {isStorefront && (
+              <CheckoutDownsell shippingAddressId={shippingAddressId} busy={isPending} onCouponApplied={handleCouponApplied} />
             )}
 
             {/* Payment Method */}

@@ -376,7 +376,11 @@ export async function importShopifyChunk(
 
   const categoryIds = [...new Set([input.defaultCategoryId, ...Object.values(input.categoryMap)])];
   if (!categoryIds.every((id) => UUID_RE.test(id))) return { success: false, error: "invalid_category" };
-  const found = await q.select({ id: categories.id }).from(categories).where(inArray(categories.id, categoryIds));
+  // Imported products are physical: a digital category (F-108e) is refused like an unknown one.
+  const found = await q
+    .select({ id: categories.id })
+    .from(categories)
+    .where(and(inArray(categories.id, categoryIds), eq(categories.productKind, "physical")));
   if (found.length !== categoryIds.length) return { success: false, error: "invalid_category" };
 
   const page = await shopifyGraphql<ShopifyProductsPage>(

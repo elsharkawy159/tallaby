@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { sellers, sellerDocuments, sellerCustomDomains } from "@workspace/db";
-import { eq, desc, and } from "drizzle-orm";
+import { sellers, sellerCustomDomains } from "@workspace/db";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import {
@@ -62,54 +62,6 @@ export async function updateSellerProfile(data: {
     return { success: true, data: updatedSeller[0] };
   } catch (error) {
     console.error("Error updating seller profile:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
-
-export async function getSellerDocuments() {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const documents = await db.query.sellerDocuments.findMany({
-      where: eq(sellerDocuments.sellerId, session.user.id),
-      orderBy: [desc(sellerDocuments.uploadedAt)],
-    });
-
-    return { success: true, data: documents };
-  } catch (error) {
-    console.error("Error fetching seller documents:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
-
-export async function uploadSellerDocument(data: {
-  documentType: string;
-  fileUrl: string;
-  expiryDate?: string;
-}) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const newDocument = await db
-      .insert(sellerDocuments)
-      .values({
-        sellerId: session.user.id,
-        documentType: data.documentType,
-        fileUrl: data.fileUrl,
-        expiryDate: data.expiryDate,
-        status: "pending",
-      })
-      .returning();
-
-    return { success: true, data: newDocument[0] };
-  } catch (error) {
-    console.error("Error uploading document:", error);
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
@@ -211,7 +163,6 @@ export async function updateStoreSubdomain(storeId: string, input: string): Prom
         { from: "dashboard", mode: "action" },
       );
     }
-    revalidateDashboardPath("/settings");
     revalidateDashboardPath("/stores/[storeId]", "layout");
     // The sidebar store switcher shows store addresses.
     revalidatePath("/", "layout");

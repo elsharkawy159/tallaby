@@ -22,7 +22,9 @@ import {
   sql,
 } from "@workspace/db";
 import {
+  orderStockLinesOf,
   restoreStock,
+  stockResultSource,
   type StockLine,
 } from "@workspace/db/inventory";
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
@@ -47,7 +49,7 @@ import {
   isCartStoreOffline,
 } from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { currencyDefaultLabel, formatPricePlain } from "@workspace/lib";
 import { after } from "next/server";
@@ -67,7 +69,9 @@ import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { isDepositPending } from "@workspace/lib/orders/cod-deposit";
 import { markDepositReported, notifyDeposit } from "@workspace/lib/orders/cod-deposit/server";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
-import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
+import { getStorefrontCheckoutForm, getStorefrontMinOrder, getStorefrontOrderCountries } from "@/lib/storefront-checkout-form.server";
+import { checkOrderCountry } from "@workspace/lib/stores/order-countries";
+import { getClientCountry } from "@workspace/lib/http/client-ip";
 import { resolveOrderNotificationEmail } from "@workspace/lib/orders/notification-email/server";
 import { applyCheckoutAnswers } from "@workspace/lib/stores/checkout-form";
 import { isStoreOrderAllowed, recordStoreOrder, storeOrderRateKeys } from "@/lib/order-rate-limit.server";
@@ -82,7 +86,9 @@ import {
 } from "@workspace/lib/whatsapp/consent/server";
 
 /** placeOrderFromCart's store-shipping refusals → checkout message keys. */
-const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod" | "orderNotAccepted" | "paymentNotInCurrency"> = {
+const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod" | "orderNotAccepted" | "paymentNotInCurrency" | "bundleUnavailable"> = {
+  // A bundle (0188, F-07f) with no items, a trashed item or one of another store.
+  bundleUnavailable: "bundleUnavailable",
   storeShippingNotCovered: "notDeliveredHere",
   storePaymentNotInCurrency: "paymentNotInCurrency",
   storeShippingOutsideEgypt: "egyptOnly",
@@ -182,6 +188,17 @@ export async function createOrder(data: {
         if (!isStoreOrderAllowed(orderRateKeys)) {
           const t = await getTranslations("checkout");
           return { success: false, error: t("tooManyOrders") };
+        }
+      }
+
+      // Store websites: orders from the store's own countries only, when the seller turned it on
+      // (ROADMAP.md F-115 A5). The country comes from the request; unknown = allowed.
+      const orderCountries = await getStorefrontOrderCountries();
+      if (orderCountries) {
+        const check = checkOrderCountry({ enabled: true }, getClientCountry(await headers()), orderCountries.countries);
+        if (!check.ok) {
+          const t = await getTranslations("checkout");
+          return { success: false, error: t("countryNotAccepted") };
         }
       }
 
@@ -296,6 +313,11 @@ export async function createOrder(data: {
           customerInputLines: result.customerInputLines,
         };
       }
+      // A cart with a digital product takes no cash on delivery (F-108b).
+      if (result.error === DIGITAL_NO_COD_ERROR) {
+        const t = await getTranslations("checkout");
+        return { success: false, error: t("digitalNoCod") };
+      }
       const shippingKey = STORE_SHIPPING_ERRORS[result.error];
       if (shippingKey) {
         const t = await getTranslations("checkout");
@@ -313,11 +335,6 @@ export async function createOrder(data: {
       await recordWhatsAppConsent({ orderId: order.id, storeId: order.storeId });
     }
 
-      // A cart with a digital product takes no cash on delivery (F-108b).
-      if (result.error === DIGITAL_NO_COD_ERROR) {
-        const t = await getTranslations("checkout");
-        return { success: false, error: t("digitalNoCod") };
-      }
     await applyInvalidation(invalidateProductInventory(inventoryItems), {
       from: "ecommerce",
       mode: "action",
@@ -804,11 +821,8 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
           })
           .where(eq(orderItems.orderId, orderId));
 
-        const stockLines: StockLine[] = items.map((item) =>
-          item.variantId
-            ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
-            : { kind: "product" as const, id: item.productId, quantity: item.quantity }
-        );
+        // A bundle line (0188, F-07f) puts back the items of its snapshot.
+        const stockLines: StockLine[] = orderStockLinesOf(items);
         // A test order never took stock (F-76), so nothing goes back.
         if (orderMovesStock(order)) {
           stockResults = await restoreStock(tx, stockLines, { reason: "cancel", orderId, actorId: userId ?? order.userId });
@@ -884,19 +898,24 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
       throw err;
     }
 
-    const inventoryItems = stockResults.map((r) => {
-      const item = items.find((i) => (i.variantId ?? i.productId) === r.id)!;
-      return {
-        snapshot: {
-          id: item.productId,
-          sellerId: item.sellerId,
-          // The order's store, for its product tag (F-87c).
-          storeId: order.storeId ?? null,
-          categoryId: item.product?.categoryId ?? null,
-          brandId: item.product?.brandId ?? null,
+    const inventoryItems = stockResults.flatMap((r) => {
+      const source = stockResultSource(items, r.id);
+      if (!source) return [];
+      const item = source.line;
+      return [
+        {
+          snapshot: {
+            id: source.productId,
+            sellerId: item.sellerId,
+            // The order's store, for its product tag (F-87c).
+            storeId: order.storeId ?? null,
+            // A bundle item's own category and brand aren't loaded: its product and store tags cover it.
+            categoryId: source.bundleItem ? null : (item.product?.categoryId ?? null),
+            brandId: source.bundleItem ? null : (item.product?.brandId ?? null),
+          },
+          stockBoundaryCrossed: r.stockBoundaryCrossed,
         },
-        stockBoundaryCrossed: r.stockBoundaryCrossed,
-      };
+      ];
     });
     await applyInvalidation(invalidateProductInventory(inventoryItems), {
       from: "ecommerce",

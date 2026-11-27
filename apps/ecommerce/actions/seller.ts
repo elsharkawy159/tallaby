@@ -5,7 +5,6 @@ import { unstable_cache } from "next/cache";
 import {
   db,
   sellers,
-  sellerDocuments,
   products,
   eq,
   desc,
@@ -13,8 +12,6 @@ import {
   sql,
 } from "@workspace/db";
 import { categoryTags, productTags } from "@workspace/cache";
-import { normalizeGovernorate } from "@workspace/lib/shipping";
-import { getUser } from "./auth";
 
 // CACHED: Public storefront listing - only approved sellers are shown
 export async function getAllSellers(params?: {
@@ -68,50 +65,6 @@ export type SellerStoreCategory = {
   /** The seller's product categories under this root, for filtering. */
   categoryIds: string[];
 };
-
-// NOT CACHED: Mutation - uploads document
-export async function uploadSellerDocument(data: {
-  documentType:
-    | "business_license"
-    | "tax_certificate"
-    | "id_proof"
-    | "address_proof"
-    | "other";
-  fileUrl: string;
-  expiryDate?: string;
-}) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
-    }
-
-    // Check if user is a seller
-    const seller = await db.query.sellers.findFirst({
-      where: eq(sellers.id, user.user.id),
-    });
-
-    if (!seller) {
-      return { success: false, error: "Seller profile not found" };
-    }
-
-    const [newDocument] = await db
-      .insert(sellerDocuments)
-      .values({
-        sellerId: user.user.id,
-        documentType: data.documentType,
-        fileUrl: data.fileUrl,
-        expiryDate: data.expiryDate,
-        status: "pending",
-      })
-      .returning();
-
-    return { success: true, data: newDocument };
-  } catch (error) {
-    console.error("Error uploading document:", error);
-    return { success: false, error: "Failed to upload document" };
-  }
-}
 
 export async function getSellerProfile(sellerId: string) {
   // CACHED: Semi-dynamic public data - seller profiles change infrequently
@@ -189,7 +142,6 @@ export async function getSellerBySlug(slug: string) {
             status: true,
             storeDescription: true,
             freeDelivery: true,
-            legalAddress: true,
           },
         });
 
@@ -197,13 +149,8 @@ export async function getSellerBySlug(slug: string) {
           return { success: false, error: "Seller not found" };
         }
 
-        // Only the governorate is public; the rest of the legal address is not.
-        const { legalAddress, ...profile } = seller;
-        const state = (legalAddress as { state?: string } | null)?.state;
-        return {
-          success: true,
-          data: { ...profile, governorate: normalizeGovernorate(state) },
-        };
+        // The legal address (and its governorate) is no longer collected (owner, 2026-11-27).
+        return { success: true, data: { ...seller, governorate: null as string | null } };
       } catch (error) {
         console.error("Error fetching seller:", error);
         return { success: false, error: "Failed to fetch seller" };

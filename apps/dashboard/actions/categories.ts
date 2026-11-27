@@ -17,10 +17,12 @@ const CATEGORY_NODE_COLUMNS = {
   slug: true,
   level: true,
   parentId: true,
+  // F-108e (0191): the product form shows only the categories of the product's type.
+  productKind: true,
 } as const;
 
 const loadCategoryTree = createCachedQuery({
-  name: "dashboard:categories:tree:v2",
+  name: "dashboard:categories:tree:v3",
   ttl: cacheProfiles.taxonomy,
   tags: () => [categoryTags.all(), categoryTags.tree()],
   // Sent to the product form as a prop, so only what the pickers read. A failure

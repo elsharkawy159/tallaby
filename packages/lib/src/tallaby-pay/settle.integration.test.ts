@@ -40,9 +40,9 @@ describe.skipIf(!TEST_DATABASE_URL)("Tallaby Pay callback (integration)", { time
     await db.insert(s.users).values({ id: sellerId, isGuest: false, role: "seller" });
     created.push(sellerId);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address,
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain,
         support_email, status)
-      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb,
+      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub},
         ${`${sub}@example.com`}, 'approved')
     `);
     const [store] = await db.select({ id: s.stores.id }).from(s.stores).where(eq(s.stores.sellerId, sellerId));

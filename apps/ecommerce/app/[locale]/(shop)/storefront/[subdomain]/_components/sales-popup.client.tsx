@@ -112,6 +112,8 @@ export function SalesPopup({
   return (
     <div
       data-sf-motion="off"
+      // The WhatsApp button app lifts the toast above itself when both share a corner (whatsapp-button.client.tsx).
+      data-sales-popup=""
       role="status"
       aria-live="polite"
       aria-hidden={!visible}

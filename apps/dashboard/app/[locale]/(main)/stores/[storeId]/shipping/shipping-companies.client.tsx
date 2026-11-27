@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Bike, CircleCheck, LoaderCircle, MapPin, Plug, Settings2 } from "lucide-react";
+import { LoaderCircle, MapPin, Plug, Settings2 } from "lucide-react";
 
 import {
   isStoreAppLive,
@@ -14,7 +14,7 @@ import {
   type StoreApp,
 } from "@workspace/lib/integrations";
 import type { BostaOverview, WassalhaOverview } from "@workspace/lib/integrations/server";
-import { IconTile, Note, OptionCard, OptionCards, SellerButton, StatusBadge } from "@/components/seller-ui";
+import { Note, OptionCard, OptionCards, SellerButton, StatusBadge } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { AppLogo } from "../apps/app-logo";
 import { updateBostaSettings } from "../apps/_settings/bosta/bosta.server";
@@ -109,22 +109,7 @@ export function ShippingCompaniesCard({
           );
         })}
 
-        {/* The seller's own delivery is always on: Tallaby doesn't deliver orders. */}
-        <div className={cn(CARD, "border-success/30 bg-success-soft/40")}>
-          <IconTile icon={Bike} tone="solid" className="size-11 rounded-[14px] [&_svg]:size-5" />
-          <div className="min-w-0 flex-1 basis-40">
-            <b className="block text-sm font-bold text-(--s-ink)">{t("selfTitle")}</b>
-            <small className="block text-xs leading-[1.6] text-(--s-subtle)">
-              <Link href="/orders/delivery" className="text-(--s-link) underline-offset-2 hover:underline max-[600px]:inline-flex max-[600px]:min-h-10 max-[600px]:items-center">
-                {t("selfBody")}
-              </Link>
-            </small>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-success">
-            <CircleCheck className="size-3.5" aria-hidden />
-            {t("selfActive")}
-          </span>
-        </div>
+        {/* The "I deliver myself" tile left this card: it shows only for "Use a shipping company" now (owner, 2026-11-27). */}
 
         {soon.length > 0 && (
           <div className="col-span-full flex flex-wrap items-center gap-2.5 px-0.5 py-1 text-[12.5px] text-(--s-subtle)">

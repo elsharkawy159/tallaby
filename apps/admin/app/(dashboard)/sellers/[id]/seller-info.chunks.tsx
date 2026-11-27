@@ -4,7 +4,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { getGovernorateLabel } from "@workspace/lib/shipping";
 import { formatCurrency, formatDate } from "../sellers.lib";
 import type { Seller } from "../sellers.types";
 import { PlatformFeeSummary } from "../../_components/entity/platform-fee.chunks";
@@ -73,8 +72,6 @@ function JsonSection({ title, data }: { title: string; data: unknown }) {
   );
 }
 
-const LEGAL_ADDRESS_KEYS = new Set(["street", "city", "state", "postalCode", "country"]);
-
 export function SellerInfoSections({
   seller,
   ownerPhone,
@@ -82,42 +79,17 @@ export function SellerInfoSections({
   seller: Seller;
   ownerPhone: string | null;
 }) {
-  const address = seller.legalAddress ?? {};
-  const governorate = formatValue(address.state);
-  const extraAddress = Object.entries(address).filter(
-    ([key, value]) => !LEGAL_ADDRESS_KEYS.has(key) && formatValue(value) !== null
-  );
-
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Section title="Business information">
         <Row label="Business name" value={seller.businessName} />
         <Row label="Display name" value={seller.displayName} />
-        <Row label="Business type" value={humanize(seller.businessType)} />
         <Row label="Description" value={seller.description || seller.storeDescription} />
         <Row label="Tax ID" value={seller.taxId} />
         <Row label="Registration number" value={seller.registrationNumber} />
         <Row label="Support email" value={seller.supportEmail} dir="ltr" />
         <Row label="Support phone" value={seller.supportPhone} dir="ltr" />
         <Row label="Owner phone" value={ownerPhone} dir="ltr" />
-      </Section>
-
-      <Section title="Legal address">
-        <Row label="Street" value={formatValue(address.street)} />
-        <Row label="City" value={formatValue(address.city)} />
-        <Row
-          label="Governorate"
-          value={
-            governorate
-              ? `${getGovernorateLabel(governorate, "en")} · ${getGovernorateLabel(governorate, "ar")}`
-              : null
-          }
-        />
-        <Row label="Postal code" value={formatValue(address.postalCode)} />
-        <Row label="Country" value={formatValue(address.country)} />
-        {extraAddress.map(([key, value]) => (
-          <Row key={key} label={humanize(key)} value={formatValue(value)} />
-        ))}
       </Section>
 
       <Section title="Account & verification">
@@ -185,7 +157,6 @@ export function SellerInfoSections({
         </Section>
       )}
 
-      <JsonSection title="Payment details" data={seller.paymentDetails} />
       <JsonSection title="Tax information" data={seller.taxInformation} />
       <JsonSection title="Verification details" data={seller.verificationDetails} />
       <JsonSection title="Fee structure" data={seller.feeStructure} />

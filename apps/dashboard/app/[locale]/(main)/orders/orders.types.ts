@@ -1,6 +1,7 @@
 import type { OrderRisk } from "@workspace/lib/customers";
 import type { SellerOrderFlow } from "./order-flow.lib";
 import type { DepositStatus } from "@workspace/lib/orders/cod-deposit";
+import type { BundleSnapshotItem } from "@workspace/lib/products/bundles";
 
 export interface SellerOrderLine {
   /** order_items.id */
@@ -18,6 +19,8 @@ export interface SellerOrderLine {
   customerInputs: unknown;
   /** Pre-order line (0179, F-23b): the expected delivery date promised at checkout, YYYY-MM-DD; null = not a pre-order. */
   preorderShipsAt: string | null;
+  /** A bundle line's items as sold (`order_items.bundle_items`, 0188, F-07f); null = not a bundle. */
+  bundleItems?: BundleSnapshotItem[] | null;
 }
 
 export interface SellerOrderAddress {
@@ -117,13 +120,13 @@ export interface SellerOrderRow {
   isManual: boolean;
   /** A test order (0155, F-76): placed by the seller before activation. Badge "Test"; view-only. */
   isTest: boolean;
-  canRestockReturn: boolean;
-  /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
-  confirmMessage: string | null;
   /** F-108d: every line is a digital product (`orders.is_digital_only`); badge "Digital". */
   isDigitalOnly?: boolean;
   /** F-108d: at least one of this seller's lines is a digital product; the panel loads "Digital delivery". */
   hasDigital?: boolean;
+  canRestockReturn: boolean;
+  /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
+  confirmMessage: string | null;
   /** The order's details for WhatsApp, without "please confirm", when there is no confirmMessage (store order with a phone, not a test). */
   detailsMessage: string | null;
   /** Hours a new order has waited unconfirmed, once past UNCONFIRMED_AFTER_HOURS. */

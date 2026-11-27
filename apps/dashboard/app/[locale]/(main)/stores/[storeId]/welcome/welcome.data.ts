@@ -15,6 +15,7 @@ import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { findIndustry, STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { nicheChoices } from "@/lib/stores/niche-choices.lib";
 import { getAllCategories } from "@/actions/categories";
+import { filterCategoryTreeByKind } from "@workspace/lib/products/category-kind";
 import { getSetupPromptRow } from "../../../_components/home.queries";
 import type { CategoryOption } from "../products/add/add-product.schema";
 import { quickProductTitle, type QuickProductCard } from "../products/add/ai/ai-product-uploader.lib";
@@ -136,5 +137,6 @@ async function loadLatestProduct(store: StoreRow, locale: string): Promise<Quick
 /** The category tree (cached) and the seller's pricing, as the add page loads them. */
 async function loadUploaderContext(): Promise<{ categories: CategoryOption[]; sellerPricing: Awaited<ReturnType<typeof loadSellerPricing>> }> {
   const [categories, sellerPricing] = await Promise.all([getAllCategories(), loadSellerPricing()]);
-  return { categories: (categories.data || []) as CategoryOption[], sellerPricing };
+  // The welcome uploader adds physical products (F-108e).
+  return { categories: filterCategoryTreeByKind((categories.data || []) as CategoryOption[], "physical"), sellerPricing };
 }

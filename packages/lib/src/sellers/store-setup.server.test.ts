@@ -31,3 +31,27 @@ describe("payments are set up by default", () => {
     expect(toStoreSetupFlags({ setup_payments: false }).payments).toBe(false);
   });
 });
+
+describe("domain, SEO and wallet flags (owner, 2026-11-27)", () => {
+  const text = new PgDialect().sqlToQuery(storeSetupFlagColumns(sql``)).sql;
+
+  it("scope the domain to this store and seller, active only", () => {
+    expect(text).toContain("cd.store_id = st.id AND cd.seller_id = s.id AND cd.status = 'active'");
+  });
+
+  it("count only the store's own SEO title or description, never the Search Console token", () => {
+    expect(text).toContain("st.seo ->> 'titleTemplate'");
+    expect(text).toContain("st.seo ->> 'description'");
+    expect(text).not.toContain("googleSiteVerification'");
+  });
+
+  it("read the wallet like hasTopUp: a succeeded top-up or a top_up ledger entry of this seller", () => {
+    expect(text).toContain("wtu.seller_id = s.id AND wtu.status = 'succeeded'");
+    expect(text).toContain("wtx.seller_id = s.id AND wtx.type = 'top_up'");
+  });
+
+  it("map the new columns", () => {
+    expect(toStoreSetupFlags({ setup_domain: true, setup_seo: true, setup_wallet: true })).toMatchObject({ domain: true, seo: true, wallet: true });
+    expect(toStoreSetupFlags({})).toMatchObject({ domain: false, seo: false, wallet: false });
+  });
+});

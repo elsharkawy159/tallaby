@@ -16,7 +16,6 @@ export const sellerStatusUpdateSchema = z.object({
 
 export const sellerFiltersSchema = z.object({
   status: z.enum(["pending", "approved", "suspended", "restricted"]).optional(),
-  businessType: z.string().optional(),
   isVerified: z.boolean().optional(),
   search: z.string().optional(),
   dateRange: z

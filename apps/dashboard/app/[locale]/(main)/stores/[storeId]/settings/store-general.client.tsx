@@ -19,7 +19,6 @@ import {
   isStoreCurrency,
   type StoreCurrency,
 } from "@workspace/lib";
-import type { PriceRoundingRule } from "@workspace/lib/products/price-rounding";
 import { formatPhone } from "@workspace/store-sections/social";
 
 import {
@@ -53,8 +52,9 @@ import { findIndustry } from "@/lib/stores/industries.lib";
 import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 import { cn } from "@/lib/utils";
 import { StoreCatalogSections, useStoreCatalog, type StoreCatalogProps } from "./catalog.client";
-import { StorePriceRoundingCard, useStorePriceRounding } from "./price-rounding.client";
 import { saveStoreGeneral } from "./store-settings.server";
+import { StoreSocialLinksField, useStoreSocialLinks } from "./social-links.client";
+import type { SocialRow } from "../website/social/social.dto";
 import { toGeneralPatch, type StoreGeneralFormValues } from "./store-settings.dto";
 
 const DESCRIPTION_MAX = 2000;
@@ -67,9 +67,11 @@ export function StoreGeneralForm({
   readOnly,
   brandInSettings,
   catalog: catalogProps,
-  priceRounding: priceRoundingInitial,
+  social: socialInitial,
   usdLive,
 }: {
+  /** Every social platform's row (Website › Social media's list), saved with the same button. */
+  social: SocialRow[];
   /** The USD switch (0136): the wallet is no longer in EGP. */
   usdLive: boolean;
   storeId: string;
@@ -81,8 +83,6 @@ export function StoreGeneralForm({
   brandInSettings: boolean;
   /** Which of the seller's products this store shows (D24); saved with the same button. */
   catalog: StoreCatalogProps;
-  /** The saved "Round prices" rule (F-112a), on or off; saved with the same button. */
-  priceRounding: PriceRoundingRule | null;
 }) {
   const t = useTranslations("storeSettings");
   const tCommon = useTranslations("common");
@@ -125,9 +125,9 @@ export function StoreGeneralForm({
   const niches = industry ? (nicheOptions[industry.id] ?? []) : [];
   const currency = useWatch({ control: form.control, name: "currency" });
   const catalog = useStoreCatalog(storeId, catalogProps);
-  const priceRounding = useStorePriceRounding(storeId, priceRoundingInitial);
+  const social = useStoreSocialLinks(storeId, socialInitial);
   const disabled = readOnly || isPending;
-  const dirty = form.formState.isDirty || catalog.dirty || priceRounding.dirty;
+  const dirty = form.formState.isDirty || catalog.dirty || social.dirty;
   useUnsavedChangesGuard(dirty && !readOnly, tCommon("unsavedChanges"));
 
   // "Same as the phone": the WhatsApp number follows the phone while it is on.
@@ -140,14 +140,15 @@ export function StoreGeneralForm({
 
   const onSubmit = (values: StoreGeneralFormValues) =>
     startTransition(async () => {
-      const catalogInvalid = catalog.validate();
+      const catalogInvalid = catalog.validate() ?? social.validate();
       if (catalogInvalid) {
         toast.error(catalogInvalid);
         return;
       }
-      const roundingInvalid = priceRounding.validate();
-      if (roundingInvalid) {
-        toast.error(roundingInvalid);
+      // Social links first: updateStoreSettings re-reads contact, so it keeps them.
+      const socialError = await social.save();
+      if (socialError) {
+        toast.error(socialError);
         return;
       }
       // A new default language moves the website drafts to it (stores/server.ts): say what to do next.
@@ -161,9 +162,7 @@ export function StoreGeneralForm({
         form.reset(values);
       }
       const catalogError = await catalog.save();
-      const roundingError = catalogError ? null : await priceRounding.save();
       if (catalogError) toast.error(catalogError);
-      else if (roundingError) toast.error(roundingError);
       else if (localeChanged) toast.success(t("savedLocaleChanged"), { duration: 12_000 });
       else toast.success(t("saved"));
       router.refresh();
@@ -172,7 +171,7 @@ export function StoreGeneralForm({
   const discard = () => {
     form.reset();
     catalog.reset();
-    priceRounding.reset();
+    social.reset();
     setWhatsappSame(Boolean(initial.phone) && initial.phone === initial.whatsapp);
   };
 
@@ -239,6 +238,7 @@ export function StoreGeneralForm({
           nicheId={niche}
           niches={niches}
           disabled={disabled}
+          variant="select"
           onIndustryChange={(option) => {
             // Another industry has other niches: the niche starts again.
             if (industry?.id !== option.id) form.setValue("niche", "", { shouldDirty: true });
@@ -275,6 +275,9 @@ export function StoreGeneralForm({
           </div>
           {text("email", t("fields.email"), { placeholder: "store@example.com", dir: "ltr", type: "email" })}
           <p className="text-pretty text-xs text-(--s-faint)">{t("contact.hint")}</p>
+          <div className="border-t border-(--s-line-soft) pt-4">
+            <StoreSocialLinksField storeId={storeId} social={social} disabled={disabled} />
+          </div>
         </SectionCard>
 
         <div className="flex flex-col gap-4">
@@ -401,8 +404,6 @@ export function StoreGeneralForm({
       </TwoColumns>
 
       <StoreCatalogSections money={{ currency: initial.currency }} catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
-
-      <StorePriceRoundingCard money={{ currency: initial.currency, label: initial.currencyLabel }} state={priceRounding} disabled={disabled} />
 
       {!readOnly && <SaveBar dirty={dirty} saving={isPending} onDiscard={discard} />}
     </form>

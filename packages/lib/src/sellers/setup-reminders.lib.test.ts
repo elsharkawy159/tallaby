@@ -18,8 +18,8 @@ const NOW = new Date("2026-11-13T12:00:00Z");
 const HOUR = 3_600_000;
 const ago = (hours: number) => new Date(NOW.getTime() - hours * HOUR).toISOString();
 
-const none: StoreSetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false };
-const all: StoreSetupFlags = { template: true, brand: true, product: true, publish: true, shipping: true, payments: true };
+const none: StoreSetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false, domain: false, seo: false, wallet: false };
+const all: StoreSetupFlags = { template: true, brand: true, product: true, publish: true, shipping: true, payments: true, domain: true, seo: true, wallet: true };
 
 function seller(over: Partial<SetupReminderSeller> & { ageHours: number }): SetupReminderSeller {
   const { ageHours, ...rest } = over;

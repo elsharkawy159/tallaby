@@ -31,7 +31,7 @@ import {
   userWalletTransactions,
 } from "@workspace/db";
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
-import { restoreStock, type StockLine, type StockResult } from "@workspace/db/inventory";
+import { orderStockLinesOf, restoreStock, stockResultSource, type StockLine, type StockResult } from "@workspace/db/inventory";
 import { orderMovesStock, WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { autoShipOrderWithBosta } from "../shipping/bosta-ship.server";
 import {
@@ -163,7 +163,7 @@ export async function cancelOrderByCustomer(
 
   const items = await db.query.orderItems.findMany({
     where: eq(orderItems.orderId, order.id),
-    columns: { productId: true, variantId: true, quantity: true, sellerId: true },
+    columns: { productId: true, variantId: true, quantity: true, sellerId: true, bundleItems: true },
     with: { product: { columns: { categoryId: true, brandId: true } } },
   });
 
@@ -190,11 +190,8 @@ export async function cancelOrderByCustomer(
         .set({ status: "cancelled", cancelledAt: now, updatedAt: now })
         .where(eq(orderItems.orderId, order.id));
 
-      const stockLines: StockLine[] = items.map((item) =>
-        item.variantId
-          ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
-          : { kind: "product" as const, id: item.productId, quantity: item.quantity },
-      );
+      // A bundle line (0188, F-07f) puts back the items of its snapshot.
+      const stockLines: StockLine[] = orderStockLinesOf(items);
       // A test order never took stock (F-76), so nothing goes back.
       if (orderMovesStock(order)) {
         stockResults = await restoreStock(tx, stockLines, { reason: "cancel", orderId: order.id, actorId: order.userId });
@@ -209,18 +206,23 @@ export async function cancelOrderByCustomer(
 
   if (stockResults.length > 0) {
     const inventory = invalidateProductInventory(
-      stockResults.map((r) => {
-        const item = items.find((i) => (i.variantId ?? i.productId) === r.id)!;
-        return {
-          snapshot: {
-            id: item.productId,
-            sellerId: item.sellerId,
-            storeId: order.storeId ?? null,
-            categoryId: item.product?.categoryId ?? null,
-            brandId: item.product?.brandId ?? null,
+      stockResults.flatMap((r) => {
+        const source = stockResultSource(items, r.id);
+        if (!source) return [];
+        const item = source.line;
+        return [
+          {
+            snapshot: {
+              id: source.productId,
+              sellerId: item.sellerId,
+              storeId: order.storeId ?? null,
+              // A bundle item's own category and brand aren't loaded: its product and store tags cover it.
+              categoryId: source.bundleItem ? null : (item.product?.categoryId ?? null),
+              brandId: source.bundleItem ? null : (item.product?.brandId ?? null),
+            },
+            stockBoundaryCrossed: r.stockBoundaryCrossed,
           },
-          stockBoundaryCrossed: r.stockBoundaryCrossed,
-        };
+        ];
       }),
     );
     await broadcastInvalidation(inventory, "backend");

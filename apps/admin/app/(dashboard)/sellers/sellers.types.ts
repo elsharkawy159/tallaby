@@ -55,9 +55,7 @@ export interface Seller {
   logoUrl?: string | null;
   bannerUrl?: string | null;
   taxId?: string | null;
-  businessType: string;
   registrationNumber?: string | null;
-  legalAddress: Record<string, unknown>;
   status: SellerStatus | null;
   verificationDetails?: Record<string, unknown> | null;
   returnPolicy?: string | null;
@@ -73,7 +71,6 @@ export interface Seller {
   freeDelivery: boolean;
   feeStructure?: Record<string, unknown> | null;
   taxInformation?: Record<string, unknown> | null;
-  paymentDetails?: Record<string, unknown> | null;
   storeRating?: number | null;
   positiveRatingPercent?: number | null;
   totalRatings: number;
@@ -105,7 +102,6 @@ export interface Seller {
 
 export interface SellerFilters {
   status?: SellerStatus;
-  businessType?: string;
   isVerified?: boolean;
   search?: string;
   dateRange?: {

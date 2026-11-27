@@ -49,8 +49,6 @@ describe.skipIf(!TEST_DATABASE_URL)("manual store top-ups (integration)", { time
           displayName: sub,
           slug: sub,
           subdomain: sub,
-          businessType: "individual",
-          legalAddress: { country: "EG" },
           supportEmail: "mt@example.com",
           status: "approved" as const,
         };

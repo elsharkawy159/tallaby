@@ -12,6 +12,7 @@ import type {
   productVariants,
 } from "@workspace/db";
 import type { MergedProduct } from "@/lib/product-translations";
+import type { BundleContentItem } from "@workspace/lib/products/bundles";
 
 export interface ProductPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -68,6 +69,8 @@ export type Product = MergedProduct<typeof products.$inferSelect> & {
       }>;
     }
   >;
+  /** A bundle's items (0188, F-07f), for "What's in the bundle"; photos are public URLs. */
+  bundleItems?: BundleContentItem[];
 };
 
 export type Review = typeof reviews.$inferSelect & {

@@ -3,7 +3,8 @@ import { STORE_PRODUCTS_PATTERN as PRODUCTS } from "@/lib/products/product-route
 import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import {
   AppWindow,
-  BadgePercent,
+  ArrowLeftRight,
+  BellRing,
   Banknote,
   PhoneMissed,
   // ScanBarcode, // scan returns hidden (owner, 2026-10-31)
@@ -38,7 +39,8 @@ import {
   MapPinned,
   Package,
   PackagePlus,
-  Settings,
+  Bell,
+  Headphones,
   ShieldCheck,
   Smartphone,
   ShoppingBag,
@@ -75,7 +77,9 @@ export type NavKey =
   | "allOrders"
   | "missedOrders"
   | "pendingCarts"
-  | "crossSellReport"
+  | "downsell"
+  | "crossSelling"
+  | "freeShippingMinOrder"
   | "customers"
   | "scanReturns"
   | "deliveryTracking"
@@ -108,6 +112,9 @@ export type NavKey =
   | "orderProtection"
   | "storeApp"
   | "salesPopup"
+  | "policies"
+  | "businessContact"
+  | "phoneAlerts"
   | "myStores"
   | "planUsage"
   | "wallet"
@@ -162,12 +169,10 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: `${PRODUCTS}/categories`, title: "sellerCategories", parent: "products", parentHref: PRODUCTS, icon: FolderTree },
   { href: `${PRODUCTS}/brands`, title: "sellerBrands", parent: "products", parentHref: PRODUCTS, icon: Tag },
   { href: `${PRODUCTS}/inventory`, title: "inventory", parent: "products", parentHref: PRODUCTS, icon: Boxes },
-  { href: `${PRODUCTS}/trash`, title: "productTrash", parent: "products", parentHref: PRODUCTS, icon: Trash2 },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
   { href: "/orders/pending-carts", title: "pendingCarts", parent: "ordersGroup", icon: ShoppingCart },
-  { href: "/orders/cross-sell", title: "crossSellReport", parent: "ordersGroup", icon: BadgePercent },
   { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
   // Scan returns hidden for now (owner, 2026-10-31).
   // { href: "/orders/scan", title: "scanReturns", parent: "ordersGroup", icon: ScanBarcode },
@@ -204,6 +209,12 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/marketing/subscribers", title: "subscribers", parent: "marketing", icon: MailCheck },
   { href: "/marketing/emails", title: "emailCampaigns", parent: "marketing", icon: Mail },
   { href: "/marketing/catalog", title: "catalogShare", parent: "marketing", icon: Share2 },
+  // App Center apps in Marketing tools (owner, 2026-11-27); their /settings tab resolves here by prefix.
+  { href: "/stores/[storeId]/apps/downsell", title: "downsell", parent: "marketing", icon: ArrowLeftRight },
+  { href: "/stores/[storeId]/apps/cross-sell", title: "crossSelling", parent: "marketing", icon: Boxes },
+  { href: "/stores/[storeId]/apps/sales-popup", title: "salesPopup", parent: "marketing", icon: BellRing },
+  // A section of Shipping settings: the page keeps its own title (the exact match above wins).
+  { href: "/stores/[storeId]/shipping#free-shipping", title: "freeShippingMinOrder", parent: "marketing", icon: Truck, hiddenFromPalette: true },
   { href: "/stores/[storeId]/analytics", title: "storeAnalytics", icon: ChartLine },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/stores/[storeId]/settings", title: "general", parent: "settingsGroup", icon: Store },
@@ -211,14 +222,18 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/settings/checkout", title: "checkoutForm", parent: "settingsGroup", icon: ClipboardList },
   { href: "/stores/[storeId]/settings/protection", title: "orderProtection", parent: "settingsGroup", icon: ShieldCheck },
   { href: "/stores/[storeId]/settings/app", title: "storeApp", parent: "settingsGroup", icon: Smartphone },
-  { href: "/stores/[storeId]/settings/sales-popup", title: "salesPopup", parent: "settingsGroup", icon: ShoppingBag },
+  // Seller-account pages in the store settings menu (moved from /settings, owner 2026-11-27).
+  { href: "/stores/[storeId]/settings/policies", title: "policies", parent: "settingsGroup", icon: FileText },
+  { href: "/stores/[storeId]/settings/contact", title: "businessContact", parent: "settingsGroup", icon: Headphones },
+  { href: "/stores/[storeId]/settings/notifications", title: "phoneAlerts", parent: "settingsGroup", icon: Bell },
+  // Moved from Products (owner, 2026-11-27).
+  { href: "/stores/[storeId]/settings/trash", title: "productTrash", parent: "settingsGroup", icon: Trash2 },
   { href: "/stores", title: "myStores", parent: "accountHelp", icon: Store },
-  { href: "/settings", title: "settings", parent: "accountHelp", icon: Settings },
   { href: "/settings/plan", title: "planUsage", parent: "accountHelp", icon: Gem },
   { href: "/help", title: "help", parent: "accountHelp", icon: CircleHelp },
-  { href: "/roadmap", title: "roadmap", parent: "accountHelp", icon: MapIcon },
-  // A top-level sidebar link since 2026-11-16, so no parent in the header.
+  // Top-level sidebar links, so no parent in the header ("Suggest a feature" since 2026-11-27, owner).
   { href: "/earn", title: "earn", icon: HandCoins },
+  { href: "/roadmap", title: "roadmap", icon: MapIcon },
 ];
 
 const EDIT_PRODUCT: DashboardRoute = {

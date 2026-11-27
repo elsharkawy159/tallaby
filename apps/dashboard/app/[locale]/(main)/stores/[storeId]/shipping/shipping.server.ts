@@ -8,9 +8,11 @@ import {
   getStore,
   saveStoreShippingZone,
   applyStoreShippingTemplate,
+  updateStoreShippingMode,
   updateStoreShippingSettings,
   type StoreShippingZone,
 } from "@workspace/lib/stores/server";
+import type { ShippingMode } from "@workspace/lib/shipping/mode";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import type { StoreShippingErrorKey, StoreShippingResult } from "./shipping.dto";
@@ -55,6 +57,14 @@ async function run<T>(
 
 export async function saveShippingSettings(storeId: string, input: unknown): Promise<StoreShippingResult<Settings>> {
   return run(storeId, (sellerId, actorId, id) => updateStoreShippingSettings(sellerId, actorId, id, input));
+}
+
+/**
+ * How the store delivers: "self" or "company" (owner, 2026-11-27). The library validates the
+ * value; switching deletes nothing (zones, riders and carrier integrations stay).
+ */
+export async function saveShippingMode(storeId: string, mode: ShippingMode): Promise<StoreShippingResult<ShippingMode>> {
+  return run(storeId, (sellerId, actorId, id) => updateStoreShippingMode(sellerId, actorId, id, mode));
 }
 
 export async function saveShippingZone(

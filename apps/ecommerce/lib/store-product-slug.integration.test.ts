@@ -130,8 +130,6 @@ describe.skipIf(!isStaging)("store product slugs (integration)", { timeout: 120_
         displayName: `Slug ${subdomain}`,
         slug: subdomain!,
         subdomain: subdomain!,
-        businessType: "individual" as const,
-        legalAddress: { country: "EG" },
         supportEmail: "slug@example.test",
         status: "approved" as const,
       })),

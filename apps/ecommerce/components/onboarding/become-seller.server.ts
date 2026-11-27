@@ -127,14 +127,9 @@ export const submitSellerApplication = async (
         businessName: business.data.businessName,
         displayName: createDisplayName(business.data.businessName),
         slug: uniqueSlug,
-        businessType: business.data.businessType,
         description: business.data.description || undefined,
         logoUrl: business.data.logoUrl || undefined,
         bannerUrl: business.data.bannerUrl || undefined,
-        legalAddress: {
-          ...legalAddress.data,
-          postalCode: legalAddress.data.postalCode ?? "",
-        },
         supportEmail: business.data.supportEmail,
         supportPhone: business.data.supportPhone,
         // Sellers can start selling right away. Fulfillment services they

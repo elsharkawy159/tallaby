@@ -9,6 +9,9 @@ import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server"
 import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
 import type { LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
 
+/** Store settings › Trash, where trashed products are listed (owner, 2026-11-27). */
+const STORE_TRASH_PATTERN = "/stores/[storeId]/settings/trash";
+
 /**
  * Product Trash actions (0123, ROADMAP.md F-35). The seller comes from the
  * session; the store is the explicit `storeId` the page sends, checked
@@ -38,6 +41,7 @@ export async function trashProductsAction(storeId: unknown, ids: unknown): Promi
     const { trashed, invalidation } = await trashProducts(seller.sellerId, seller.userId, ids, { inStore });
     await applyInvalidation(invalidation, { from: "dashboard", mode: "action" });
     revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
+    revalidateDashboardPath(STORE_TRASH_PATTERN, "page");
     return { success: true, count: trashed.length, ids: trashed };
   } catch (error) {
     return failure(error, "trash");
@@ -53,6 +57,7 @@ export async function restoreProductsAction(storeId: unknown, ids: unknown): Pro
     // A product back live: a new store with a chosen template can go live now (owner, 2026-11-17). Once for the store.
     const live = wentLive ? await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId) : null;
     revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
+    revalidateDashboardPath(STORE_TRASH_PATTERN, "page");
     return { success: true, count: restored.length, ids: restored, ...(live && { live }) };
   } catch (error) {
     return failure(error, "restore");
@@ -64,6 +69,7 @@ export async function deleteProductsForeverAction(storeId: unknown, ids: unknown
     const { seller, inStore } = await requireProductStore(storeId);
     const { deleted } = await deleteTrashedProductsForever(seller.sellerId, ids, { inStore });
     revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
+    revalidateDashboardPath(STORE_TRASH_PATTERN, "page");
     return { success: true, count: deleted.length, ids: deleted };
   } catch (error) {
     return failure(error, "delete forever");

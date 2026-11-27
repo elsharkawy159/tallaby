@@ -9,8 +9,9 @@
  * Store-less forms (each maps to `/stores/<id>/…`):
  * - `/<section>/…` for the store sections with no account page of their own
  *   (`TOP_LEVEL_STORE_SECTIONS`);
- * - `/settings/<store settings page>/…` (`STORE_SETTINGS_PAGES`); `/settings`
- *   itself and its account pages (`plan`, `fulfillment`) are not store links;
+ * - `/settings/<store settings page>/…` (`STORE_SETTINGS_PAGES`); the account
+ *   pages `plan` and `fulfillment` are not store links, and `/settings` itself
+ *   has its own redirect page (to the store's General settings);
  * - `/stores/<section>/…` for every store section (`STORE_SECTIONS`), the only
  *   form for sections whose top-level path is an account page (`/shipping`,
  *   `/settings`).
@@ -37,7 +38,17 @@ export const STORE_SECTIONS = [
 export const TOP_LEVEL_STORE_SECTIONS = ["analytics", "apps", "catalog", "earnings", "website"] as const;
 
 /** The store settings sub-pages (`stores/[storeId]/settings/<page>`, guarded by a test). */
-export const STORE_SETTINGS_PAGES = ["app", "checkout", "payments", "protection", "sales-popup"] as const;
+export const STORE_SETTINGS_PAGES = [
+  "app",
+  "checkout",
+  "contact",
+  "notifications",
+  "payments",
+  "policies",
+  "protection",
+  "sales-popup",
+  "trash",
+] as const;
 
 const LOCALE_PREFIX_RE = /^\/(?:ar|en)(?=\/|$)/;
 

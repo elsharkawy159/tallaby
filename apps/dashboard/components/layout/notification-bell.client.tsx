@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Bell, Check, CheckCheck, Settings2, X } from "lucide-react";
 import { AnchoredSheet, IconButton, IconTile } from "@/components/seller-ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import {
   isLockedOrderNotification,
   notificationText,
@@ -126,76 +127,81 @@ export function NotificationBell({ userId }: { userId: string | null }) {
     .filter((group) => group.items.length > 0);
 
   return (
-    <AnchoredSheet
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (next) void refresh();
-      }}
-      label={t("title")}
-      className="max-h-[min(620px,calc(100dvh-90px))] w-[400px]"
-      trigger={
-        <IconButton aria-label={unread > 0 ? t("openUnread", { count: unread }) : t("open")}>
-          <Bell />
-          {unread > 0 && (
-            <b className="absolute -end-0.5 top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-accent px-[5px] font-montserrat text-[10.5px] font-extrabold text-(--tallaby-teal-900) shadow-[0_0_0_2px_var(--background)] tabular-nums">
-              {unread > 9 ? "9+" : unread}
-            </b>
-          )}
-        </IconButton>
-      }
-    >
-      <div className="flex shrink-0 items-center gap-1 pb-2 pe-2.5 ps-[18px] pt-3.5">
-        <b className="min-w-0 flex-1 text-base font-bold text-(--s-ink)">{t("title")}</b>
-        <button
-          type="button"
-          disabled={unread === 0}
-          onClick={() => void markRead()}
-          className="inline-flex h-8 cursor-pointer items-center gap-[5px] whitespace-nowrap rounded-[10px] px-2.5 text-xs font-bold text-(--s-link) transition-colors duration-150 hover:bg-(--s-hover) disabled:pointer-events-none disabled:opacity-40"
-        >
-          <CheckCheck aria-hidden className="size-[15px]" />
-          {t("markAllRead")}
-        </button>
-        <IconButton asChild aria-label={t("settings")}>
-          <Link href="/settings#push-alerts" onClick={() => setOpen(false)}>
-            <Settings2 />
-          </Link>
-        </IconButton>
-        <IconButton aria-label={t("close")} onClick={() => setOpen(false)} className="min-[601px]:hidden">
-          <X />
-        </IconButton>
-      </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-[3px] overflow-y-auto overscroll-contain px-2 pb-2 pt-1 [scrollbar-width:thin]">
-        {feed === null ? (
-          <p className="px-4 py-10 text-center text-[13px] text-(--s-subtle)">{t("loading")}</p>
-        ) : feed.items.length === 0 ? (
-          <div className="flex flex-col items-center gap-1.5 px-5 py-10 text-center">
-            <Image src="/illustrations/empty/notifications.png" alt="" aria-hidden width={64} height={64} className="size-16 select-none" />
-            <b className="mt-1 text-sm font-bold text-(--s-ink)">{t("emptyTitle")}</b>
-            <p className="text-[12.5px] text-(--s-subtle)">{t("empty")}</p>
-          </div>
-        ) : (
-          groups.map((group) => (
-            <div key={group.day} className="flex flex-col gap-[3px]">
-              <p className="px-2.5 pb-1 pt-2.5 text-[11.5px] font-bold text-(--s-faint)">{t(group.day)}</p>
-              <ul className="flex flex-col gap-[3px]">
-                {group.items.map((item) => (
-                  <NotificationRow
-                    key={item.id}
-                    item={item}
-                    onOpen={() => {
-                      setOpen(false);
-                      if (!item.readAt) void markRead([item.id]);
-                    }}
-                    onMarkRead={() => void markRead([item.id])}
-                  />
-                ))}
-              </ul>
+    <Tooltip>
+      <AnchoredSheet
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (next) void refresh();
+        }}
+        label={t("title")}
+        className="max-h-[min(620px,calc(100dvh-90px))] w-[400px]"
+        trigger={
+          <TooltipTrigger asChild>
+            <IconButton aria-label={unread > 0 ? t("openUnread", { count: unread }) : t("open")}>
+              <Bell />
+              {unread > 0 && (
+                <b className="absolute -end-0.5 top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-accent px-[5px] font-montserrat text-[10.5px] font-extrabold text-(--tallaby-teal-900) shadow-[0_0_0_2px_var(--background)] tabular-nums">
+                  {unread > 9 ? "9+" : unread}
+                </b>
+              )}
+            </IconButton>
+          </TooltipTrigger>
+        }
+      >
+        <div className="flex shrink-0 items-center gap-1 pb-2 pe-2.5 ps-[18px] pt-3.5">
+          <b className="min-w-0 flex-1 text-base font-bold text-(--s-ink)">{t("title")}</b>
+          <button
+            type="button"
+            disabled={unread === 0}
+            onClick={() => void markRead()}
+            className="inline-flex h-8 cursor-pointer items-center gap-[5px] whitespace-nowrap rounded-[10px] px-2.5 text-xs font-bold text-(--s-link) transition-colors duration-150 hover:bg-(--s-hover) disabled:pointer-events-none disabled:opacity-40"
+          >
+            <CheckCheck aria-hidden className="size-[15px]" />
+            {t("markAllRead")}
+          </button>
+          <IconButton asChild aria-label={t("settings")}>
+            <Link href="/settings/notifications" onClick={() => setOpen(false)}>
+              <Settings2 />
+            </Link>
+          </IconButton>
+          <IconButton aria-label={t("close")} onClick={() => setOpen(false)} className="min-[601px]:hidden">
+            <X />
+          </IconButton>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col gap-[3px] overflow-y-auto overscroll-contain px-2 pb-2 pt-1 [scrollbar-width:thin]">
+          {feed === null ? (
+            <p className="px-4 py-10 text-center text-[13px] text-(--s-subtle)">{t("loading")}</p>
+          ) : feed.items.length === 0 ? (
+            <div className="flex flex-col items-center gap-1.5 px-5 py-10 text-center">
+              <Image src="/illustrations/empty/notifications.png" alt="" aria-hidden width={64} height={64} className="size-16 select-none" />
+              <b className="mt-1 text-sm font-bold text-(--s-ink)">{t("emptyTitle")}</b>
+              <p className="text-[12.5px] text-(--s-subtle)">{t("empty")}</p>
             </div>
-          ))
-        )}
-      </div>
-    </AnchoredSheet>
+          ) : (
+            groups.map((group) => (
+              <div key={group.day} className="flex flex-col gap-[3px]">
+                <p className="px-2.5 pb-1 pt-2.5 text-[11.5px] font-bold text-(--s-faint)">{t(group.day)}</p>
+                <ul className="flex flex-col gap-[3px]">
+                  {group.items.map((item) => (
+                    <NotificationRow
+                      key={item.id}
+                      item={item}
+                      onOpen={() => {
+                        setOpen(false);
+                        if (!item.readAt) void markRead([item.id]);
+                      }}
+                      onMarkRead={() => void markRead([item.id])}
+                    />
+                  ))}
+                </ul>
+              </div>
+            ))
+          )}
+        </div>
+      </AnchoredSheet>
+      <TooltipContent>{t("title")}</TooltipContent>
+    </Tooltip>
   );
 }
 

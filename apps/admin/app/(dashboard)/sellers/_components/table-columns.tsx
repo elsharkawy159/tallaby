@@ -28,7 +28,6 @@ import {
   canSuspendSeller,
   formatWalletBalance,
   formatDate,
-  getBusinessTypeOptions,
   getInitials,
   getStatusOptions,
 } from "../sellers.lib";
@@ -41,11 +40,6 @@ import { SellerWhatsAppButton } from "./seller-whatsapp-button";
 /** Server-side filters (URL params) for the sellers table. */
 export const sellersFilters: DataTableFilter[] = [
   { id: "status", title: "Status", options: getStatusOptions() },
-  {
-    id: "businessType",
-    title: "Business type",
-    options: getBusinessTypeOptions(),
-  },
   {
     id: "verification",
     title: "Verification",

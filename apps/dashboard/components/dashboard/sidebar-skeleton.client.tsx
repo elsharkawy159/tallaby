@@ -19,7 +19,7 @@ export function SidebarSkeleton() {
     <div
       aria-hidden
       className={cn(
-        "fixed inset-y-0 start-0 z-40 hidden flex-col border-e border-(--s-line) bg-(--s-glass-nav) backdrop-blur-md min-[1021px]:flex",
+        "fixed inset-y-0 start-0 z-40 hidden flex-col bg-(--s-frame) min-[1021px]:flex",
         isCollapsed ? "w-[76px]" : "w-[264px]",
       )}
     >

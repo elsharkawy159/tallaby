@@ -51,8 +51,6 @@ describe.skipIf(!TEST_DATABASE_URL)("fee on delivery (integration)", { timeout: 
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "fd@example.com",
       status: "approved",
     });

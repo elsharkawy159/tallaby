@@ -38,8 +38,6 @@ describe.skipIf(!TEST_DATABASE_URL)("fee trial start (integration)", { timeout: 
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "ft@example.com",
       status: "approved",
       // Sellers created before 0119 are eligible; the column default is false since then.

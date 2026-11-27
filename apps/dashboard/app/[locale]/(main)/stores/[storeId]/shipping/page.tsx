@@ -1,5 +1,6 @@
 import { DEFAULT_CURRENCY, parseStoreCurrency } from "@workspace/lib";
 import { getStoreShipping } from "@workspace/lib/stores/server";
+import { parseShippingMode, resolveShippingMode } from "@workspace/lib/shipping/mode";
 import { getBostaOverview, getWassalhaOverview } from "@workspace/lib/integrations/server";
 import { childrenOf, EGYPT, placeChain, placeLabel } from "@workspace/lib/places";
 import {
@@ -90,6 +91,11 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
     };
   });
 
+  // How the store delivers (owner, 2026-11-27): the saved choice, else inferred from what it already set up
+  // (the same rule as getStoreShippingMode, from the data this page loads anyway). Null: not chosen yet.
+  const hasCarrier = [bosta, wassalha].some((carrier) => carrier !== null && carrier.summary.status !== "disconnected");
+  const mode = resolveShippingMode(parseShippingMode(store.settings), { hasCarrier, hasZones: shipping.zones.length > 0 });
+
   const t = await getTranslations("storeShipping");
   const offline = store.siteStatus === "unpublished" || store.siteStatus === "draft";
 
@@ -139,6 +145,7 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
         templates={templates}
         bosta={bosta}
         wassalha={wassalha}
+        mode={mode}
         readOnly={store.status !== "active"}
       />
     </PageContainer>

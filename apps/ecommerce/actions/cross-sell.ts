@@ -12,6 +12,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { getCartScope } from "@/lib/storefront.server";
 import { isSwitchOn } from "@/lib/platform-switches.server";
 import { productShownInStore } from "@workspace/lib/stores/scope/server";
+import { bundleAvailabilityFor } from "@workspace/lib/products/bundles/server";
 
 export type CrossSellCard = {
   offerId: string;
@@ -25,6 +26,8 @@ export type CrossSellCard = {
   variants: { id: string; title: string; unitPiastres: number; discountedPiastres: number }[];
   unitPiastres: number;
   discountedPiastres: number;
+  /** A bundle (0188, F-07f): its availability is checked live after the cached read. */
+  bundle?: true;
 };
 
 /**
@@ -113,6 +116,7 @@ const loadOffers = createCachedQuery({
         variants: choices,
         unitPiastres: base.unitPiastres,
         discountedPiastres: base.discountedPiastres,
+        ...(product.isBundle && { bundle: true as const }),
       });
     }
     return cards;
@@ -131,7 +135,12 @@ export async function getCrossSellOffers(mainProductIds: string[]): Promise<Cros
     const store = await hostStore();
     if (!store || !Array.isArray(mainProductIds)) return [];
     const ids = [...new Set(mainProductIds.filter((id) => typeof id === "string"))].sort().slice(0, 30);
-    return await loadOffers(store.sellerId, store.id, ids, await getLocale(), await isSwitchOn("stores_catalog_split"));
+    const cards = await loadOffers(store.sellerId, store.id, ids, await getLocale(), await isSwitchOn("stores_catalog_split"));
+    // A bundle's stock is its items' (0188, F-07f): never cached, one query set for every bundle card.
+    const bundleIds = cards.filter((card) => card.bundle).map((card) => card.productId);
+    if (bundleIds.length === 0) return cards;
+    const available = await bundleAvailabilityFor(store.id, bundleIds);
+    return cards.filter((card) => !card.bundle || available.get(card.productId) !== 0);
   } catch (error) {
     console.error("[cross-sell] offers failed", (error as Error)?.name);
     return [];

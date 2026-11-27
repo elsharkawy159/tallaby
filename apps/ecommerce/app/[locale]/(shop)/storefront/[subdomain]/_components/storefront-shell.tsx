@@ -19,11 +19,15 @@ import { readStoreViewsGtmId } from "@/lib/store-views.server";
 import { StoreSiteBottomNav, StoreSiteChrome } from "./store-site";
 import { StorePreviewBanner } from "./store-preview-banner";
 import { pickStoreCouponOffer } from "@workspace/lib/orders/coupon-popup";
+import { TOP_LOADER_DEFAULTS, topLoaderCss } from "@workspace/lib/stores/top-loader";
 import { StoreOfferProvider } from "@/components/storefront/store-offer.client";
 import { getCachedSellerPopupCoupons } from "@/lib/store-site/store-data.server";
 import { CouponOfferPopup } from "./coupon-offer-popup.client";
 import { loadStoreSalesFeed } from "@/lib/store-site/sales-popup.server";
 import { SalesPopup } from "./sales-popup.client";
+import { WHATSAPP_BUTTON_DEFAULTS, whatsAppButtonDigits, whatsAppButtonHref } from "@workspace/lib/stores/whatsapp-button";
+import { storeHasWhatsAppButton } from "@/lib/store-site/whatsapp-button.server";
+import { WhatsAppButton } from "./whatsapp-button.client";
 import { StoreOffline } from "./store-offline";
 import { CampaignCapture } from "./campaign-capture.client";
 import s from "../storefront.module.css";
@@ -72,11 +76,17 @@ export async function StorefrontShell({
   }
 
   const storeViewsGtmId = readStoreViewsGtmId();
+  // The colour is regex-checked by the parser; `<` is escaped anyway, like the design system CSS above.
+  const topLoaderStyle = topLoaderCss(store.topLoader ?? TOP_LOADER_DEFAULTS)?.replace(/</g, "\\3c ") ?? null;
   // The seller's coupon pop-up (0114); a failed read only loses the pop-up.
   // Sales pop-up (F-22): real recent orders of this store. Not on shared pages
   // (checkout, orders, account) and never in a builder draft preview.
-  // Both reads are independent, so they run together.
-  const [popupCoupons, salesFeed] = await Promise.all([
+  // Apps › WhatsApp button: only with a usable number, never in a builder draft preview (like the sales pop-up).
+  // Shared pages render it too; the button itself keeps to cart/checkout (when asked) and never shows on account pages.
+  const whatsappButton = store.whatsappButton ?? WHATSAPP_BUTTON_DEFAULTS;
+  const whatsappDigits = preview ? null : whatsAppButtonDigits(whatsappButton, { whatsapp: store.supportWhatsapp, phone: store.supportPhone });
+  // The reads are independent, so they run together.
+  const [popupCoupons, salesFeed, whatsappInstalled] = await Promise.all([
     shared
       ? null
       : getCachedSellerPopupCoupons(store.id, store.storeId).catch((error) => {
@@ -84,6 +94,7 @@ export async function StorefrontShell({
           return [];
         }),
     shared || preview ? [] : loadStoreSalesFeed(store, locale),
+    whatsappDigits ? storeHasWhatsAppButton(store.id, store.storeId) : false,
   ]);
   const offer = popupCoupons ? pickStoreCouponOffer(popupCoupons) : null;
 
@@ -104,6 +115,8 @@ export async function StorefrontShell({
         {site && <style dangerouslySetInnerHTML={{ __html: designSystemToCss(site.designSystem, "body").replace(/</g, "\\3c ") }} />}
         {/* No design system: the Classic brand, so the top loader (in <body>) still uses the store's colour. */}
         {!site && <style dangerouslySetInnerHTML={{ __html: `body { --sf-brand: ${CLASSIC_TOKENS["--sf-brand"]}; }` }} />}
+        {/* Apps › Top loader: a custom colour (--sf-loader) or the bar hidden; nothing for the default brand colour. */}
+        {topLoaderStyle && <style dangerouslySetInnerHTML={{ __html: topLoaderStyle }} />}
         {preview && <StorePreviewBanner state={preview} />}
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" passThrough={shared} /> : <StorefrontHeader store={store} />}
         <main className="flex-1">{children}</main>
@@ -123,6 +136,9 @@ export async function StorefrontShell({
         {!shared && !preview && storeViewsGtmId && <StoreViewsTag containerId={storeViewsGtmId} storeId={store.storeId} />}
         {salesFeed.length > 0 && (
           <SalesPopup items={salesFeed} delaySeconds={store.salesPopup.delaySeconds} pages={store.salesPopup.pages} />
+        )}
+        {whatsappDigits && whatsappInstalled && (
+          <WhatsAppButton href={whatsAppButtonHref(whatsappDigits, whatsappButton.message)} settings={whatsappButton} />
         )}
         {offer && <CouponOfferPopup fontClassName={cn(storefrontFont.variable, site && [SITE_ROOT_CLASS, storeFontVariables])} />}
       </div>

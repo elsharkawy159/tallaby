@@ -21,6 +21,8 @@ import { cn, resolvePrimaryImage } from "@/lib/utils";
 import { useCart } from "@/providers/cart-provider";
 import { STORE_SOLID_BUTTON } from "./store-buttons.lib";
 import { CustomerInputsLines } from "@/components/cart/customer-inputs-lines.client";
+import { BundleIncludesLine } from "@/components/cart/bundle-includes-line.client";
+import type { BundleLineItem } from "@workspace/lib/products/bundles";
 
 /**
  * This storefront's cart: the cart actions are scoped by host, so on a store
@@ -136,6 +138,8 @@ export function StorefrontCart({
                     {t("variant", { name: variantTitle })}
                   </p>
                 )}
+                {/* A bundle's items (0188, F-07f). */}
+                <BundleIncludesLine items={(item as { bundleItems?: BundleLineItem[] }).bundleItems} />
                 {/* Customer requirements (F-91): another name or photo is another line. */}
                 <CustomerInputsLines value={item.customerInputs} views={cartData?.customerUploadViews} />
                 {cartItemMinimum(item) != null && (

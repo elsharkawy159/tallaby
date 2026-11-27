@@ -139,7 +139,10 @@ export function searchCategoryChoices({
       .sort((a, b) => rank(a) - rank(b) || a.path.length - b.path.length)
       .slice(0, TALLABY_RESULTS);
   } else {
-    const base = suggested.length ? suggested : tallaby.filter((c) => c.path.length === 1);
+    // One top-level category (the digital tree's "Digital products", F-108e): browse its main categories instead.
+    const tops = tallaby.filter((c) => c.path.length === 1);
+    const browse = tops.length === 1 ? tallaby.filter((c) => c.path.length === 2) : tops;
+    const base = suggested.length ? suggested : browse.length ? browse : tops;
     tallabyRows = base.filter((c) => !copied.has(c.category.id)).slice(0, TALLABY_BROWSE);
   }
 

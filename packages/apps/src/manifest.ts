@@ -13,6 +13,24 @@ export const APP_IDS = [
   "ai_assistants",
   "size_chart",
   "qr_codes",
+  "cross_sell",
+  "sales_popup",
+  "downsell",
+  "price_rounding",
+  "coupons",
+  "automatic_discounts",
+  "quantity_offers",
+  "bundles",
+  "email_campaigns",
+  "catalog_share",
+  "order_protection",
+  "missed_orders",
+  "store_app",
+  "languages",
+  "shoppable_gallery",
+  "top_loader",
+  "whatsapp_button",
+  "min_order",
   "meta_pixel",
   "google_analytics",
   "google_tag_manager",
@@ -49,7 +67,7 @@ export const APP_KINDS = ["app", "integration"] as const;
 export type AppKind = (typeof APP_KINDS)[number];
 
 /** The App Center's categories, in display order (the old catalog's groups). */
-export const APP_CATEGORIES = ["ai", "storefront", "tracking", "shipping", "payments", "data", "messaging"] as const;
+export const APP_CATEGORIES = ["ai", "storefront", "marketing", "orders", "tracking", "shipping", "payments", "data", "messaging"] as const;
 export type AppCategory = (typeof APP_CATEGORIES)[number];
 
 /** How the app works, shown as a tag on its card (the old catalog's `kind`). */
@@ -99,8 +117,37 @@ export const APP_SETTINGS_ROUTES = [
   "product_feeds",
   "google_search_console",
   "whatsapp",
+  "cross_sell",
+  "sales_popup",
+  "downsell",
+  "price_rounding",
+  "top_loader",
+  "whatsapp_button",
+  // A feature that has its own dashboard page: the app screen says where it is and opens it (`opens`).
+  "feature_page",
 ] as const;
 export type AppSettingsRoute = (typeof APP_SETTINGS_ROUTES)[number];
+
+/**
+ * Existing dashboard pages a `feature_page` app opens (owner, 2026-11-27: features
+ * we already have show up in the App Center too, so sellers find them there).
+ * Keys only: the dashboard maps each to its store-scoped path.
+ */
+export const APP_FEATURE_PAGES = [
+  "coupons",
+  "automatic_discounts",
+  "quantity_offers",
+  "bundles",
+  "email_campaigns",
+  "catalog_share",
+  "order_protection",
+  "missed_orders",
+  "store_app",
+  "languages",
+  "shoppable_gallery",
+  "min_order",
+] as const;
+export type AppFeaturePage = (typeof APP_FEATURE_PAGES)[number];
 
 /** Where the app shows up or acts. Data only: nothing reads these to grant access yet. */
 export const APP_SURFACES = [
@@ -206,6 +253,8 @@ export const appManifestSchema = z
     installMode: z.enum(APP_INSTALL_MODES),
     /** Null for an app that is not built yet, or that has nothing to set (it only installs). */
     settingsRoute: z.enum(APP_SETTINGS_ROUTES).nullable(),
+    /** The existing dashboard page a `feature_page` app opens; set exactly when `settingsRoute` is `feature_page`. */
+    opens: z.enum(APP_FEATURE_PAGES).optional(),
     surfaces: z.array(z.enum(APP_SURFACES)),
     /** A gateway's shopper payment methods, in display order (logos on the detail page). Empty for every other app. */
     paymentMethods: z.array(z.enum(APP_PAYMENT_METHODS)).default([]),
@@ -241,6 +290,9 @@ export const appManifestSchema = z
     }
     if (manifest.freeWithPro && manifest.pricing.model !== "monthly") {
       ctx.addIssue({ code: "custom", path: ["freeWithPro"], message: "only a monthly app can be free with Pro" });
+    }
+    if ((manifest.settingsRoute === "feature_page") !== (manifest.opens !== undefined)) {
+      ctx.addIssue({ code: "custom", path: ["opens"], message: "a feature_page app names the page it opens, and only it does" });
     }
     if (manifest.requires.includes(manifest.id)) {
       ctx.addIssue({ code: "custom", path: ["requires"], message: "an app cannot require itself" });

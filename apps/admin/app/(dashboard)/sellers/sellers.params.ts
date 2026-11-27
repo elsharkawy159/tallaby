@@ -20,7 +20,6 @@ export function parseSellersParams(searchParams: RawSearchParams): SellersQuery 
   const query = parseTableSearchParams(searchParams, {
     filters: [
       "status",
-      "businessType",
       "verification",
       "source",
       "site",

@@ -31,8 +31,8 @@ describe.skipIf(!TEST_DATABASE_URL)("manual orders (integration)", { timeout: 12
     await db.execute(sql`INSERT INTO auth.users (id) VALUES (${id})`);
     await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${id}`);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone, status, fee_trial_eligible)
-      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'm@example.com', '01000000000', 'approved', false)`);
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, support_phone, status, fee_trial_eligible)
+      VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'm@example.com', '01000000000', 'approved', false)`);
   }
 
   async function addProduct(owner: string, key: string) {

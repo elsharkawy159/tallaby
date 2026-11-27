@@ -5,6 +5,7 @@ import { applyInvalidation, invalidateProduct, invalidateSellerProducts, mergeIn
 import {
   and,
   asc,
+  categories,
   count,
   db,
   digitalFiles,
@@ -20,6 +21,7 @@ import {
 import { syncCategoryProductCountForProductChange } from "@workspace/db/categories";
 import { getServiceClient } from "@workspace/db/supabase/service";
 import { parsePriceJson } from "@workspace/lib";
+import { CATEGORY_KIND_MISMATCH, categoryMatchesProductType } from "@workspace/lib/products/category-kind";
 import { isAccessError } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -151,7 +153,7 @@ async function removeUnusedObjects(paths: string[]) {
 
 type Outcome =
   | { ok: true; removed: string[]; unpublished: boolean; previousStatus: string | null; nextStatus: string | null; categoryId: string }
-  | { ok: false; error: "notFound" | "bundle" | "hasVariants" };
+  | { ok: false; error: "notFound" | "bundle" | "hasVariants" | typeof CATEGORY_KIND_MISMATCH };
 
 /**
  * Saves the product form's type and files (F-108a), after createProduct /
@@ -168,6 +170,9 @@ type Outcome =
  * Physical: the digital rows and their files are deleted, unless a buyer
  * already has a download for them (`digital_orders` cascade from
  * `digital_products`), in which case they are kept so those links keep working.
+ *
+ * Either type: the product's Tallaby category must be of that kind (0191,
+ * F-108e), else `category_kind_mismatch` and nothing is saved.
  *
  * Storage objects of removed files are deleted after the commit, best effort.
  */
@@ -225,6 +230,12 @@ export async function saveProductDigital(storeId: string, productId: string, inp
         .for("update")
         .limit(1);
       if (!product) return { ok: false, error: "notFound" };
+
+      // F-108e: the Tallaby category must be of the type being saved (createProduct / updateProduct wrote it just before).
+      const [category] = product.categoryId
+        ? await tx.select({ kind: categories.productKind }).from(categories).where(eq(categories.id, product.categoryId)).limit(1)
+        : [];
+      if (category && !categoryMatchesProductType(category.kind, productType)) return { ok: false, error: CATEGORY_KIND_MISMATCH };
 
       const owners = await tx
         .select({ id: digitalProducts.id, fileUrl: digitalProducts.fileUrl })

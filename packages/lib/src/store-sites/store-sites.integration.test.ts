@@ -55,8 +55,6 @@ describe.skipIf(!TEST_DATABASE_URL)("store sites (integration)", () => {
         displayName: `Site Test ${i}`,
         slug: `st-${tag}-${i}`,
         subdomain: `st-${tag}-${i}`,
-        businessType: "individual",
-        legalAddress: { country: "EG" },
         supportEmail: "it@example.com",
         status: (i === 0 ? "approved" : "restricted") as "approved" | "restricted",
       })),
@@ -226,8 +224,6 @@ describe.skipIf(!TEST_DATABASE_URL)("new stores start from the code default temp
       displayName: "Default Template Test",
       slug: `dt-${tag}`,
       subdomain: `dt-${tag}`,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "it@example.com",
       status: "approved",
     });

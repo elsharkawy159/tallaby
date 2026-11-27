@@ -29,7 +29,7 @@ import {
 } from "./welcome.lib";
 
 const STORE = "11111111-1111-4111-8111-111111111111";
-const none: StoreSetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false };
+const none: StoreSetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false, domain: false, seo: false, wallet: false };
 
 describe("welcomeSteps", () => {
   it("lists product, theme and delivery price in that order (owner, 2026-11-25), done from the home's flags", () => {

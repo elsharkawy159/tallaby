@@ -34,11 +34,14 @@ const stockStyles = {
 export function StockBadge({
   quantity,
   trackStock,
+  isBundle,
   className,
 }: {
   quantity?: number | null;
   /** False: unlimited stock (0138, F-51), shown as "Unlimited". */
   trackStock?: boolean | null;
+  /** A bundle (F-07f): its stock comes from its items, shown as "Bundle". */
+  isBundle?: boolean | null;
   className?: string;
 }) {
   const t = useTranslations("products.list.stock");
@@ -51,11 +54,11 @@ export function StockBadge({
     <span
       className={cn(
         "inline-flex h-[26px] items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-xs font-semibold before:size-[7px] before:rounded-full before:bg-current",
-        stockStyles[level],
+        isBundle ? "bg-(--s-fill) text-(--s-body)" : stockStyles[level],
         className
       )}
     >
-      {unlimited ? t("unlimited") : t(level, { count })}
+      {isBundle ? t("bundle") : unlimited ? t("unlimited") : t(level, { count })}
     </span>
   );
 }
@@ -225,7 +228,7 @@ export function ProductCard({
           </span>
         ) : (
           <div className="pointer-events-none absolute end-2.5 bottom-2.5">
-            <StockBadge quantity={product.quantity} trackStock={product.trackStock} />
+            <StockBadge quantity={product.quantity} trackStock={product.trackStock} isBundle={product.isBundle} />
           </div>
         )}
 
@@ -312,7 +315,7 @@ export function ProductPhoneRow({
         </Link>
         <span className="flex flex-wrap items-center justify-between gap-2">
           <ProductPrice product={product} />
-          <StockBadge quantity={product.quantity} trackStock={product.trackStock} />
+          <StockBadge quantity={product.quantity} trackStock={product.trackStock} isBundle={product.isBundle} />
         </span>
         <ProductPublishSwitch productId={product.id} status={product.status} showLabel />
       </div>

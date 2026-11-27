@@ -16,7 +16,6 @@ export const getSiteData = async () => {
   ] = await Promise.all([
     getSiteSellerSummary(),
     // getAllCategories(),
-    // getSellerDocuments(),
   ]);
   const storeLink = await getSellerStoreUrl(summary.data?.subdomain);
   // This goes to the browser (SiteDataProvider): only what the shell reads.

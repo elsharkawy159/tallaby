@@ -65,8 +65,8 @@ describe.skipIf(!TEST_DATABASE_URL)("orders list (integration)", { timeout: 180_
     for (const id of [sellerId, otherSellerId]) {
       const sub = `ol-${id.slice(0, 8)}`;
       await db.execute(sql`
-        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
-        VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'ol@example.com', 'approved')
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, status)
+        VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'ol@example.com', 'approved')
       `);
     }
     for (const [id, owner] of [[storeA, sellerId], [storeB, sellerId]] as const) {

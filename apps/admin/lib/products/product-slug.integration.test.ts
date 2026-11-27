@@ -58,8 +58,6 @@ describe.skipIf(!isStaging)("admin product slug (integration)", { timeout: 120_0
         displayName: `Slug ${run} ${index}`,
         slug: `slugfix-${run}-${index}`,
         subdomain: `slugfix-${run}-${index}`,
-        businessType: "individual" as const,
-        legalAddress: { country: "EG" },
         supportEmail: "slug@example.test",
         status: "approved" as const,
       })),

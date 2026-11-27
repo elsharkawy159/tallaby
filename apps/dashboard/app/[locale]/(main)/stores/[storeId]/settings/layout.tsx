@@ -5,6 +5,7 @@ import { storeHostname } from "@workspace/lib/storefront";
 import { PageContainer, PageHeader, Tag } from "@/components/seller-ui";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
+import { getVapidPublicKey } from "@/lib/push/push-alerts.server";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StoreSettingsTabs } from "./store-settings-tabs.client";
 
@@ -27,7 +28,8 @@ export default async function StoreSettingsLayout({
   const t = await getTranslations("storeSetup");
 
   return (
-    <PageContainer narrow>
+    // Wider than the 960px form column so the settings menu fits beside it from 1100px (owner, 2026-11-27).
+    <PageContainer className="max-w-[1280px]">
       <PageHeader
         title={t("settingsTitle")}
         description={t("settingsDescription")}
@@ -40,11 +42,16 @@ export default async function StoreSettingsLayout({
       <Suspense fallback={null}>
         <StoreStatusNote params={params} />
       </Suspense>
-      {/* PageTabs reads the pathname, which suspends for an unknown [storeId]. */}
-      <Suspense fallback={<Skeleton className="h-12 w-full rounded-full max-[720px]:rounded-[18px]" />}>
-        <SettingsTabs params={params} />
-      </Suspense>
-      {children}
+      {/* The settings menu: a pill row on phones and tablets, a vertical list beside the page from 1100px. */}
+      <div className="flex flex-col gap-5 max-[600px]:gap-3.5 min-[1100px]:grid min-[1100px]:grid-cols-[272px_minmax(0,1fr)] min-[1100px]:items-start min-[1100px]:gap-6">
+        {/* The menu reads the pathname, which suspends for an unknown [storeId]. */}
+        <Suspense
+          fallback={<Skeleton className="h-12 w-full rounded-full max-[720px]:rounded-[18px] min-[1100px]:h-[460px] min-[1100px]:rounded-[18px]" />}
+        >
+          <SettingsTabs params={params} />
+        </Suspense>
+        <div className="flex min-w-0 flex-col gap-5 max-[600px]:gap-3.5">{children}</div>
+      </div>
     </PageContainer>
   );
 }
@@ -75,5 +82,6 @@ async function StoreStatusNote({ params }: { params: StoreParams }) {
 
 async function SettingsTabs({ params }: { params: StoreParams }) {
   const store = await loadStorePage((await params).storeId);
-  return <StoreSettingsTabs storeId={store.id} />;
+  // Phone alerts (F-06) is listed only when push is configured (VAPID keys set).
+  return <StoreSettingsTabs storeId={store.id} phoneAlerts={getVapidPublicKey() !== null} />;
 }

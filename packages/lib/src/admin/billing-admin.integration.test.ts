@@ -50,8 +50,6 @@ describe.skipIf(!TEST_DATABASE_URL)("admin billing (integration)", { timeout: 60
       displayName: name,
       slug: name,
       subdomain: name,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "bil@example.com",
       status: "approved",
       feeTrialEligible: false,

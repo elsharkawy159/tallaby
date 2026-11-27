@@ -28,7 +28,17 @@ export const storeSetupFlagColumns = (productScope: SQL) => sql`
       -- one always keeps a method on (storePaymentsSchema: last_method). So this is "the store exists";
       -- nothing is written to mark it (store-setup.server.test.ts pins the checkout default).
       (st.id IS NOT NULL) AS setup_payments,
-      coalesce(st.site_status = 'published', false) AS setup_publish
+      coalesce(st.site_status = 'published', false) AS setup_publish,
+      -- Optional steps (owner, 2026-11-27). An active custom domain of this store.
+      coalesce(EXISTS (SELECT 1 FROM seller_custom_domains cd
+        WHERE cd.store_id = st.id AND cd.seller_id = s.id AND cd.status = 'active'), false) AS setup_domain,
+      -- The store's own SEO title or description (updateStoreSeo removes an empty field);
+      -- googleSiteVerification (Apps › Google Search Console) doesn't count.
+      coalesce(nullif(btrim(st.seo ->> 'titleTemplate'), '') IS NOT NULL
+        OR nullif(btrim(st.seo ->> 'description'), '') IS NOT NULL, false) AS setup_seo,
+      -- Account level: a paid top-up, the same rule as hasTopUp in billing/order-lock.server.ts.
+      (EXISTS (SELECT 1 FROM seller_wallet_top_ups wtu WHERE wtu.seller_id = s.id AND wtu.status = 'succeeded')
+        OR EXISTS (SELECT 1 FROM wallet_transactions wtx WHERE wtx.seller_id = s.id AND wtx.type = 'top_up')) AS setup_wallet
 `;
 
 export const toStoreSetupFlags = (row: Record<string, unknown>): StoreSetupFlags => ({
@@ -38,4 +48,7 @@ export const toStoreSetupFlags = (row: Record<string, unknown>): StoreSetupFlags
   publish: Boolean(row.setup_publish),
   shipping: Boolean(row.setup_shipping),
   payments: Boolean(row.setup_payments),
+  domain: Boolean(row.setup_domain),
+  seo: Boolean(row.setup_seo),
+  wallet: Boolean(row.setup_wallet),
 });

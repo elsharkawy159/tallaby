@@ -33,6 +33,7 @@ import { normalizePrice } from "@workspace/lib";
 import { resolveProductSlug } from "@workspace/lib/products/slug/server";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { assertProductTaxonomyInStore, requireProductStore, requireStoreProduct } from "@/lib/products/product-store.server";
+import { assertCategoryKindForProduct } from "@/lib/products/category-kind.server";
 import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import { loadProductStoreRounding, loadStorePriceRounding, resolveProductStoreRounding, roundPricePayload, roundVariantPriceRow, type PriceRoundingRule } from "@/lib/products/price-rounding.server";
 import {
@@ -448,7 +449,8 @@ export async function bulkUploadProductsAction(formData: FormData) {
     // Get all categories for name resolution
     const allCategories = await db.query.categories.findMany({
       columns: { id: true, name: true },
-      where: (categories, { isNotNull }) => isNotNull(categories.name),
+      // F-108e: imports only map to physical categories.
+      where: (categories, { and, eq, isNotNull }) => and(isNotNull(categories.name), eq(categories.productKind, "physical")),
     });
     const categoryByName = new Map<string, string>();
     for (const c of allCategories)
@@ -1200,6 +1202,7 @@ async function createProductInStore(
     }
     // The bulk imports send their own category and brand here: both must be this store's (F-87d).
     await assertProductTaxonomyInStore(productStore, productPayload);
+    await assertCategoryKindForProduct(productPayload); // F-108e
 
     const slugsForSnapshot: { locale: string; slug: string | null }[] = [];
 
@@ -1479,6 +1482,7 @@ export async function updateProduct(
     }
     // A category or brand in the payload must be this store's (F-87d).
     await assertProductTaxonomyInStore(productStore, productData as { sellerCategoryId?: unknown; sellerBrandId?: unknown });
+    await assertCategoryKindForProduct(productData as { categoryId?: unknown; categoryKind?: unknown }, { productId, sellerId: session.user.id }); // F-108e
 
     const updatedProduct = await db.transaction(async (tx) => {
       await setStockContext(tx, { reason: "edit", actorId: session.user.id });

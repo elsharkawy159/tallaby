@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { LayoutTemplate, Minus, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
@@ -30,7 +30,10 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { IconButton, Note, OptionCard, OptionCards, SaveBar, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
+import { useHashHighlight } from "@/hooks/use-hash-highlight";
+import type { ShippingMode } from "@workspace/lib/shipping/mode";
 import { ShippingCompaniesCard } from "./shipping-companies.client";
+import { RidersCard, ShippingModeBar, ShippingModeChooser } from "./shipping-mode.client";
 import { ShippingCoverage } from "./shipping-coverage";
 import { StepCard } from "./shipping-ui";
 import { DescribeZonesSheet } from "./ai/ai-zones.client";
@@ -66,6 +69,7 @@ export function StoreShippingSettings({
   templates,
   bosta,
   wassalha,
+  mode,
   readOnly,
 }: {
   storeId: string;
@@ -85,6 +89,8 @@ export function StoreShippingSettings({
   bosta: BostaOverview | null;
   /** The store's Wassalha settings (F-12c), or null when it has none. */
   wassalha: WassalhaOverview | null;
+  /** How the store delivers (owner, 2026-11-27); null until the seller chooses, which shows only the two choices. */
+  mode: ShippingMode | null;
   readOnly: boolean;
 }) {
   const t = useTranslations("storeShipping");
@@ -149,9 +155,21 @@ export function StoreShippingSettings({
     </div>
   );
 
+  // Not chosen yet: a clear first step, ship it yourself or use a shipping company (owner, 2026-11-27).
+  if (mode === null) {
+    return (
+      <>
+        {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
+        <ShippingModeChooser storeId={storeId} readOnly={readOnly} />
+      </>
+    );
+  }
+
   return (
     <>
       {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
+
+      <ShippingModeBar storeId={storeId} mode={mode} readOnly={readOnly} />
 
       <StepCard
         id="shipping-zones"
@@ -205,9 +223,14 @@ export function StoreShippingSettings({
         />
       )}
 
-      <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
+      {/* Step 2: the seller's own riders, or the shipping companies. Step 3 is the rules card in both. */}
+      {mode === "self" ? (
+        <RidersCard />
+      ) : (
+        <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
+      )}
 
-      <SettingsCard form={settingsForm} readOnly={readOnly} money={money} />
+      <SettingsCard storeId={storeId} form={settingsForm} readOnly={readOnly} money={money} />
 
       <SaveBar
         dirty={!readOnly && settingsForm.changed}
@@ -453,9 +476,11 @@ type SettingsForm = ReturnType<typeof useSettingsForm>;
 /** The server accepts 0–30 days. */
 const HANDLING_DAYS_MAX = 30;
 
-function SettingsCard({ form, readOnly, money }: { form: SettingsForm; readOnly: boolean; money: StoreMoney }) {
+function SettingsCard({ storeId, form, readOnly, money }: { storeId: string; form: SettingsForm; readOnly: boolean; money: StoreMoney }) {
   const t = useTranslations("storeShipping");
   const locale = useLocale();
+  // Marketing tools › Free shipping & minimum order links to #free-shipping (owner, 2026-11-27).
+  const highlighted = useHashHighlight("free-shipping");
   const { handlingDays, setHandlingDays, otherPlaces, setOtherPlaces, freeMode, setFreeMode, freeOver, setFreeOver, freeOverValid } = form;
   const stepDays = (delta: number) =>
     setHandlingDays(String(Math.min(HANDLING_DAYS_MAX, Math.max(0, (Number(handlingDays) || 0) + delta))));
@@ -466,7 +491,13 @@ function SettingsCard({ form, readOnly, money }: { form: SettingsForm; readOnly:
           ChoiceGroup, the seller-funded free-over field and Tallaby's read-only rate table were here. The same
           rates are now the "Tallaby's rates" shipping template. */}
 
-      <fieldset className="flex min-w-0 flex-col gap-2.5">
+      <fieldset
+        id="free-shipping"
+        className={cn(
+          "-m-2 flex min-w-0 scroll-mt-24 flex-col gap-2.5 rounded-[18px] p-2 transition-shadow duration-500",
+          highlighted && "ring-2 ring-(--s-primary) ring-offset-2 ring-offset-(--s-surface)",
+        )}
+      >
         <legend className="mb-2.5 text-[13.5px] font-bold text-(--s-text)">{t("freeDelivery.title")}</legend>
         <OptionCards>
           {(
@@ -507,6 +538,13 @@ function SettingsCard({ form, readOnly, money }: { form: SettingsForm; readOnly:
           </div>
         )}
         <p className="text-pretty text-xs text-(--s-faint)">{t("freeDelivery.note")}</p>
+        {/* The store minimum order lives in Store settings › Checkout (F-13b). */}
+        <p className="text-pretty text-xs text-(--s-muted)">
+          {t("freeDelivery.minOrderHint")}{" "}
+          <Link href={`/stores/${storeId}/settings/checkout#min-order`} className="font-bold text-(--s-link) hover:underline">
+            {t("freeDelivery.minOrderLink")}
+          </Link>
+        </p>
       </fieldset>
 
       <div className="h-px bg-(--s-line-soft)" />

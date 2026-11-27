@@ -7,6 +7,8 @@ import { ShoppingCart } from "lucide-react";
 import type { StoreMinOrder } from "@workspace/lib/stores/min-order";
 import { Field, InputGroup, SectionCard, Toggle } from "@/components/seller-ui";
 import { moneyParams, moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
+import { useHashHighlight } from "@/hooks/use-hash-highlight";
+import { cn } from "@/lib/utils";
 import { saveStoreMinOrder } from "./min-order.server";
 
 function toEgpText(piastres: number): string {
@@ -60,9 +62,13 @@ export function StoreMinOrderCard({
   const t = useTranslations("storeMinOrder");
   const locale = useLocale();
   const params = moneyParams(locale, money);
+  // The shipping page's free-delivery section links here (#min-order).
+  const highlighted = useHashHighlight("min-order");
 
   return (
     <SectionCard
+      id="min-order"
+      className={cn("transition-shadow duration-500", highlighted && "ring-2 ring-(--s-primary) ring-offset-2")}
       icon={ShoppingCart}
       title={t("title")}
       description={t("description")}

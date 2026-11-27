@@ -1,5 +1,7 @@
 import { CrossSellSection } from "./cross-sell.client";
 import { listCrossSells } from "./cross-sell.server";
+import { BundleSection } from "./bundle.client";
+import { loadBundle } from "./bundle.server";
 import { QuantityOffersSection } from "./quantity-offers.client";
 import { listQuantityOffers } from "./quantity-offers.server";
 import { notFound } from "next/navigation";
@@ -16,7 +18,6 @@ import { getBillingState } from "@workspace/lib/billing/server";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
 import { loadProductStorePage, taxonomyScopeOf } from "@/lib/products/product-store.server";
 import { loadProductStoreRounding } from "@/lib/products/price-rounding.server";
-import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
 import { loadProductLinkHost } from "../../add/product-link-host.data";
 import { loadProductStoreLinks } from "../../_components/product-store-links.data";
@@ -71,7 +72,7 @@ export default async function EditProductPage({
 
   const product = productResult.data;
   // In Trash (0123, F-35): it is restored from there before it can be edited.
-  if ((product as { deletedAt?: string | null }).deletedAt) redirect({ href: storeProductsHref(store.id, "/trash"), locale: await getLocale() });
+  if ((product as { deletedAt?: string | null }).deletedAt) redirect({ href: `/stores/${encodeURIComponent(store.id)}/settings/trash`, locale: await getLocale() });
   // Product type and files (F-108a): names and sizes only, no download links.
   const digital = await loadProductDigital(sellerId, productId, access.inStore);
   const categories = (categoriesRes.data || []) as CategoryOption[];
@@ -108,7 +109,11 @@ export default async function EditProductPage({
   const slug = defaultValues.localized?.en?.slug?.trim() || null;
   const storeLinks = await loadProductStoreLinks([{ id: productId, slug }], store.id);
 
-  const [crossSells, quantityOffers] = await Promise.all([listCrossSells(store.id, productId), listQuantityOffers(store.id, productId)]);
+  const [crossSells, quantityOffers, bundle] = await Promise.all([
+    listCrossSells(store.id, productId),
+    listQuantityOffers(store.id, productId),
+    loadBundle(store.id, productId),
+  ]);
 
   return (
     <EditProduct
@@ -123,6 +128,7 @@ export default async function EditProductPage({
       aiEnabled={aiConfigured()}
       viewStats={viewStats}
     >
+      <BundleSection productId={productId} initial={bundle} />
       <QuantityOffersSection productId={productId} initial={quantityOffers} />
       <CrossSellSection productId={productId} initial={crossSells} />
     </EditProduct>

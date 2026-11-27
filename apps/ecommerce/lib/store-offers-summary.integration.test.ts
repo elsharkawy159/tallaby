@@ -39,8 +39,8 @@ describe.skipIf(!isStaging)("checkout summary matches the order (integration)", 
     await db.execute(sql`INSERT INTO auth.users (id) VALUES (${sellerId})`);
     await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${sellerId}`);
     await db.execute(sql`
-      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone, status, fee_trial_eligible)
-      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'x@example.com', '01000000000', 'approved', false)`);
+      INSERT INTO sellers (id, business_name, display_name, slug, subdomain, support_email, support_phone, status, fee_trial_eligible)
+      VALUES (${sellerId}, ${sub}, ${sub}, ${sub}, ${sub}, 'x@example.com', '01000000000', 'approved', false)`);
     const [store] = await db.execute(sql`SELECT id FROM stores WHERE seller_id = ${sellerId} LIMIT 1`);
     storeId = (store as { id: string }).id;
     await db.insert(users).values({ id: buyer, fullName: "QA Buyer", email: `qa_${buyer}@temp.local`, isGuest: true });

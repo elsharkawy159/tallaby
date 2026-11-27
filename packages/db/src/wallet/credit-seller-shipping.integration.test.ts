@@ -40,8 +40,6 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "sw@example.com",
       status: "approved",
     });

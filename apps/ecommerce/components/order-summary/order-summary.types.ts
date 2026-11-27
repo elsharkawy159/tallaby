@@ -11,6 +11,8 @@ export interface OrderSummaryItem {
   crossSellId?: string | null
   /** Customer requirements the customer filled (0167, F-91). */
   customerInputs?: unknown
+  /** A bundle's items (0188, F-07f), listed under the line. */
+  bundleItems?: Array<{ name: string; variantName: string | null; quantity: number }>
   variant?: {
     option1?: string | null
     option2?: string | null

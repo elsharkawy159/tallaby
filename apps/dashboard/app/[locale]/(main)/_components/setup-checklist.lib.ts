@@ -1,21 +1,29 @@
 /**
  * The home "get your store ready" setup (PLAN.md §6.6, P3-04; ROADMAP.md F-86),
- * computed from data, never stored. Four steps, all required (owner,
- * 2026-11-10), in this order (owner, 2026-11-25): add a product, choose the
- * store design (template and brand together), set up shipping, set up
- * payments. A step opens only once the steps before it are done
- * (`stepBlocker`); a done step always keeps its link. Store steps belong to
- * the store selected in the sidebar.
+ * computed from data, never stored. Six steps in this order (owner,
+ * 2026-11-27): products and categories, theme, store identity, domain
+ * (optional), SEO (optional), wallet. Only the required ones count toward
+ * "setup done"; the optional ones show an "optional" label and never block
+ * anything. No step is locked: every step can be opened at any time, done
+ * ones too. Store steps belong to the store selected in the sidebar; the
+ * wallet is the seller's.
  *
- * Until those are done and the seller has no real order yet, the home shows
- * only the setup cards, no metrics (`showSetupOnlyHome`).
+ * Until the required steps are done and the seller has no real order yet, the
+ * home shows only the setup cards, no metrics (`showSetupOnlyHome`).
  *
  * The guided prompts (setup-prompts.lib.ts) still walk the older, finer step
  * list (`buildSetupTasks`: product, template, brand, shipping), keyed as
  * before, so their saved progress keeps its meaning.
  */
 
-import { STORE_SETUP_STEP_DONE, type StoreSetupFlags } from "@workspace/lib/sellers";
+import {
+  STORE_SETUP_OPTIONAL_STEPS,
+  STORE_SETUP_STEP_DONE,
+  STORE_SETUP_STEP_KEYS,
+  storeSetupStepHref,
+  type StoreSetupFlags,
+  type StoreSetupStepKey,
+} from "@workspace/lib/sellers";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 
 /**
@@ -26,41 +34,37 @@ import { storeProductsHref } from "@/lib/products/product-routes.lib";
 export type SetupFlags = StoreSetupFlags;
 
 // ---------------------------------------------------------------------------
-// Home setup steps (the setup-only home and the checklist card).
+// Home steps (the setup-only home and the checklist card).
 // ---------------------------------------------------------------------------
 
-export type HomeStepKey = "product" | "design" | "shipping" | "payments";
+export type HomeStepKey = StoreSetupStepKey;
 
-export type HomeStep = { key: HomeStepKey; href: string; done: boolean };
+export type HomeStep = { key: HomeStepKey; href: string; done: boolean; optional: boolean };
 
-const HOME_STORE_STEPS = new Set<HomeStepKey>(["design", "payments", "shipping"]);
-
-const HOME_STEPS: { key: HomeStepKey; done: (f: SetupFlags) => boolean; href: (storeId: string, f: SetupFlags) => string }[] = [
-  { key: "product", done: STORE_SETUP_STEP_DONE.product, href: (id) => storeProductsHref(id || null, "/add") },
-  {
-    key: "design",
-    done: STORE_SETUP_STEP_DONE.design,
-    // No template yet: the gallery first; then the brand (logo, colours, fonts).
-    href: (id, f) => (f.template ? `/stores/${id}/website/design` : `/stores/${id}/website/templates`),
-  },
-  { key: "shipping", done: STORE_SETUP_STEP_DONE.shipping, href: (id) => `/stores/${id}/shipping` },
-  { key: "payments", done: STORE_SETUP_STEP_DONE.payments, href: (id) => `/stores/${id}/settings/payments` },
-];
+/** Steps that need a store; the product and the wallet show without one. */
+const HOME_STORE_STEPS = new Set<HomeStepKey>(["theme", "identity", "domain", "seo"]);
 
 export function buildHomeSteps(flags: SetupFlags, storeId: string | null): HomeStep[] {
-  return HOME_STEPS.filter((step) => storeId || !HOME_STORE_STEPS.has(step.key)).map((step) => ({
-    key: step.key,
-    href: step.href(storeId ?? "", flags),
-    done: step.done(flags),
+  return STORE_SETUP_STEP_KEYS.filter((key) => storeId || !HOME_STORE_STEPS.has(key)).map((key) => ({
+    key,
+    // The product link keeps its no-store fallback (storeProductsHref).
+    href: key === "product" ? storeProductsHref(storeId, "/add") : storeSetupStepHref(key, storeId ?? ""),
+    done: STORE_SETUP_STEP_DONE[key](flags),
+    optional: STORE_SETUP_OPTIONAL_STEPS.has(key),
   }));
 }
 
+/** The step the "next step" badge and the header point to: the first open required step, in order. */
+export function nextHomeStep(steps: readonly HomeStep[]): HomeStep | undefined {
+  return steps.find((step) => !step.optional && !step.done);
+}
+
 /**
- * Steps go in order (owner, 2026-11-25): a step that isn't done waits for the
- * first earlier step that isn't done, returned here so the page can say what
- * to do first. Null when the step can be started, and always for a done step,
- * so a seller who did steps out of order is never stuck. Shared with the
- * store welcome page.
+ * Steps in order: a step that isn't done waits for the first earlier step
+ * that isn't done, returned here so the page can say what to do first. Null
+ * when the step can be started, and always for a done step. The home no
+ * longer locks its steps (owner, 2026-11-27); the store welcome page still
+ * uses this for its own steps.
  */
 export function stepBlocker<K extends string>(steps: readonly { key: K; done: boolean }[], key: K): K | null {
   const index = steps.findIndex((step) => step.key === key);
@@ -68,21 +72,9 @@ export function stepBlocker<K extends string>(steps: readonly { key: K; done: bo
   return steps.slice(0, index).find((step) => !step.done)?.key ?? null;
 }
 
-/**
- * `stepBlocker` for the home steps: the steps after the design wait only for a
- * chosen template (the user's flow is product > theme > shipping, owner
- * 2026-11-25), not for the brand that also counts toward the design step.
- */
-export function homeStepBlocker(steps: readonly HomeStep[], key: HomeStepKey, flags: SetupFlags): HomeStepKey | null {
-  return stepBlocker(
-    steps.map((step) => (step.key === "design" && step.key !== key ? { ...step, done: step.done || flags.template } : step)),
-    key,
-  );
-}
-
-/** Every step is done: the store is ready for its first order, and the guide can go away. */
+/** Every required step is done: the store is ready for its first order, and the guide can go away. */
 export function isSetupDone(flags: SetupFlags, storeId: string | null): boolean {
-  return buildHomeSteps(flags, storeId).every((step) => step.done);
+  return buildHomeSteps(flags, storeId).every((step) => step.optional || step.done);
 }
 
 /**

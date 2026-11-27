@@ -9,13 +9,12 @@ import { loadSetupNextStep } from "@/app/[locale]/(main)/_components/setup-next-
 import { StoreLiveCelebration } from "@/app/[locale]/(main)/_components/store-live-celebration.client";
 import { getStoreWalletBalance } from "@/app/[locale]/(main)/wallet/store-wallet.server";
 import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
-import { loadOrderLock, loadSeller } from "@/lib/auth/require-seller.server";
+import { loadSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { editorAiEnabled } from "@/app/[locale]/(builder)/stores/[storeId]/editor/server/editor-entry.data";
 import { aiConfigured } from "@workspace/ai";
-import { storeMayBeBillingOffline } from "@workspace/lib/billing/order-lock";
 import { resolvePlanId } from "@workspace/lib/plans";
 import { BottomNav } from "./bottom-nav.client";
 import { DashboardHeader } from "./dashboard-header.client";
@@ -76,28 +75,21 @@ export async function GatedSidebar() {
   return <SidebarData />;
 }
 
-/** The top bar's data: wallet, store link, live dot, setup step, the bell's user id. */
+/** The top bar's data: wallet, store link, setup step, the bell's user id. The live/offline eye is in the sidebar (sidebar.data.tsx). */
 export async function HeaderData() {
   const { user, access } = await loadShellAccess();
   if (!user || !access.allowed) return null;
-  // Per-request memo: getSellerAccess already read this row, so this costs no query.
-  const seller = await loadSeller(user.id);
-  // A seller still not activated when the trial's days are over has every store offline (owner, 2026-11-17): the dot says so.
-  // The lock is read only once the sign-up date says it can apply (loadOrderLock is cached per request; the sidebar reads it too).
-  const mayBeBillingOffline = storeMayBeBillingOffline(seller?.createdAt);
-  const [wallet, storeLink, { selected }, setupNextStep, billingOffline] = await Promise.all([
+  const [wallet, storeLink, { selected }, setupNextStep] = await Promise.all([
     getStoreWalletBalance(user.id),
     getSelectedStoreLink().catch(() => null),
     getSellerStores(),
     loadSetupNextStep(user.id).catch(() => null),
-    mayBeBillingOffline ? loadOrderLock(user.id).then((lock) => lock.storeOffline) : false,
   ]);
   return (
     <DashboardHeader
       walletBalance={wallet?.balance ?? null}
       walletCurrency={wallet?.currency ?? "EGP"}
       storeLink={storeLink}
-      siteLive={selected?.siteStatus === "published" && !billingOffline}
       storeId={selected?.id ?? null}
       setupNextStep={setupNextStep}
       userId={user.id}

@@ -13,6 +13,7 @@ import {
   db,
   desc,
   eq,
+  inArray,
   isNull,
   ne,
   products,
@@ -20,6 +21,7 @@ import {
   sellers,
   storeDesignSystems,
   storePages,
+  storeIntegrations,
   storeSettingsAudit,
   storeShippingZones,
   stores,
@@ -66,6 +68,7 @@ import {
   type StoreShippingSettings,
 } from "../shipping/store-zones";
 import { TALLABY_SERVICES_ENABLED } from "../fulfillment/constants";
+import { parseShippingMode, resolveShippingMode, shippingModeSchema, type ShippingMode } from "../shipping/shipping-mode.lib";
 import { normalizeSubdomain, validateSubdomain } from "../storefront";
 import {
   createStoreInputSchema,
@@ -1064,6 +1067,83 @@ export async function updateStoreShippingSettings(
         changes: { before, after: parsed.data },
       });
       return parsed.data;
+    });
+    return { success: true, data };
+  } catch (error) {
+    return shippingFailure(error);
+  }
+}
+
+/**
+ * Has this store a shipping company set up: a Bosta or Wassalha integration row that wasn't disconnected.
+ * Same rows the Shipping page's companies card reads (getBostaOverview / getWassalhaOverview).
+ */
+async function storeHasCarrier(sellerId: string, storeId: string, q: Queryable): Promise<boolean> {
+  const [row] = await q
+    .select({ id: storeIntegrations.id })
+    .from(storeIntegrations)
+    .where(
+      and(
+        eq(storeIntegrations.storeId, storeId),
+        eq(storeIntegrations.sellerId, sellerId),
+        inArray(storeIntegrations.provider, ["bosta", "wassalha"]),
+        ne(storeIntegrations.status, "disconnected"),
+      ),
+    )
+    .limit(1);
+  return Boolean(row);
+}
+
+/**
+ * How the store delivers (owner, 2026-11-27): the saved `settings.shippingMode`, or, for a store
+ * that never chose, "company" with a carrier set up, "self" with shipping zones, else null.
+ * Null for a foreign or missing store too. Never cached (CLAUDE.md rule 8): two cheap reads at most.
+ */
+export async function getStoreShippingMode(sellerId: string, storeId: string, q: Queryable = db): Promise<ShippingMode | null> {
+  if (!UUID_RE.test(storeId)) return null;
+  const [store] = await q.select({ settings: stores.settings }).from(stores).where(ownStore(sellerId, storeId)).limit(1);
+  if (!store) return null;
+  const stored = parseShippingMode(store.settings);
+  if (stored) return stored;
+  const [hasCarrier, zone] = await Promise.all([
+    storeHasCarrier(sellerId, storeId, q),
+    q.select({ id: storeShippingZones.id }).from(storeShippingZones).where(eq(storeShippingZones.storeId, storeId)).limit(1),
+  ]);
+  return resolveShippingMode(null, { hasCarrier, hasZones: zone.length > 0 });
+}
+
+/**
+ * Saves how the store delivers. Only the top-level `settings.shippingMode` changes:
+ * zones, riders and carrier integrations stay as they are, so the seller can switch back.
+ */
+export async function updateStoreShippingMode(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  input: unknown,
+  q: Queryable = db,
+): Promise<StoreResult<ShippingMode, StoreShippingError>> {
+  const parsed = shippingModeSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const mode = parsed.data;
+  try {
+    const data = await q.transaction(async (tx) => {
+      const store = await lockActiveStore(tx, sellerId, storeId);
+      const settings = (store.settings ?? {}) as Record<string, unknown>;
+      const before = parseShippingMode(settings);
+      await tx
+        .update(stores)
+        .set({ settings: { ...settings, shippingMode: mode }, updatedAt: sql`now()` })
+        .where(ownStore(sellerId, storeId));
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "shipping",
+        action: `mode_${mode}`,
+        changes: { before: { shippingMode: before }, after: { shippingMode: mode } },
+      });
+      return mode;
     });
     return { success: true, data };
   } catch (error) {

@@ -47,8 +47,6 @@ describe.skipIf(!TEST_DATABASE_URL)("store wallet (integration)", { timeout: 60_
       displayName: sub,
       slug: sub,
       subdomain: sub,
-      businessType: "individual",
-      legalAddress: { country: "EG" },
       supportEmail: "sw@example.com",
       status: "approved",
     });
