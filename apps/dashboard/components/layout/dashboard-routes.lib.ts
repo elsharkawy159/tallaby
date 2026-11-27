@@ -91,7 +91,9 @@ export type NavKey =
   | "domainSeo"
   | "seo"
   | "socialMedia"
+  | "blogGroup"
   | "blog"
+  | "blogCategories"
   | "forms"
   | "mediaLibrary"
   | "marketing"
@@ -184,16 +186,17 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
   { href: "/stores/[storeId]/website", title: "websiteOverview", parent: "websiteContent", icon: Globe },
-  { href: "/stores/[storeId]/editor", title: "websiteBuilder", parent: "websiteContent", icon: LayoutTemplate },
   { href: "/stores/[storeId]/website/templates", title: "templates", parent: "websiteContent", icon: LayoutGrid },
+  { href: "/stores/[storeId]/editor", title: "websiteBuilder", parent: "websiteContent", icon: LayoutTemplate },
   { href: "/stores/[storeId]/website/design", title: "designSystem", parent: "websiteContent", icon: Palette },
   { href: "/stores/[storeId]/website/domain", title: "domainSeo", parent: "websiteContent", icon: Globe },
   { href: "/stores/[storeId]/website/seo", title: "seo", parent: "websiteContent", icon: SearchCheck },
   { href: "/stores/[storeId]/website/social", title: "socialMedia", parent: "websiteContent", icon: Share2 },
   { href: "/stores/[storeId]/website/pages", title: "pages", parent: "websiteContent", icon: FileText },
-  { href: "/stores/[storeId]/website/blog", title: "blog", parent: "websiteContent", icon: Newspaper },
   { href: "/stores/[storeId]/website/forms", title: "forms", parent: "websiteContent", icon: ClipboardList },
   { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "websiteContent", icon: Images },
+  { href: "/stores/[storeId]/website/blog", title: "blog", parent: "blogGroup", icon: Newspaper },
+  { href: "/stores/[storeId]/website/blog/categories", title: "blogCategories", parent: "blogGroup", icon: FolderTree },
   { href: "/coupons", title: "coupons", parent: "marketing", icon: Gift },
   { href: "/marketing/discounts", title: "automaticDiscounts", parent: "marketing", icon: Percent },
   // Paid ads: reachable only by its URL for now (owner, 2026-11-04, F-65a).

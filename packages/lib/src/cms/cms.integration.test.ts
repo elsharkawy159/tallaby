@@ -11,9 +11,11 @@ import {
   ensureBlogCollection,
   getCmsItem,
   getPublicCmsItem,
+  listBlogCategories,
   listBlogPosts,
   listCmsCollections,
   listCmsItemRevisions,
+  listPublicBlogCategories,
   listPublicBlogTags,
   listPublicCmsItems,
   listPublicCmsUrls,
@@ -21,6 +23,7 @@ import {
   restoreCmsItemRevision,
   saveBlogPost,
   saveCmsItem,
+  updateBlogCategories,
   updateCmsCollection,
 } from "./cms.server";
 
@@ -206,6 +209,31 @@ describe.skipIf(!TEST_DATABASE_URL)("cms and blog (integration)", { timeout: 60_
     expect(await getPublicCmsItem(w.a.a1, "looks", "summer", db)).not.toBeNull();
     expect((await deleteCmsCollection(w.a.sellerId, w.a.a1, created.data.id, db)).success).toBe(true);
     expect(await getPublicCmsItem(w.a.a1, "looks", "summer", db)).toBeNull();
+  });
+
+  it("blog categories: per store, validated on save, public only with a live post", async () => {
+    const added = await updateBlogCategories(w.a.sellerId, w.a.a1, { op: "add", name: "Guides" }, db);
+    if (!added.success) throw new Error("add failed");
+    const id = added.data.id!;
+    expect(await updateBlogCategories(w.a.sellerId, w.a.a1, { op: "add", name: "guides" }, db)).toEqual({ success: false, error: "duplicate_name" });
+    // Another seller can neither read nor change A's categories.
+    expect(await listBlogCategories(w.b.sellerId, w.a.a1, db)).toBeNull();
+    expect(await updateBlogCategories(w.b.sellerId, w.a.a1, { op: "delete", id }, db)).toEqual({ success: false, error: "not_found" });
+
+    const saved = await saveBlogPost(w.a.sellerId, w.a.a1, null, post("with-cat", { status: "published", data: { title: "C", categoryId: id } }), w.a.sellerId, db);
+    const stray = await saveBlogPost(w.a.sellerId, w.a.a1, null, post("stray-cat", { data: { title: "S", categoryId: "zzzzzzzzzz" } }), w.a.sellerId, db);
+    if (!saved.success || !stray.success) throw new Error("save failed");
+    expect((await getCmsItem(w.a.sellerId, w.a.a1, stray.data.id, db))?.item.data.categoryId).toBeUndefined();
+    expect((await listBlogCategories(w.a.sellerId, w.a.a1, db))?.find((c) => c.id === id)?.postCount).toBe(1);
+    expect(await listPublicBlogCategories(w.a.a1, db)).toEqual([{ id, name: "Guides", count: 1 }]);
+    expect((await listPublicCmsItems(w.a.a1, "blog", { category: id }, db)).items.map((i) => i.slug)).toEqual(["with-cat"]);
+    // B's store never shows A's categories.
+    expect(await listPublicBlogCategories(w.b.b1, db)).toEqual([]);
+
+    expect((await updateBlogCategories(w.a.sellerId, w.a.a1, { op: "delete", id }, db)).success).toBe(true);
+    expect(await listPublicBlogCategories(w.a.a1, db)).toEqual([]);
+    await deleteCmsItem(w.a.sellerId, w.a.a1, saved.data.id, db);
+    await deleteCmsItem(w.a.sellerId, w.a.a1, stray.data.id, db);
   });
 
   it("an archived store's content is not public and cannot be written", async () => {

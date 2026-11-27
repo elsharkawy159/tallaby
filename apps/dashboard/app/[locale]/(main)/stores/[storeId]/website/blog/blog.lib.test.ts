@@ -29,10 +29,12 @@ describe("blog editor helpers", () => {
       slug: "a",
       state: "scheduled",
       publishedAt: "2030-05-01T09:30:00.000Z",
-      data: { title: "T", tags: ["x", 3], body: "<p>b</p>" },
+      data: { title: "T", tags: ["x", 3], body: "<p>b</p>", categoryId: "aaaaaaaaaa" },
       seo: { title: "", description: "", ogImage: "", noindex: false },
     });
-    expect(form).toMatchObject({ slug: "a", title: "T", tags: ["x"], body: "<p>b</p>", mode: "schedule" });
+    expect(form).toMatchObject({ slug: "a", title: "T", tags: ["x"], body: "<p>b</p>", mode: "schedule", categoryId: "aaaaaaaaaa" });
+    expect(toPostInput(form, null).data.categoryId).toBe("aaaaaaaaaa");
+    expect(toPostForm({ slug: "b", state: "draft", publishedAt: null, data: {}, seo: form.seo }).categoryId).toBe("");
     expect(form.scheduledAt).toMatch(/^2030-05-01T\d{2}:30$/);
   });
 });

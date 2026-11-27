@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCmsItem } from "@workspace/lib/cms/server";
+import { getCmsItem, listBlogCategories } from "@workspace/lib/cms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { toPostForm } from "../blog.lib";
@@ -13,7 +13,7 @@ export const instant = false;
 export default async function EditBlogPostPage({ params }: { params: Promise<{ storeId: string; postId: string }> }) {
   const { storeId, postId } = await params;
   const store = await loadWebsiteStorePage(storeId);
-  const found = await getCmsItem(store.sellerId, store.id, postId);
+  const [found, categories] = await Promise.all([getCmsItem(store.sellerId, store.id, postId), listBlogCategories(store.sellerId, store.id)]);
   if (!found || found.collection.kind !== "blog") notFound();
 
   return (
@@ -27,6 +27,7 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ s
       liveBaseUrl={storeUrl(store.subdomain)}
       defaultAuthor={store.name}
       readOnly={store.status !== "active"}
+      categories={categories ?? []}
     />
   );
 }

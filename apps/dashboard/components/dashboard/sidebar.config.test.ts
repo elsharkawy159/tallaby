@@ -115,6 +115,7 @@ describe("SIDEBAR_CONFIG", () => {
       "finance",
       "|",
       "websiteContent",
+      "blogGroup",
       "marketing",
       "apps",
       "settingsGroup",
@@ -135,7 +136,9 @@ describe("SIDEBAR_CONFIG", () => {
     const keys = (storeBuilder: boolean) =>
       topLevel(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder } }));
     expect(keys(false)).not.toContain("websiteContent");
+    expect(keys(false)).not.toContain("blogGroup");
     expect(keys(true)).toContain("websiteContent");
+    expect(keys(true)).toContain("blogGroup");
   });
 
   it("keeps the dividers tidy when a store-less seller loses store-scoped sections", () => {
@@ -177,9 +180,55 @@ describe("SIDEBAR_CONFIG", () => {
       expect(group(key).items.map((i) => i.href), key).not.toContain(href);
     }
     // The other groups have no overview page.
-    for (const key of ["fulfillmentShipping", "finance", "marketing", "accountHelp"]) {
+    for (const key of ["fulfillmentShipping", "finance", "blogGroup", "marketing", "accountHelp"]) {
       expect(group(key).href, key).toBeUndefined();
     }
+  });
+});
+
+describe("Store design and Blog groups (owner, 2026-11-27)", () => {
+  const resolved = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } });
+  const items = (key: string) => (resolved.find((e) => e.kind === "group" && e.key === key) as ResolvedGroup).items;
+
+  it("opens Store design on Overview, then Themes, then Edit store design, with no blog inside", () => {
+    expect(items("websiteContent").slice(0, 3).map((i) => i.key)).toEqual(["websiteOverview", "templates", "websiteBuilder"]);
+    expect(items("websiteContent").some((i) => i.href.includes("/website/blog"))).toBe(false);
+  });
+
+  it("gives the blog its own group: Manage posts, then Blog categories", () => {
+    expect(items("blogGroup").map((i) => [i.key, i.href])).toEqual([
+      ["blog", `/stores/${STORE}/website/blog`],
+      ["blogCategories", `/stores/${STORE}/website/blog/categories`],
+    ]);
+    expect(resolveDashboardRoute(`/stores/${STORE}/website/blog/categories`)).toMatchObject({ title: "blogCategories", parent: "blogGroup" });
+    expect(resolveDashboardRoute(`/stores/${STORE}/website/blog/new`)).toMatchObject({ title: "blog", parent: "blogGroup" });
+  });
+
+  it("uses the owner's labels in both languages", () => {
+    expect(ar.nav).toMatchObject({
+      websiteContent: "تصميم المتجر",
+      websiteOverview: "نظرة عامة",
+      templates: "الثيمات",
+      websiteBuilder: "تعديل تصميم المتجر",
+      socialMedia: "ربط التواصل الاجتماعي",
+      blogGroup: "المدونة",
+      blog: "إدارة المدونات",
+      blogCategories: "أقسام المدونات",
+    });
+    expect(en.nav).toMatchObject({
+      websiteContent: "Store design",
+      templates: "Themes",
+      websiteBuilder: "Edit store design",
+      socialMedia: "Connect social media",
+      blogGroup: "Blog",
+      blog: "Manage posts",
+      blogCategories: "Blog categories",
+    });
+  });
+
+  it("lights only Blog categories on its page, and Manage posts on a post", () => {
+    expect(findActiveHref(resolved, `/stores/${STORE}/website/blog/categories`)).toBe(`/stores/${STORE}/website/blog/categories`);
+    expect(findActiveHref(resolved, `/stores/${STORE}/website/blog/abc`)).toBe(`/stores/${STORE}/website/blog`);
   });
 });
 

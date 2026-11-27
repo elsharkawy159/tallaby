@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import { ArrowRight, ExternalLink, FileText, History, ImageIcon, Search, Tags } from "lucide-react";
 import { CMS_ITEM_SLUG_RE, slugifyCms } from "@workspace/lib/cms";
 import { RichTextEditor } from "@workspace/tiptap/editor";
-import { Field, FieldRow, InputGroup, Note, OptionCard, OptionCards, PageHeader, Row, Rows, SaveBar, SectionCard, SellerButton, StatusBadge, TextAction, TextArea, TextInput, Toggle } from "@/components/seller-ui";
+import { Field, FieldRow, InputGroup, NativeSelect, Note, OptionCard, OptionCards, PageHeader, Row, Rows, SaveBar, SectionCard, SellerButton, StatusBadge, TextAction, TextArea, TextInput, Toggle } from "@/components/seller-ui";
 import { MediaPicker } from "@/components/media/media-adapter.client";
 import { cn } from "@/lib/utils";
 import { parseTags, toPostInput } from "./blog.lib";
-import type { BlogPostForm, BlogPostState, BlogRevision } from "./blog.dto";
+import type { BlogCategoryItem, BlogPostForm, BlogPostState, BlogRevision } from "./blog.dto";
 import { listPostRevisions, restorePostRevision, savePost } from "./blog.server";
 import { RemoteImage } from "@/components/media/remote-image";
 
@@ -35,6 +35,7 @@ export function PostEditor({
   liveBaseUrl,
   defaultAuthor,
   readOnly,
+  categories,
 }: {
   storeId: string;
   postId: string | null;
@@ -44,6 +45,8 @@ export function PostEditor({
   liveBaseUrl: string;
   defaultAuthor: string;
   readOnly: boolean;
+  /** The blog's categories, in order (a post has one or none). */
+  categories: BlogCategoryItem[];
 }) {
   const t = useTranslations("websiteBlog.editor");
   const tErrors = useTranslations("websiteBlog.errors");
@@ -224,6 +227,27 @@ export function PostEditor({
             <TextInput id="post-author" maxLength={80} value={form.authorName} disabled={disabled} onChange={(e) => set("authorName", e.target.value)} />
           </Field>
         </FieldRow>
+        <Field label={t("details.category")} htmlFor="post-category" note={categories.length === 0 ? t("details.categoryEmpty") : undefined}>
+          <NativeSelect
+            id="post-category"
+            className="w-64 max-[600px]:w-full"
+            value={categories.some((c) => c.id === form.categoryId) ? form.categoryId : ""}
+            disabled={disabled}
+            onChange={(e) => set("categoryId", e.target.value)}
+          >
+            <option value="">{t("details.categoryNone")}</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+        {categories.length === 0 && !readOnly && (
+          <TextAction asChild className="-mt-2 self-start text-[12.5px]">
+            <Link href={`${base}/categories`}>{t("details.manageCategories")}</Link>
+          </TextAction>
+        )}
         <Field label={t("details.visibility")}>
           <OptionCards role="radiogroup" aria-label={t("details.visibility")}>
             {(["draft", "publish", "schedule"] as const).map((mode) => (

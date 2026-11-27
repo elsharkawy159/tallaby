@@ -2,6 +2,7 @@ import { cacheProfiles, createCachedQuery, storeTags } from "@workspace/cache";
 import {
   getPublicCmsCollection,
   getPublicCmsItem,
+  listPublicBlogCategories,
   listPublicBlogTags,
   listPublicCmsItems,
   resolvePublicContent,
@@ -19,11 +20,19 @@ import {
 export const BLOG_PAGE_SIZE = 9;
 
 export const getCachedBlogPage = createCachedQuery({
-  name: "storefront:blog-page:v1",
+  name: "storefront:blog-page:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, storeId: string, _page: number, _tag: string | null) => [storeTags.cms(sellerId, storeId)],
-  query: (_sellerId: string, storeId: string, page: number, tag: string | null) =>
-    listPublicCmsItems(storeId, "blog", { limit: BLOG_PAGE_SIZE, offset: (page - 1) * BLOG_PAGE_SIZE, tag }),
+  tags: (sellerId: string, storeId: string, _page: number, _tag: string | null, _category: string | null) => [storeTags.cms(sellerId, storeId)],
+  query: (_sellerId: string, storeId: string, page: number, tag: string | null, category: string | null) =>
+    listPublicCmsItems(storeId, "blog", { limit: BLOG_PAGE_SIZE, offset: (page - 1) * BLOG_PAGE_SIZE, tag, category }),
+});
+
+/** Blog categories that have a published post, in the seller's order (owner, 2026-11-27). */
+export const getCachedBlogCategories = createCachedQuery({
+  name: "storefront:blog-categories:v1",
+  ttl: cacheProfiles.listing,
+  tags: (sellerId: string, storeId: string) => [storeTags.cms(sellerId, storeId)],
+  query: (_sellerId: string, storeId: string) => listPublicBlogCategories(storeId),
 });
 
 export const getCachedBlogTags = createCachedQuery({

@@ -7,6 +7,7 @@ import {
   HandCoins,
   LayoutDashboard,
   Megaphone,
+  Newspaper,
   Package,
   Settings,
   ShoppingBag,
@@ -161,18 +162,29 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     href: "/stores/[storeId]/website",
     overviewKey: "websiteOverview",
     exact: true,
+    // Overview, then Themes, then Edit store design (owner, 2026-11-27).
     items: [
-      { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "live" },
       { key: "templates", href: "/stores/[storeId]/website/templates", status: "live" },
+      { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "live" },
       { key: "designSystem", href: "/stores/[storeId]/website/design", status: "live" },
       { key: "domainSeo", href: "/stores/[storeId]/website/domain", status: "live" },
       // Store and page SEO, keywords and the sitemap (owner, 2026-11-09).
       { key: "seo", href: "/stores/[storeId]/website/seo", status: "live" },
       { key: "socialMedia", href: "/stores/[storeId]/website/social", status: "live" },
       { key: "pages", href: "/stores/[storeId]/website/pages", status: "live" },
-      { key: "blog", href: "/stores/[storeId]/website/blog", status: "live" },
       { key: "forms", href: "/stores/[storeId]/website/forms", countKey: "forms", status: "live" },
       { key: "mediaLibrary", href: "/stores/[storeId]/website/media", status: "live" },
+    ],
+  },
+  // The blog has its own group (owner, 2026-11-27); its label only opens it.
+  {
+    kind: "group",
+    key: "blogGroup",
+    icon: Newspaper,
+    feature: "storeBuilder",
+    items: [
+      { key: "blog", href: "/stores/[storeId]/website/blog", status: "live" },
+      { key: "blogCategories", href: "/stores/[storeId]/website/blog/categories", status: "live" },
     ],
   },
   {

@@ -116,7 +116,87 @@ export const BLOG_FIELDS: readonly CmsFieldDef[] = [
   { key: "body", label: "Body", type: "richtext" },
   { key: "tags", label: "Tags", type: "tags" },
   { key: "authorName", label: "Author", type: "text" },
+  /** One of the blog's categories (`BlogCategory.id`), or absent. The server drops an id the blog doesn't have. */
+  { key: "categoryId", label: "Category", type: "text" },
 ];
+
+// ---------------------------------------------------------------------------
+// Blog categories (owner, 2026-11-27)
+// ---------------------------------------------------------------------------
+//
+// Stored on the blog collection row itself, `cms_collections.settings.categories`
+// (jsonb, ordered), so no table is needed. A post points at one with
+// `data.categoryId`. Ids are short random strings, safe in a URL (?category=).
+
+export const BLOG_MAX_CATEGORIES = 50;
+export const BLOG_CATEGORY_NAME_MAX = 60;
+export const BLOG_CATEGORY_ID_RE = /^[a-z0-9]{10}$/;
+
+export type BlogCategory = { id: string; name: string };
+
+export const blogCategoryNameSchema = z.string().trim().min(1).max(BLOG_CATEGORY_NAME_MAX);
+
+/** The categories kept in a blog collection's `settings` (bad entries are skipped). */
+export function parseBlogCategories(settings: unknown): BlogCategory[] {
+  const raw = (settings as { categories?: unknown } | null)?.categories;
+  if (!Array.isArray(raw)) return [];
+  const out: BlogCategory[] = [];
+  for (const entry of raw) {
+    const { id, name } = (entry ?? {}) as { id?: unknown; name?: unknown };
+    if (typeof id !== "string" || !BLOG_CATEGORY_ID_RE.test(id) || out.some((c) => c.id === id)) continue;
+    const parsed = blogCategoryNameSchema.safeParse(name);
+    if (parsed.success) out.push({ id, name: parsed.data });
+    if (out.length >= BLOG_MAX_CATEGORIES) break;
+  }
+  return out;
+}
+
+/** A new category id (10 lowercase letters and digits). */
+export function newBlogCategoryId(random: () => number = Math.random): string {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let id = "";
+  for (let i = 0; i < 10; i++) id += alphabet[Math.floor(random() * alphabet.length)];
+  return id;
+}
+
+export const blogCategoryOpSchema = z.discriminatedUnion("op", [
+  z.strictObject({ op: z.literal("add"), name: blogCategoryNameSchema }),
+  z.strictObject({ op: z.literal("rename"), id: z.string().regex(BLOG_CATEGORY_ID_RE), name: blogCategoryNameSchema }),
+  z.strictObject({ op: z.literal("delete"), id: z.string().regex(BLOG_CATEGORY_ID_RE) }),
+  z.strictObject({ op: z.literal("move"), id: z.string().regex(BLOG_CATEGORY_ID_RE), direction: z.enum(["up", "down"]) }),
+]);
+export type BlogCategoryOp = z.infer<typeof blogCategoryOpSchema>;
+export type BlogCategoryOpError = "not_found" | "duplicate_name" | "limit_reached";
+
+const sameName = (a: string, b: string) => a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
+
+/** The list after one seller change (pure; `newId` names an added category). */
+export function applyBlogCategoryOp(
+  list: readonly BlogCategory[],
+  op: BlogCategoryOp,
+  newId: string,
+): { success: true; list: BlogCategory[] } | { success: false; error: BlogCategoryOpError } {
+  const index = op.op === "add" ? -1 : list.findIndex((c) => c.id === op.id);
+  if (op.op !== "add" && index < 0) return { success: false, error: "not_found" };
+  switch (op.op) {
+    case "add":
+      if (list.length >= BLOG_MAX_CATEGORIES) return { success: false, error: "limit_reached" };
+      if (list.some((c) => sameName(c.name, op.name))) return { success: false, error: "duplicate_name" };
+      return { success: true, list: [...list, { id: newId, name: op.name.trim() }] };
+    case "rename":
+      if (list.some((c) => c.id !== op.id && sameName(c.name, op.name))) return { success: false, error: "duplicate_name" };
+      return { success: true, list: list.map((c) => (c.id === op.id ? { ...c, name: op.name.trim() } : c)) };
+    case "delete":
+      return { success: true, list: list.filter((c) => c.id !== op.id) };
+    case "move": {
+      const target = op.direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= list.length) return { success: true, list: [...list] };
+      const next = [...list];
+      [next[index], next[target]] = [next[target]!, next[index]!];
+      return { success: true, list: next };
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Collections

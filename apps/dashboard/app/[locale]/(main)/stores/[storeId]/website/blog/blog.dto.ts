@@ -11,6 +11,8 @@ export type BlogPostListItem = {
   updatedAt: string;
   tags: string[];
   coverImage: string | null;
+  /** The post's blog category id, or null. */
+  categoryId: string | null;
 };
 
 export type BlogPostSeo = { title: string; description: string; ogImage: string; noindex: boolean };
@@ -24,6 +26,8 @@ export type BlogPostForm = {
   body: string;
   tags: string[];
   authorName: string;
+  /** One of the blog's categories, or "" for none. */
+  categoryId: string;
   /** draft | publish now (or keep the date) | schedule at `scheduledAt`. */
   mode: "draft" | "publish" | "schedule";
   /** `datetime-local` value in the seller's time zone. */
@@ -34,7 +38,16 @@ export type BlogPostForm = {
 export type BlogRevision = { id: string; reason: string; createdAt: string; title: string; status: string };
 
 /** Error keys under `websiteBlog.errors.*`. */
-export type BlogErrorKey = "invalidInput" | "readOnly" | "notFound" | "slugTaken" | "invalidData" | "rateLimited" | "generic";
+export type BlogErrorKey =
+  | "invalidInput"
+  | "readOnly"
+  | "notFound"
+  | "slugTaken"
+  | "invalidData"
+  | "rateLimited"
+  | "duplicateName"
+  | "limitReached"
+  | "generic";
 
 export type BlogResult<T> = { success: true; data: T } | { success: false; error: BlogErrorKey; fields?: string[] };
 
@@ -44,4 +57,9 @@ export const BLOG_ERRORS: Record<string, BlogErrorKey> = {
   not_found: "notFound",
   slug_taken: "slugTaken",
   invalid_data: "invalidData",
+  duplicate_name: "duplicateName",
+  limit_reached: "limitReached",
 };
+
+/** A blog category as the categories page and the post editor show it. */
+export type BlogCategoryItem = { id: string; name: string; postCount: number };

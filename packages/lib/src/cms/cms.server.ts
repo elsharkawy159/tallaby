@@ -33,9 +33,16 @@ import {
 } from "@workspace/db";
 import { articlePlainText, sanitizeArticleHtml } from "@workspace/store-sections/config";
 import {
+  BLOG_CATEGORY_ID_RE,
   BLOG_COLLECTION_SLUG,
   BLOG_FIELDS,
   CMS_MAX_COLLECTIONS,
+  type BlogCategory,
+  type BlogCategoryOpError,
+  applyBlogCategoryOp,
+  blogCategoryOpSchema,
+  newBlogCategoryId,
+  parseBlogCategories,
   type CmsDataIssue,
   type CmsFieldDef,
   type CmsItemState,
@@ -67,7 +74,8 @@ export type CmsError =
   | "reserved_slug"
   | "limit_reached"
   | "system_collection"
-  | "invalid_data";
+  | "invalid_data"
+  | BlogCategoryOpError;
 
 export type CmsResult<T> = { success: true; data: T } | { success: false; error: CmsError; issues?: CmsDataIssue[] };
 
@@ -339,6 +347,8 @@ function toItem(row: RawItem, now = new Date()): CmsItemRow {
 export type CmsItemFilters = {
   state?: CmsItemState | "all";
   tag?: string;
+  /** Blog: only posts of this category id. */
+  category?: string;
   search?: string;
   limit?: number;
   offset?: number;
@@ -375,6 +385,7 @@ export async function listCmsItems(
     eq(cmsItems.collectionId, collectionId),
     stateFilter(filters.state),
     tag ? sql`${cmsItems.data} -> 'tags' ? ${tag}` : undefined,
+    filters.category && BLOG_CATEGORY_ID_RE.test(filters.category) ? sql`${cmsItems.data} ->> 'categoryId' = ${filters.category}` : undefined,
     search
       ? or(ilike(cmsItems.slug, `%${search.replace(/[%_\\]/g, "\\$&")}%`), sql`${cmsItems.data} ->> ${titleKey} ILIKE ${`%${search.replace(/[%_\\]/g, "\\$&")}%`}`)
       : undefined,
@@ -419,7 +430,7 @@ export async function getCmsItem(
 }
 
 /** Item data validated against the collection, rich text sanitized, blog extras derived. */
-function prepareData(collection: { kind: string; fields: CmsFieldDef[] }, raw: Record<string, unknown>) {
+function prepareData(collection: { kind: string; fields: CmsFieldDef[]; settings?: unknown }, raw: Record<string, unknown>) {
   const parsed = parseCmsItemData(collection.fields, raw);
   if (!parsed.success) throw new CmsActionError("invalid_data", parsed.issues);
   const data = parsed.data;
@@ -432,6 +443,8 @@ function prepareData(collection: { kind: string; fields: CmsFieldDef[] }, raw: R
   }
   if (collection.kind === "blog") {
     data.readingMinutes = readingMinutes(articlePlainText(typeof data.body === "string" ? data.body : ""));
+    // A post keeps a category only while the blog has it (never trust the client's id).
+    if (data.categoryId !== undefined && !parseBlogCategories(collection.settings).some((c) => c.id === data.categoryId)) delete data.categoryId;
   }
   return data;
 }
@@ -460,12 +473,12 @@ export async function saveCmsItem(
     const saved = await q.transaction(async (tx) => {
       await requireOwnStore(tx, sellerId, storeId, true);
       const [collectionRow] = await tx
-        .select({ kind: cmsCollections.kind, fields: cmsCollections.fields })
+        .select({ kind: cmsCollections.kind, fields: cmsCollections.fields, settings: cmsCollections.settings })
         .from(cmsCollections)
         .where(and(eq(cmsCollections.id, collectionId), eq(cmsCollections.storeId, storeId)))
         .limit(1);
       if (!collectionRow) throw new CmsActionError("not_found");
-      const data = prepareData({ kind: collectionRow.kind, fields: collectionFields(collectionRow) }, parsed.data.data);
+      const data = prepareData({ kind: collectionRow.kind, fields: collectionFields(collectionRow), settings: collectionRow.settings }, parsed.data.data);
 
       let current: { publishedAt: string | null } | undefined;
       if (itemId) {
@@ -660,17 +673,19 @@ export async function getPublicCmsCollection(storeId: string, collectionSlug: st
 export async function listPublicCmsItems(
   storeId: string,
   collectionSlug: string,
-  options: { limit?: number; offset?: number; tag?: string | null } = {},
+  options: { limit?: number; offset?: number; tag?: string | null; category?: string | null } = {},
   q: Queryable = db,
 ): Promise<{ items: PublicCmsItem[]; total: number }> {
   if (!UUID_RE.test(storeId) || !/^[a-z0-9-]{1,128}$/.test(collectionSlug)) return { items: [], total: 0 };
   const tag = options.tag?.trim().toLowerCase().slice(0, 40) || null;
+  const category = options.category && BLOG_CATEGORY_ID_RE.test(options.category) ? options.category : null;
   const where = and(
     eq(cmsItems.storeId, storeId),
     eq(cmsCollections.slug, collectionSlug),
     isPublic,
     liveStore,
     tag ? sql`${cmsItems.data} -> 'tags' ? ${tag}` : undefined,
+    category ? sql`${cmsItems.data} ->> 'categoryId' = ${category}` : undefined,
   );
   const limit = Math.min(Math.max(options.limit ?? 12, 1), 50);
   const [rows, [{ n } = { n: 0 }]] = await Promise.all([
@@ -718,6 +733,33 @@ export async function listPublicBlogTags(storeId: string, q: Queryable = db): Pr
     LIMIT 30
   `);
   return [...rows].map((r) => ({ tag: r.tag, count: Number(r.n) }));
+}
+
+/**
+ * The store's blog categories that have at least one published, due post, in
+ * the seller's order, with their post counts (store resolved from the host).
+ */
+export async function listPublicBlogCategories(storeId: string, q: Queryable = db): Promise<(BlogCategory & { count: number })[]> {
+  if (!UUID_RE.test(storeId)) return [];
+  const [collection] = await q
+    .select({ settings: cmsCollections.settings })
+    .from(cmsCollections)
+    .innerJoin(stores, and(eq(stores.id, cmsCollections.storeId), isNull(stores.deletedAt), eq(stores.status, "active")))
+    .where(and(eq(cmsCollections.storeId, storeId), eq(cmsCollections.slug, BLOG_COLLECTION_SLUG)))
+    .limit(1);
+  const categories = parseBlogCategories(collection?.settings);
+  if (!categories.length) return [];
+  const rows = await q.execute<{ id: string; n: number }>(sql`
+    SELECT i.data ->> 'categoryId' AS id, count(*)::int AS n
+    FROM ${cmsItems} i
+    JOIN ${cmsCollections} c ON c.id = i.collection_id AND c.store_id = i.store_id AND c.slug = ${BLOG_COLLECTION_SLUG}
+    WHERE i.store_id = ${storeId}
+      AND i.status = 'published' AND i.published_at IS NOT NULL AND i.published_at <= now()
+      AND i.data ? 'categoryId'
+    GROUP BY 1
+  `);
+  const counts = new Map([...rows].map((r) => [r.id, Number(r.n)]));
+  return categories.filter((c) => (counts.get(c.id) ?? 0) > 0).map((c) => ({ ...c, count: counts.get(c.id)! }));
 }
 
 /**
@@ -808,4 +850,76 @@ export async function saveBlogPost(
   const blog = await ensureBlogCollection(sellerId, storeId, q);
   if (!blog.success) return blog;
   return saveCmsItem(sellerId, storeId, blog.data.id, postId, input, userId, q);
+}
+
+/**
+ * The blog's categories in the seller's order, each with its number of posts
+ * (any state). Creates the blog on first use. Null for a foreign store.
+ */
+export async function listBlogCategories(
+  sellerId: string,
+  storeId: string,
+  q: Queryable = db,
+): Promise<(BlogCategory & { postCount: number })[] | null> {
+  const blog = await ensureBlogCollection(sellerId, storeId, q);
+  if (!blog.success) return null;
+  const [row] = await q
+    .select({ settings: cmsCollections.settings })
+    .from(cmsCollections)
+    .where(and(eq(cmsCollections.id, blog.data.id), eq(cmsCollections.storeId, storeId)))
+    .limit(1);
+  const categories = parseBlogCategories(row?.settings);
+  if (!categories.length) return [];
+  const counts = await q
+    .select({ id: sql<string>`${cmsItems.data} ->> 'categoryId'`, n: count() })
+    .from(cmsItems)
+    .where(and(eq(cmsItems.storeId, storeId), eq(cmsItems.collectionId, blog.data.id), sql`${cmsItems.data} ? 'categoryId'`))
+    .groupBy(sql`${cmsItems.data} ->> 'categoryId'`);
+  const byId = new Map(counts.map((r) => [r.id, Number(r.n)]));
+  return categories.map((c) => ({ ...c, postCount: byId.get(c.id) ?? 0 }));
+}
+
+/**
+ * Adds, renames, deletes or moves one blog category. The blog row is locked
+ * for the change, so concurrent edits never lose each other; other `settings`
+ * keys are kept. Deleting a category leaves its posts without one (their
+ * stale id is ignored on read and dropped on their next save).
+ */
+export async function updateBlogCategories(
+  sellerId: string,
+  storeId: string,
+  input: unknown,
+  q: Queryable = db,
+): Promise<CmsResult<{ categories: BlogCategory[]; id: string | null }>> {
+  const parsed = blogCategoryOpSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  try {
+    await requireOwnStore(q, sellerId, storeId, true);
+    const blog = await ensureBlogCollection(sellerId, storeId, q);
+    if (!blog.success) return blog;
+    const result = await q.transaction(async (tx) => {
+      const [row] = await tx
+        .select({ settings: cmsCollections.settings })
+        .from(cmsCollections)
+        .where(and(eq(cmsCollections.id, blog.data.id), eq(cmsCollections.storeId, storeId)))
+        .for("update");
+      if (!row) throw new CmsActionError("not_found");
+      const current = parseBlogCategories(row.settings);
+      let newId = newBlogCategoryId();
+      while (current.some((c) => c.id === newId)) newId = newBlogCategoryId();
+      const next = applyBlogCategoryOp(current, parsed.data, newId);
+      if (!next.success) throw new CmsActionError(next.error);
+      await tx
+        .update(cmsCollections)
+        .set({
+          settings: sql`coalesce(${cmsCollections.settings}, '{}'::jsonb) || jsonb_build_object('categories', ${JSON.stringify(next.list)}::jsonb)`,
+          updatedAt: sql`now()`,
+        })
+        .where(and(eq(cmsCollections.id, blog.data.id), eq(cmsCollections.storeId, storeId)));
+      return { categories: next.list, id: parsed.data.op === "add" ? newId : parsed.data.id };
+    });
+    return { success: true, data: result };
+  } catch (error) {
+    return fail(error);
+  }
 }

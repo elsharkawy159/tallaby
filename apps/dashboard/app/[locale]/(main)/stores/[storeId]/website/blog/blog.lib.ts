@@ -10,6 +10,7 @@ export const EMPTY_POST: BlogPostForm = {
   body: "",
   tags: [],
   authorName: "",
+  categoryId: "",
   mode: "draft",
   scheduledAt: "",
   seo: { title: "", description: "", ogImage: "", noindex: false },
@@ -61,6 +62,7 @@ export function toPostInput(form: BlogPostForm, currentPublishedAt: string | nul
       body: form.body,
       tags: form.tags,
       authorName: form.authorName,
+      categoryId: form.categoryId,
     },
     seo: form.seo,
   };
@@ -83,6 +85,7 @@ export function toPostForm(item: {
     body: str(item.data.body),
     tags: Array.isArray(item.data.tags) ? item.data.tags.filter((t): t is string => typeof t === "string") : [],
     authorName: str(item.data.authorName),
+    categoryId: str(item.data.categoryId),
     mode: item.state === "draft" ? "draft" : item.state === "scheduled" ? "schedule" : "publish",
     scheduledAt: item.state === "scheduled" ? toLocalInput(item.publishedAt) : "",
     seo: item.seo,

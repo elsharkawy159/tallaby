@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { storeLocalePrefix, storeUrl } from "@workspace/lib/storefront";
 import { Link } from "@/i18n/navigation";
 import { cmsImageUrl, toContentSummary } from "@/lib/store-cms/cms.lib";
-import { getCachedBlogPage, getCachedCmsItem } from "@/lib/store-cms/cms.server";
+import { getCachedBlogCategories, getCachedBlogPage, getCachedCmsItem } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
 import { storePageMetadata } from "@/lib/store-seo/store-seo.lib";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
@@ -56,10 +56,12 @@ export default async function StoreBlogPostPage({ params }: BlogPostProps) {
   // Website offline: the layout shows the offline page instead.
   if (await isSubdomainOfflineForRequest(subdomain)) return null;
   const { store, item, post } = await loadPost(subdomain, postSlug);
-  const [t, recent] = await Promise.all([
+  const [t, recent, categories] = await Promise.all([
     getTranslations({ locale, namespace: "storefrontBlog" }),
-    getCachedBlogPage(store.id, store.storeId, 1, null),
+    getCachedBlogPage(store.id, store.storeId, 1, null, null),
+    getCachedBlogCategories(store.id, store.storeId),
   ]);
+  const category = categories.find((c) => c.id === item.data.categoryId) ?? null;
   const base = storeUrl(store.subdomain, store.customDomain);
   const url = postUrl(base, locale, item.slug, store.defaultLocale);
   const image = cmsImageUrl(item.seo.ogImage || post.image);
@@ -98,6 +100,11 @@ export default async function StoreBlogPostPage({ params }: BlogPostProps) {
           {t("backToBlog")}
         </Link>
         <header className="mt-4 space-y-3">
+          {category && (
+            <Link href={`/blog?category=${category.id}`} className="inline-block text-sm font-semibold text-(--sf-brand)">
+              {category.name}
+            </Link>
+          )}
           <PostMeta post={post} locale={locale} minutesLabel={minutesLabel} />
           <h1 className="text-balance text-3xl font-bold leading-tight md:text-4xl">{post.title}</h1>
           {post.excerpt && <p className="text-pretty text-lg leading-relaxed text-(--sf-muted)">{post.excerpt}</p>}

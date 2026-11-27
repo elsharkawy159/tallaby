@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { RESERVED_PAGE_SLUGS } from "@workspace/store-sections";
 import {
+  BLOG_CATEGORY_ID_RE,
   BLOG_FIELDS,
+  BLOG_MAX_CATEGORIES,
+  applyBlogCategoryOp,
+  blogCategoryOpSchema,
+  newBlogCategoryId,
+  parseBlogCategories,
   RESERVED_COLLECTION_SLUGS,
   cmsCollectionInputSchema,
   cmsItemInputSchema,
@@ -118,5 +124,50 @@ describe("helpers", () => {
       image: "x.png",
       tags: ["a"],
     });
+  });
+});
+
+describe("blog categories", () => {
+  const list = [
+    { id: "aaaaaaaaaa", name: "News" },
+    { id: "bbbbbbbbbb", name: "Guides" },
+  ];
+
+  it("reads settings tolerantly", () => {
+    expect(parseBlogCategories(null)).toEqual([]);
+    expect(parseBlogCategories({ categories: "x" })).toEqual([]);
+    expect(
+      parseBlogCategories({
+        other: 1,
+        categories: [{ id: "aaaaaaaaaa", name: "  News " }, { id: "BAD", name: "x" }, { id: "aaaaaaaaaa", name: "dup" }, { id: "cccccccccc", name: "" }, null],
+      }),
+    ).toEqual([{ id: "aaaaaaaaaa", name: "News" }]);
+  });
+
+  it("makes url-safe ids", () => {
+    expect(newBlogCategoryId()).toMatch(BLOG_CATEGORY_ID_RE);
+  });
+
+  it("adds, renames, deletes and moves", () => {
+    expect(applyBlogCategoryOp(list, { op: "add", name: "Tips" }, "cccccccccc")).toEqual({ success: true, list: [...list, { id: "cccccccccc", name: "Tips" }] });
+    expect(applyBlogCategoryOp(list, { op: "add", name: " news " }, "cccccccccc")).toEqual({ success: false, error: "duplicate_name" });
+    expect(applyBlogCategoryOp(list, { op: "rename", id: "aaaaaaaaaa", name: "NEWS" }, "x")).toEqual({ success: true, list: [{ id: "aaaaaaaaaa", name: "NEWS" }, list[1]] });
+    expect(applyBlogCategoryOp(list, { op: "rename", id: "aaaaaaaaaa", name: "guides" }, "x")).toEqual({ success: false, error: "duplicate_name" });
+    expect(applyBlogCategoryOp(list, { op: "delete", id: "aaaaaaaaaa" }, "x")).toEqual({ success: true, list: [list[1]] });
+    expect(applyBlogCategoryOp(list, { op: "delete", id: "zzzzzzzzzz" }, "x")).toEqual({ success: false, error: "not_found" });
+    expect(applyBlogCategoryOp(list, { op: "move", id: "bbbbbbbbbb", direction: "up" }, "x")).toEqual({ success: true, list: [list[1], list[0]] });
+    expect(applyBlogCategoryOp(list, { op: "move", id: "bbbbbbbbbb", direction: "down" }, "x")).toEqual({ success: true, list });
+  });
+
+  it("caps the list and validates ops", () => {
+    const full = Array.from({ length: BLOG_MAX_CATEGORIES }, (_, i) => ({ id: `c${String(i).padStart(9, "0")}`, name: `n${i}` }));
+    expect(applyBlogCategoryOp(full, { op: "add", name: "one more" }, "zzzzzzzzzz")).toEqual({ success: false, error: "limit_reached" });
+    expect(blogCategoryOpSchema.safeParse({ op: "add", name: "" }).success).toBe(false);
+    expect(blogCategoryOpSchema.safeParse({ op: "delete", id: "../x" }).success).toBe(false);
+    expect(blogCategoryOpSchema.safeParse({ op: "add", name: "x", storeId: "s" }).success).toBe(false);
+  });
+
+  it("keeps a post's category id as blog data", () => {
+    expect(parseCmsItemData(BLOG_FIELDS, { title: "T", categoryId: "aaaaaaaaaa" })).toEqual({ success: true, data: { title: "T", categoryId: "aaaaaaaaaa" } });
   });
 });

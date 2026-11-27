@@ -1,3 +1,4 @@
+import { listBlogCategories } from "@workspace/lib/cms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { EMPTY_POST } from "../blog.lib";
@@ -10,6 +11,7 @@ export const instant = false;
 export default async function NewBlogPostPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadWebsiteStorePage(storeId);
+  const categories = await listBlogCategories(store.sellerId, store.id);
   return (
     <PostEditor
       storeId={store.id}
@@ -19,6 +21,7 @@ export default async function NewBlogPostPage({ params }: { params: Promise<{ st
       liveBaseUrl={storeUrl(store.subdomain)}
       defaultAuthor={store.name}
       readOnly={store.status !== "active"}
+      categories={categories ?? []}
     />
   );
 }
