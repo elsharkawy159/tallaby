@@ -97,6 +97,12 @@ export function OrderCard({
                   {t("testBadge")}
                 </span>
               )}
+              {/* F-108d: a digital-only order has nothing to ship. */}
+              {order.isDigitalOnly && (
+                <span className="rounded-full bg-(--s-fill) px-2 py-0.5 font-sans text-[11px] font-semibold text-(--s-ink)">
+                  {t("digitalBadge")}
+                </span>
+              )}
             </p>
             <p className="text-xs text-(--s-subtle)">{formatDateTime(order.createdAt, locale)}</p>
             <p className="break-words text-xs text-(--s-subtle)">{order.storeName ?? t("channel.marketplace")}</p>

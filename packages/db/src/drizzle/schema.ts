@@ -1990,6 +1990,8 @@ export const digitalOrders = pgTable("digital_orders", {
 	index("digital_orders_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
 	index("digital_orders_buyer_id_idx").using("btree", table.buyerId.asc().nullsLast().op("uuid_ops")),
 	index("digital_orders_fulfillment_status_idx").using("btree", table.fulfillmentStatus.asc().nullsLast().op("enum_ops")),
+	// F-108d (0190): one link per digital order line; created only when no duplicates exist.
+	uniqueIndex("digital_orders_order_item_id_key").using("btree", table.orderItemId).where(sql`order_item_id IS NOT NULL`),
 	foreignKey({
 		columns: [table.orderId],
 		foreignColumns: [orders.id],

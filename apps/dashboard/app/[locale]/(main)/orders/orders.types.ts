@@ -120,6 +120,10 @@ export interface SellerOrderRow {
   canRestockReturn: boolean;
   /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
   confirmMessage: string | null;
+  /** F-108d: every line is a digital product (`orders.is_digital_only`); badge "Digital". */
+  isDigitalOnly?: boolean;
+  /** F-108d: at least one of this seller's lines is a digital product; the panel loads "Digital delivery". */
+  hasDigital?: boolean;
   /** The order's details for WhatsApp, without "please confirm", when there is no confirmMessage (store order with a phone, not a test). */
   detailsMessage: string | null;
   /** Hours a new order has waited unconfirmed, once past UNCONFIRMED_AFTER_HOURS. */

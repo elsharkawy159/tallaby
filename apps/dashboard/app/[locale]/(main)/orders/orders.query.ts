@@ -244,7 +244,8 @@ export async function loadSellerOrders(
         },
         with: {
           product: {
-            columns: { images: true },
+            // productType: F-108d, the order panel's "Digital delivery".
+            columns: { images: true, productType: true },
             with: { productTranslations: { columns: { locale: true, slug: true } } },
           },
         },
@@ -459,6 +460,9 @@ export async function loadSellerOrders(
       flow,
       isManual: o.orderSource === "manual",
       isTest: o.isTest,
+      // F-108d: the "Digital" badge and the order panel's "Digital delivery".
+      isDigitalOnly: Boolean(o.isDigitalOnly),
+      hasDigital: mine.some((i) => i.product?.productType === "digital"),
       canRestockReturn: canRestockReturn(flow.stage, o.metadata, Boolean(flow.readOnly)),
       confirmMessage:
         // Never a WhatsApp message for a test order: its buyer is the seller (F-76).

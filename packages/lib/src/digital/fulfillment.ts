@@ -33,8 +33,9 @@ type CreatedDigitalOrder = {
  * Safe to call more than once and at the same time (two payment webhooks):
  * the order's rows are made inside one transaction holding a per-order
  * advisory lock, so a second call waits, sees the rows and adds nothing.
- * digital_orders.order_item_id has no unique index, so the lock is what
- * prevents duplicates. Only rows made by this call are emailed, so a repeated
+ * The lock is what prevents duplicates; 0190 adds a unique partial index on
+ * digital_orders.order_item_id as a second guard where it could be created
+ * (F-108d), and the code does not need it. Only rows made by this call are emailed, so a repeated
  * webhook never mails twice. A license key is claimed with
  * FOR UPDATE SKIP LOCKED, so two orders never get the same key.
  */

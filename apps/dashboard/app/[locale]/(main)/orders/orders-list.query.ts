@@ -65,6 +65,9 @@ const stagesCondition = (stages: readonly SellerOrderStage[]): SQL =>
     sql`, `,
   )})`;
 
+/** A digital-only order (`orders.is_digital_only`) has nothing to ship: kept out of the to-prepare count and the carrier queues (F-108d). */
+const notDigitalOnly = sql`coalesce(${orders.isDigitalOnly}, false) = false`;
+
 /** The row's bosta?.needsAttention. */
 const needsAttentionSql = (sellerId: string) => sql`COALESCE((
   SELECT sh.needs_attention AND sh.carrier = 'bosta' AND sh.seller_id = ${sellerId}
@@ -179,6 +182,8 @@ export async function countOrdersAwaitingPrep(sellerId: string, channel: OrdersC
         ...scopeConditions(sellerId, { channel, q: "", attention: false }),
         // A test order is never prepared (F-76).
         eq(orders.isTest, false),
+        // A digital-only order has nothing to prepare or ship (F-108d).
+        notDigitalOnly,
         inArray(sql`COALESCE(${orders.status}::text, 'pending')`, [...AWAITING_PREP_ORDER_STATUSES]),
         stagesCondition(AWAITING_PREP_STAGES),
       ),
@@ -210,5 +215,5 @@ export function listFilteredOrderIds(sellerId: string, filters: OrdersQuery, lim
 
 /** Filtered orders of one store still waiting to ship, oldest work included: the Bosta and Wassalha queues. */
 export function listShipQueueIds(sellerId: string, filters: OrdersQuery, limit: number) {
-  return selectIds(sellerId, filters, { limit }, stagesCondition(["new", "to_ship"]));
+  return selectIds(sellerId, filters, { limit }, and(stagesCondition(["new", "to_ship"]), notDigitalOnly));
 }

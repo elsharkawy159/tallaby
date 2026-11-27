@@ -132,6 +132,12 @@ function OrdersTable({
             >
               <bdi dir="ltr">#{row.original.orderNumber}</bdi>
             </button>
+            {/* F-108d: a digital-only order has nothing to ship. */}
+            {row.original.isDigitalOnly && (
+              <span className="ms-1.5 rounded-full bg-(--s-fill) px-2 py-0.5 text-[11px] font-semibold text-(--s-ink)">
+                {t("digitalBadge")}
+              </span>
+            )}
             <div className="text-xs text-(--s-subtle)">
               {formatDateTime(row.original.createdAt, locale)}
             </div>

@@ -28,6 +28,7 @@ import { DetailRow, DIALOG_CLOSE_40, PanelSection, PhoneText } from "./orders-ui
 import { PrintOrdersButton } from "./print-orders-button.client";
 import { canExportForWassalha, WassalhaExportButton } from "./wassalha-export.client";
 import { WassalhaTrackingCard } from "./wassalha-tracking.client";
+import { DigitalDeliveryPanel } from "./digital/digital-delivery.client"; // F-108d
 
 const BOX = "rounded-2xl border border-(--s-line) p-3.5";
 
@@ -227,6 +228,8 @@ export function OrderDetailsDialog({
               <FlowNote order={order} />
               <BostaDeliveryCard order={order} />
               <WassalhaTrackingCard order={order} />
+              {/* F-108d: confirm a transfer, then send or renew the one-time download link. */}
+              <DigitalDeliveryPanel key={order.id} order={order} />
 
               <div className="grid grid-cols-5 items-start gap-5 max-[760px]:grid-cols-1">
                 <div className="col-span-3 flex min-w-0 flex-col gap-5 max-[760px]:col-span-1">
