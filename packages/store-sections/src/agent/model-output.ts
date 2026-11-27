@@ -42,7 +42,23 @@ export const editorAgentModelOutputSchema = z.object({
   reply: z.string().describe(`What you did or what you need, in the seller's language, at most ${MAX_AGENT_REPLY_LENGTH} characters.`),
   ops: z.array(editorAgentModelOpSchema).describe(`The edits, in order. At most ${MAX_OPS_PER_TURN}. Empty when you only answer.`),
 });
-export type EditorAgentModelOutput = z.infer<typeof editorAgentModelOutputSchema>;
+export type EditorAgentModelOutput = z.infer<typeof editorAgentModelOutputSchema> & { suggestions?: string[] | null };
+
+export const MAX_AGENT_SUGGESTIONS = 3;
+export const MAX_AGENT_SUGGESTION_LENGTH = 60;
+
+/**
+ * The same answer plus follow-up suggestions, for hosts that show them
+ * ("Edit with AI"). One flat, nullable list of short strings, so the schema
+ * stays well under the structured-output complexity limit. The editor's dock
+ * keeps `editorAgentModelOutputSchema` (no extra output tokens there).
+ */
+export const editorAgentModelOutputWithSuggestionsSchema = editorAgentModelOutputSchema.extend({
+  suggestions: z
+    .array(z.string())
+    .nullable()
+    .describe(`Up to ${MAX_AGENT_SUGGESTIONS} next edits the seller can ask for with one tap, each at most ${MAX_AGENT_SUGGESTION_LENGTH} characters, in the reply's language. Null when you ask a question.`),
+});
 
 /** A row that can never be a valid op (its JSON doesn't parse): `applySectionOps` refuses it as `invalid_op`. */
 const INVALID = Object.freeze({ op: "invalid" });
@@ -103,9 +119,31 @@ export function toSectionOpCandidate(row: EditorAgentModelOp): unknown {
   }
 }
 
-/** The reply, plain and capped. */
-export function cleanAgentReply(reply: unknown): string {
+/** The reply, plain and capped (`max` for hosts with a longer answer, such as advice). */
+export function cleanAgentReply(reply: unknown, max = MAX_AGENT_REPLY_LENGTH): string {
   if (typeof reply !== "string") return "";
   // eslint-disable-next-line no-control-regex
-  return reply.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, MAX_AGENT_REPLY_LENGTH);
+  return reply.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, max);
+}
+
+/**
+ * The follow-up suggestions: plain one-line strings, no markup, each at most
+ * `MAX_AGENT_SUGGESTION_LENGTH` characters (a longer one is dropped, never
+ * cut mid-sentence), no repeats, at most `MAX_AGENT_SUGGESTIONS`.
+ */
+export function cleanAgentSuggestions(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const item of value) {
+    if (typeof item !== "string") continue;
+    // eslint-disable-next-line no-control-regex
+    const text = item.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/<[^>]{0,200}>/g, " ").replace(/\s+/g, " ").trim();
+    const key = text.toLowerCase();
+    if (!text || text.length > MAX_AGENT_SUGGESTION_LENGTH || seen.has(key)) continue;
+    seen.add(key);
+    out.push(text);
+    if (out.length === MAX_AGENT_SUGGESTIONS) break;
+  }
+  return out;
 }

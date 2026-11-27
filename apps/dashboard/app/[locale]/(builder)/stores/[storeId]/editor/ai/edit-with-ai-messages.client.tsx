@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Check, FileSpreadsheet, Loader2, ShieldAlert, Undo2 } from "lucide-react";
+import { ArrowUpRight, Check, FileSpreadsheet, Loader2, ShieldAlert, Undo2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { SOCIAL_PLATFORMS } from "@workspace/store-sections/social";
 import { Link } from "@/i18n/navigation";
@@ -10,13 +10,14 @@ import { SellerButton } from "@/components/seller-ui";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { AssistantMessage as AssistantRow, SellerMessage } from "@/app/[locale]/(builder)/ai-builder/_components/chat-thread.client";
 import type { EditWithAiCard, EditWithAiError } from "./server/edit-with-ai.dto";
-import type { AssistantMessage, ChatMessage, ProposalView } from "./edit-with-ai-chat.lib";
+import { cleanLinks, type AssistantMessage, type ChatMessage, type ProposalView } from "./edit-with-ai-chat.lib";
 
 /**
  * The "Edit with AI" conversation: the seller's bubbles, the AI's replies
  * with what they changed on the canvas (a checklist; Undo while that change
  * is still the editor's newest undo step), confirm cards for store changes,
- * the products-file card, skipped changes and credits. Replies are announced
+ * the products-file card, links to the dashboard page that does what the
+ * chat couldn't, skipped changes and credits. Replies are announced
  * (`role="log"`, `aria-live="polite"`).
  */
 
@@ -132,7 +133,9 @@ function SentAttachments({ attachments }: { attachments: Extract<ChatMessage, { 
 
 function AssistantTurn({ message, storeId, canUndo, onUndo, onConfirm, onCancel }: { message: AssistantMessage } & Handlers) {
   const t = useTranslations("editWithAi.chat");
+  const tLinks = useTranslations("editWithAi.links");
   const changes = message.siteChanges;
+  const links = cleanLinks(message.links);
   return (
     <AssistantRow>
       <span className="sr-only">{t("assistant")}: </span>
@@ -171,6 +174,24 @@ function AssistantTurn({ message, storeId, canUndo, onUndo, onConfirm, onCancel 
         {message.cards.map((card) => (
           <ImportCard key={card.fileRef} card={card} />
         ))}
+        {links.length > 0 && (
+          <ul aria-label={tLinks("label")} className="flex flex-wrap gap-2">
+            {links.map((link) => (
+              <li key={link.key}>
+                {/* A new tab, so the editor and this chat stay open. */}
+                <Link
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-(--s-line) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-link) transition-colors hover:border-(--s-primary)"
+                >
+                  {tLinks(link.key)}
+                  <ArrowUpRight className="size-3.5 rtl:-scale-x-100" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
         {message.rejected > 0 && <span className="text-[12.5px] text-(--s-subtle)">{t("skipped", { count: message.rejected })}</span>}
         {message.creditsUsed > 0 && <span className="text-[11.5px] text-(--s-subtle)">{t("credits", { count: message.creditsUsed })}</span>}
       </div>

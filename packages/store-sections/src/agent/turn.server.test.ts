@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { SectionInstance } from "../config/schema";
 import { joinSectionFile } from "../code/section-file";
 import type { EditorAgentModelOp, EditorAgentModelOutput } from "./model-output";
-import { cleanAgentReply, toSectionOpCandidate } from "./model-output";
+import { cleanAgentReply, cleanAgentSuggestions, editorAgentModelOutputSchema, editorAgentModelOutputWithSuggestionsSchema, toSectionOpCandidate } from "./model-output";
+import { applySectionOps, MAX_OPS_PER_TURN, MAX_PAGE_OPS_PER_TURN, maxOpsFor } from "./section-ops";
+import { MAX_PAGE_PROMPT_BYTES } from "./serialize";
 import { buildAgentContent, runEditorAgentTurn, type EditorAgentTurnRequest } from "./turn.server";
 
 const hero: SectionInstance = {
@@ -166,6 +168,132 @@ describe("runEditorAgentTurn", () => {
 
   it("throws when the first call fails (the host reports it)", async () => {
     await expect(runEditorAgentTurn(request(), { callModel: async () => Promise.reject(new Error("down")) })).rejects.toThrow("down");
+  });
+});
+
+describe("page scope", () => {
+  const text = (id: string, nodeId: string, words: string): SectionInstance => ({
+    id,
+    sectionId: "custom-section",
+    version: 1,
+    props: {},
+    componentTree: [{ id: `${nodeId}-root`, type: "section", props: {}, children: [{ id: nodeId, type: "text", props: { text: words }, children: [] }] }],
+  });
+  const about = text("s-about", "n-about", "من نحن");
+  // A long section is cut at its own cap (about 12 KB), so three of them don't fit the page budget together.
+  const bigSection = (n: number): SectionInstance => {
+    const made = text(`s-big${n}`, `n-big${n}`, "x");
+    made.componentTree![0]!.children = Array.from({ length: 150 }, (_, i) => ({ id: `n-big${n}-${i}`, type: "text" as const, props: { text: "كلمة ".repeat(40) }, children: [] }));
+    return made;
+  };
+  const code: SectionInstance = {
+    id: "s-code",
+    sectionId: "custom-section",
+    version: 1,
+    props: {},
+    componentTree: [{ id: "n-croot", type: "section", props: {}, children: [{ id: "n-code", type: "code", props: { source: "<p>Hi</p>", css: "", schema: { name: "X", settings: [] }, settings: {}, blocks: [] }, children: [] }] }],
+  };
+  const page = [hero, about];
+  const pageRequest = (sections: SectionInstance[], extra: Partial<EditorAgentTurnRequest> = {}) =>
+    request({
+      message: "make the whole page clearer",
+      target: { kind: "page" },
+      section: null,
+      outline: sections.map((s) => ({ id: s.id, name: s.id, kind: "tree" })),
+      content: { sections },
+      pageSections: sections,
+      ...extra,
+    });
+
+  it("shows the page's sections, edits several in one call and marks the target", async () => {
+    const callModel = vi.fn(async (_args: { text: string }) =>
+      answer([
+        row({ op: "set_text", sectionId: "s-hero", nodeId: "n-title", prop: "text", ar: "اطلب الآن", en: "Order now" }),
+        row({ op: "set_text", sectionId: "s-about", nodeId: "n-about", prop: "text", ar: "قصتنا", en: "Our story" }),
+      ]),
+    );
+    const result = await runEditorAgentTurn(pageRequest(page, { page: { name: "Home", kind: "home" } }), { callModel });
+    expect(callModel).toHaveBeenCalledTimes(1);
+    const sent = callModel.mock.calls[0]![0].text;
+    expect(sent).toContain('Page: "Home", the store\'s home page.');
+    expect(sent).toContain("TREE SECTION s-hero");
+    expect(sent).toContain("TREE SECTION s-about");
+    expect(sent).toContain(`at most ${MAX_PAGE_OPS_PER_TURN} ops`);
+    expect(sent).not.toContain("Not shown this turn");
+    expect(result.applied.map((a) => a.sectionId)).toEqual(["s-hero", "s-about"]);
+    expect(result.target).toEqual({ kind: "page", scope: "page" });
+  });
+
+  it("refuses element and code ops on sections the model wasn't shown, but lets it move or remove them", async () => {
+    const sections = [hero, bigSection(1), bigSection(2), bigSection(3), code, about];
+    const callModel = vi.fn(async (_args: { text: string }) =>
+      answer([
+        row({ op: "set_text", sectionId: "s-big3", nodeId: "n-big3-0", prop: "text", ar: "x", en: "x" }),
+        row({ op: "set_style", sectionId: "s-code", nodeId: null, breakpoint: "desktop", styleJson: '{"paddingTop":8}' }),
+        row({ op: "update_code_section", sectionId: "s-code", file: GOOD_FILE }),
+        row({ op: "convert_to_code_section", sectionId: "s-big3", file: GOOD_FILE }),
+        row({ op: "set_text", sectionId: "s-about", nodeId: "n-about", prop: "text", ar: "قصتنا", en: "Our story" }),
+        row({ op: "move_section", sectionId: "s-big3", to: 5 }),
+        row({ op: "remove_section", sectionId: "s-code" }),
+      ]),
+    );
+    const result = await runEditorAgentTurn(pageRequest(sections), { callModel });
+    const sent = callModel.mock.calls[0]![0].text;
+    expect(sent).toContain("Not shown this turn: s-big3, s-code.");
+    expect(sent).toContain("TREE SECTION s-big2");
+    expect(sent).not.toContain("TREE SECTION s-big3");
+    expect(new TextEncoder().encode(sent).length).toBeLessThan(MAX_PAGE_PROMPT_BYTES + 2048);
+    expect(sent).not.toContain("CODE SECTION");
+    // A later, smaller section still fits after the one that was left out.
+    expect(sent).toContain("TREE SECTION s-about");
+    expect(result.rejected).toEqual([0, 1, 2, 3].map((index) => ({ index, code: "outside_target" })));
+    expect(result.applied.map((a) => a.op.op)).toEqual(["set_text", "move_section", "remove_section"]);
+    expect(result.content.sections.map((s) => s.id)).toEqual(["s-hero", "s-big1", "s-big2", "s-about", "s-big3"]);
+  });
+
+  it("allows more ops than a section turn, up to the page cap", async () => {
+    const many = (count: number) => Array.from({ length: count }, (_, i) => row({ op: "set_text", sectionId: "s-hero", nodeId: "n-title", prop: "text", ar: `ع ${i}`, en: `T ${i}` }));
+    const pageTurn = await runEditorAgentTurn(pageRequest(page), { callModel: async () => answer(many(MAX_PAGE_OPS_PER_TURN + 2)) });
+    expect(pageTurn.applied).toHaveLength(MAX_PAGE_OPS_PER_TURN);
+    expect(pageTurn.rejected.map((r) => r.code)).toEqual(["too_many_ops", "too_many_ops"]);
+    // The editor re-applies them with the returned target: the same cap.
+    expect(applySectionOps({ sections: page }, pageTurn.ops, { target: pageTurn.target, defaultLocale: "ar", allowCode: true }).applied).toHaveLength(MAX_PAGE_OPS_PER_TURN);
+    const sectionTurn = await runEditorAgentTurn(request(), { callModel: async () => answer(many(MAX_OPS_PER_TURN + 2)) });
+    expect(sectionTurn.applied).toHaveLength(MAX_OPS_PER_TURN);
+  });
+
+  it("is opt-in: a host that sends no page sections, or targets a section, gets the turn it always got", async () => {
+    // The dock's page turn: stand-ins of the outline, no sections shown, no scope on the target.
+    const outlineOnly = await runEditorAgentTurn(
+      request({ target: { kind: "page" }, section: null, content: buildAgentContent({ target: { kind: "page" }, section: null, outlineIds: ["s-hero", "s-2"] })! }),
+      { callModel: async ({ text: sent }) => (expect(sent).toContain("No section is selected"), answer([])) },
+    );
+    expect(outlineOnly.target).toEqual({ kind: "page" });
+    // A targeted section wins over page sections, and a scope the host made up is dropped.
+    const targeted = await runEditorAgentTurn(request({ target: { kind: "page", sectionId: "s-hero", scope: "page" }, pageSections: page }), {
+      callModel: async ({ text: sent }) => (expect(sent).not.toContain("whole page"), answer([row({ op: "remove_section", sectionId: "s-2" })])),
+    });
+    expect(targeted.target).toEqual({ kind: "page", sectionId: "s-hero" });
+    expect(targeted.rejected).toEqual([{ index: 0, code: "outside_target" }]);
+    expect(maxOpsFor({ kind: "header", scope: "page" })).toBe(MAX_OPS_PER_TURN);
+    expect(maxOpsFor({ kind: "page", sectionId: "s", scope: "page" })).toBe(MAX_OPS_PER_TURN);
+  });
+});
+
+describe("suggestions", () => {
+  it("returns the model's follow-ups cleaned, and none when the schema has none (the dock)", async () => {
+    const withIdeas = await runEditorAgentTurn(request(), { callModel: async () => ({ ...answer([]), suggestions: ["  Make the\nbutton bigger ", "Make the button bigger", "<b>Add</b> a photo", "y".repeat(61), 7 as unknown as string, "Third", "Fourth"] }) });
+    expect(withIdeas.suggestions).toEqual(["Make the button bigger", "Add a photo", "Third"]);
+    expect((await runEditorAgentTurn(request(), { callModel: async () => answer([]) })).suggestions).toEqual([]);
+    expect(cleanAgentSuggestions(null)).toEqual([]);
+    expect(cleanAgentSuggestions("x")).toEqual([]);
+  });
+
+  it("the dock's schema has no suggestions; the Edit with AI one adds a flat nullable list", () => {
+    expect(Object.keys(editorAgentModelOutputSchema.shape)).toEqual(["reply", "ops"]);
+    expect(Object.keys(editorAgentModelOutputWithSuggestionsSchema.shape)).toEqual(["reply", "ops", "suggestions"]);
+    expect(editorAgentModelOutputWithSuggestionsSchema.safeParse({ reply: "x", ops: [], suggestions: null }).success).toBe(true);
+    expect(editorAgentModelOutputWithSuggestionsSchema.safeParse({ reply: "x", ops: [], suggestions: ["a"] }).success).toBe(true);
   });
 });
 

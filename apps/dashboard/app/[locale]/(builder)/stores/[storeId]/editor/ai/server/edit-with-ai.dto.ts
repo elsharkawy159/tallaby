@@ -122,7 +122,19 @@ export type EditWithAiError =
 
 export type EditWithAiResult<T> = { success: true; data: T } | { success: false; error: EditWithAiError };
 
-export type EditWithAiRoute = "site" | "products" | "settings" | "shipping" | "design" | "import" | "none";
+/**
+ * What a turn did. "advice" answers a question about the website (no ops, no
+ * credit); "help" is code's answer to something this chat can't do, with
+ * links to the page that does it (no model).
+ */
+export type EditWithAiRoute = "site" | "products" | "settings" | "shipping" | "design" | "import" | "advice" | "help" | "none";
+
+/** Things the chat can't do; each has a dashboard page (`OUT_OF_REACH` in the lib) and a label (`editWithAi.links.*`). */
+export const OUT_OF_REACH_KEYS = ["pages", "coupons", "discounts", "domain", "payments", "orders", "apps", "blog"] as const;
+export type OutOfReachKey = (typeof OUT_OF_REACH_KEYS)[number];
+
+/** A dashboard page that does what the chat couldn't. `href` is built by the server (no locale). */
+export type EditWithAiLink = { key: OutOfReachKey; href: string };
 
 export type EditWithAiProposal = {
   actionId: string;
@@ -165,6 +177,10 @@ export type EditWithAiTurnView = {
   /** Store changes waiting for the seller's Confirm (nothing is written before). */
   proposals: EditWithAiProposal[];
   cards: EditWithAiCard[];
+  /** Up to 3 short follow-up requests the seller can tap (cleaned and capped by the server). */
+  suggestions: string[];
+  /** Where to do what the chat couldn't (at most 2). */
+  links: EditWithAiLink[];
   /** Ops or proposals that were refused, by code only. */
   rejected: { code: string; index?: number; tool?: string }[];
   creditsUsed: number;

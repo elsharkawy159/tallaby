@@ -129,6 +129,52 @@ export function isCodeSection(section: SectionInstance): boolean {
   return codeSectionNode(section.componentTree) !== null;
 }
 
+/**
+ * A page-scope turn's budget for the page's tree sections together (docs/ai.md
+ * rule 3). The homepages of the 84 code templates serialise to 19–45 KB
+ * (median 29 KB, measured 2026-11-27), so 32 KB shows a typical page whole;
+ * at the cap it is about 10k input tokens, near $0.003 on the fast tier.
+ */
+export const MAX_PAGE_PROMPT_BYTES = 32 * 1024;
+
+export type PageSectionsText = {
+  /** The sections shown in full, in page order ("" when none fits). */
+  text: string;
+  /** Sections the model saw in full: element ops are allowed on these only. */
+  editableIds: string[];
+  /** Sections left out (code sections, or over the budget): known by the outline only. */
+  outlineOnlyIds: string[];
+};
+
+/**
+ * The page's tree sections for a page-scope turn, in order, while they fit
+ * the budget. A section that doesn't fit whole is left out (a later, smaller
+ * one may still fit); code sections are always left out (their files are
+ * large). Pure and deterministic.
+ */
+export function serializePageSections(sections: readonly SectionInstance[], defaultLocale: SiteLocale, budget = MAX_PAGE_PROMPT_BYTES): PageSectionsText {
+  const parts: string[] = [];
+  const editableIds: string[] = [];
+  const outlineOnlyIds: string[] = [];
+  let bytes = 0;
+  for (const section of sections) {
+    if (isCodeSection(section) || !(section.componentTree ?? []).length) {
+      outlineOnlyIds.push(section.id);
+      continue;
+    }
+    const text = serializeTreeSection(section, defaultLocale);
+    const size = utf8Length(text) + 2;
+    if (bytes + size > budget) {
+      outlineOnlyIds.push(section.id);
+      continue;
+    }
+    bytes += size;
+    parts.push(text);
+    editableIds.push(section.id);
+  }
+  return { text: parts.join("\n\n"), editableIds, outlineOnlyIds };
+}
+
 export type OutlineEntry = { id: string; name: string; kind: string };
 
 /** At most `MAX_OUTLINE_SECTIONS` lines, centred on the targeted section when the page is longer. */

@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import type { EditWithAiProposal, EditWithAiTurnView } from "./server/edit-with-ai.dto";
 import {
+  activeSuggestions,
   CHAT_MAX_MESSAGES,
   classifyFile,
+  cleanLinks,
+  cleanSuggestions,
   createEditWithAiChat,
   historyOf,
   restoreChat,
@@ -19,6 +22,8 @@ const view = (patch: Partial<EditWithAiTurnView> = {}): EditWithAiTurnView => ({
   siteChanges: null,
   proposals: [],
   cards: [],
+  suggestions: [],
+  links: [],
   rejected: [],
   creditsUsed: 0,
   creditsRemaining: null,
@@ -254,6 +259,47 @@ describe("a turn", () => {
     saved(true);
     await sent;
     expect(actions.turn).not.toHaveBeenCalled();
+  });
+});
+
+describe("follow-up suggestions and links", () => {
+  it("keeps the reply's suggestions and links, and shows suggestions only under the newest reply", async () => {
+    const turn = vi
+      .fn<ChatActions["turn"]>()
+      .mockResolvedValueOnce({ success: true, data: view({ suggestions: ["Shorten the headline", "Make the button bigger"], links: [{ key: "coupons", href: "/coupons" }] }) })
+      .mockResolvedValueOnce({ success: true, data: view({ suggestions: [] }) });
+    const { chat } = setup({ turn });
+    await chat.send({}, "Improve the hero");
+    expect(chat.getState().messages[1]).toMatchObject({ suggestions: ["Shorten the headline", "Make the button bigger"], links: [{ key: "coupons", href: "/coupons" }] });
+    expect(activeSuggestions(chat.getState())).toEqual(["Shorten the headline", "Make the button bigger"]);
+    // Not while a turn runs, and not once a newer message exists.
+    expect(activeSuggestions({ ...chat.getState(), pending: true })).toEqual([]);
+    await chat.send({}, "Thanks");
+    expect(activeSuggestions(chat.getState())).toEqual([]);
+    expect(chat.getState().messages[1]).toMatchObject({ suggestions: ["Shorten the headline", "Make the button bigger"] });
+  });
+
+  it("never shows suggestions under an error or the seller's own message", () => {
+    const assistant: ChatMessage = { id: "a", role: "assistant", text: "Done", siteChanges: null, proposals: [], cards: [], rejected: 0, creditsUsed: 0, suggestions: ["Next"] };
+    expect(activeSuggestions({ messages: [assistant], pending: false })).toEqual(["Next"]);
+    expect(activeSuggestions({ messages: [assistant, { id: "e", role: "error", error: "generic" }], pending: false })).toEqual([]);
+    expect(activeSuggestions({ messages: [assistant, { id: "u", role: "user", text: "x", attachments: [] }], pending: false })).toEqual([]);
+    expect(activeSuggestions({ messages: [], pending: false })).toEqual([]);
+  });
+
+  it("reads suggestions and links defensively (a stored chat, or one from before they existed)", () => {
+    expect(cleanSuggestions(["ok", 5, "", "x".repeat(61), "a", "b", "c"])).toEqual(["ok", "a", "b"]);
+    expect(cleanSuggestions(undefined)).toEqual([]);
+    expect(cleanLinks([{ key: "coupons", href: "/coupons" }, { key: "nope", href: "/x" }, { key: "orders", href: "https://evil.example" }, { key: "orders", href: "//evil.example" }, { key: "apps", href: "/stores/s1/apps" }, { key: "blog", href: "/stores/s1/website/blog" }])).toEqual([
+      { key: "coupons", href: "/coupons" },
+      { key: "apps", href: "/stores/s1/apps" },
+    ]);
+    const old = { id: "a", role: "assistant", text: "Done", siteChanges: null, proposals: [], cards: [], rejected: 0, creditsUsed: 0 };
+    const bad = { ...old, id: "b", suggestions: "x", links: [{ key: "orders", href: "javascript:alert(1)" }] };
+    expect(restoreChat(JSON.stringify({ messages: [old, bad], draft: "" })).messages).toMatchObject([
+      { suggestions: [], links: [] },
+      { suggestions: [], links: [] },
+    ]);
   });
 });
 

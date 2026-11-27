@@ -44,6 +44,13 @@ import { normalizeSectionStyle, normalizeStyle, STYLE_BREAKPOINTS } from "../ele
 import { cloneWithNewIds, duplicateNode, findNode, newTreeSection, removeNode, updateNode, type MakeId } from "../elements/tree";
 
 export const MAX_OPS_PER_TURN = 20;
+/**
+ * A page-scope turn (`target.scope === "page"`: the model reads several
+ * sections at once) may make more ops, since a page-wide change touches many
+ * elements. An op is about 100 output tokens, so 40 ops stay near $0.006 of
+ * output on the fast tier.
+ */
+export const MAX_PAGE_OPS_PER_TURN = 40;
 export const MAX_CODE_OPS_PER_TURN = 3;
 /** A code op's file: the template (64 KB), stylesheet (32 KB) and schema together. */
 export const MAX_AGENT_FILE_BYTES = 128 * 1024;
@@ -58,7 +65,17 @@ export const AGENT_DEVICES = ["desktop", ...STYLE_BREAKPOINTS] as const;
 export type AgentDevice = (typeof AGENT_DEVICES)[number];
 
 /** What the turn is about: a page (optionally one of its sections), or the shared header or footer. */
-export type AgentTarget = { kind: "page" | "header" | "footer"; sectionId?: string };
+export type AgentTarget = {
+  kind: "page" | "header" | "footer";
+  sectionId?: string;
+  /** "page": a page-wide turn with no targeted section (set by the server only); it raises the op cap to `MAX_PAGE_OPS_PER_TURN`. */
+  scope?: "page";
+};
+
+/** The most ops one turn on this target may make. */
+export function maxOpsFor(target: AgentTarget): number {
+  return target.kind === "page" && !target.sectionId && target.scope === "page" ? MAX_PAGE_OPS_PER_TURN : MAX_OPS_PER_TURN;
+}
 
 // ---------------------------------------------------------------------------
 // The operation schema (the contract with the editor)
@@ -121,6 +138,9 @@ export const SECTION_OP_NAMES = sectionOpSchema.options.map((o) => o.shape.op.va
 
 export const CODE_OP_NAMES: readonly SectionOpName[] = ["add_code_section", "update_code_section", "convert_to_code_section"];
 const SECTION_LEVEL_OPS: readonly SectionOpName[] = ["add_code_section", "convert_to_code_section", "move_section", "remove_section", "duplicate_section"];
+
+/** Ops that need only the page outline, not the section's elements. */
+const OUTLINE_ONLY_OPS: readonly SectionOpName[] = ["move_section", "remove_section", "duplicate_section"];
 
 export const SECTION_OP_REJECT_CODES = [
   "invalid_op",
@@ -194,6 +214,13 @@ export type ApplySectionOpsOptions = {
    * checked, and the seller can pick any photo in the sidebar anyway.
    */
   allowImage?: (src: string) => string | null;
+  /**
+   * A page-scope turn: the sections the model was shown in full. An element
+   * or code op on any other section is refused as `outside_target` (the
+   * model never saw its elements); moving, removing or duplicating a section
+   * needs only the outline, so those stay allowed. Server only.
+   */
+  editableSectionIds?: ReadonlySet<string>;
   /** Run after each op on the whole content; issues refuse that op. The server passes `validatePageContent` with the server checks. */
   validate?: (content: { sections: SectionInstance[] }) => AgentIssue[] | null;
 };
@@ -421,6 +448,7 @@ export function applySectionOps<T extends { sections: SectionInstance[] }>(
   const codeProps = opts.codeProps ?? defaultCodeProps;
   const chrome = opts.target.kind !== "page";
   let codeOps = 0;
+  const maxOps = maxOpsFor(opts.target);
 
   const freshId = (kind: "section" | "node", wanted: string | undefined, taken: (id: string) => boolean): string => {
     if (wanted && !taken(wanted)) return wanted;
@@ -432,7 +460,7 @@ export function applySectionOps<T extends { sections: SectionInstance[] }>(
   const nodeTaken = (id: string) => sections.some((s) => findNode(s.componentTree ?? [], id) !== null);
 
   ops.forEach((raw, index) => {
-    if (index >= MAX_OPS_PER_TURN) return void rejected.push({ index, op: raw, code: "too_many_ops" });
+    if (index >= maxOps) return void rejected.push({ index, op: raw, code: "too_many_ops" });
     const parsed = sectionOpSchema.safeParse(raw);
     if (!parsed.success) return void rejected.push({ index, op: raw, code: "invalid_op" });
     const op = parsed.data;
@@ -463,6 +491,7 @@ export function applySectionOps<T extends { sections: SectionInstance[] }>(
     const index = sections.findIndex((s) => s.id === op.sectionId);
     if (index < 0) return reject("section_not_found");
     if (opts.target.sectionId && op.sectionId !== opts.target.sectionId) return reject("outside_target");
+    if (opts.editableSectionIds && !opts.editableSectionIds.has(op.sectionId) && !OUTLINE_ONLY_OPS.includes(op.op)) return reject("outside_target");
     const section = sections[index]!;
     const replace = (next: SectionInstance) => sections.map((s, i) => (i === index ? next : s));
 

@@ -1,4 +1,5 @@
 import {
+  OUT_OF_REACH_KEYS,
   EDIT_AI_FILE_TYPES,
   EDIT_AI_IMAGE_TYPES,
   EDIT_WITH_AI_LIMITS,
@@ -8,6 +9,7 @@ import {
   type EditWithAiConfirmView,
   type EditWithAiError,
   type EditWithAiInput,
+  type EditWithAiLink,
   type EditWithAiProposal,
   type EditWithAiResult,
   type EditWithAiTargetInput,
@@ -93,6 +95,10 @@ export type ChatMessage =
       cards: EditWithAiCard[];
       rejected: number;
       creditsUsed: number;
+      /** Follow-up requests to tap (shown while this is the newest message). Missing in chats stored before they existed. */
+      suggestions?: string[];
+      /** Dashboard pages that do what the chat couldn't. */
+      links?: EditWithAiLink[];
     }
   | { id: string; role: "error"; error: EditWithAiError }
   | { id: string; role: "notice"; notice: "stopped" };
@@ -179,6 +185,32 @@ const FINAL_CONFIRM_ERRORS = new Set<EditWithAiError>(["actionExpired", "actionF
 
 const isRecord = (value: unknown): value is Record<string, unknown> => value != null && typeof value === "object" && !Array.isArray(value);
 
+/** Suggestions as plain short strings, at most 3 (the server cleaned them; a stored chat is read back defensively). */
+export function cleanSuggestions(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0 && item.length <= 60).slice(0, 3);
+}
+
+/** Links to dashboard pages: a known key and a path inside the dashboard (never another site). */
+export function cleanLinks(value: unknown): EditWithAiLink[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(
+      (item): item is EditWithAiLink =>
+        isRecord(item) && (OUT_OF_REACH_KEYS as readonly unknown[]).includes(item.key) && typeof item.href === "string" && /^\/(?!\/)[A-Za-z0-9/_-]{1,200}$/.test(item.href),
+    )
+    .slice(0, 2);
+}
+
+/**
+ * The follow-up suggestions to show: those of the newest message, while it
+ * is the assistant's and no turn is running. Older ones disappear.
+ */
+export function activeSuggestions(state: Pick<ChatState, "messages" | "pending">): string[] {
+  const last = state.messages.at(-1);
+  return !state.pending && last?.role === "assistant" ? cleanSuggestions(last.suggestions) : [];
+}
+
 /** Reads a stored chat back; anything malformed is dropped. Work in flight comes back idle. */
 export function restoreChat(raw: string | null): { messages: ChatMessage[]; draft: string } {
   if (!raw) return { messages: [], draft: "" };
@@ -196,6 +228,8 @@ export function restoreChat(raw: string | null): { messages: ChatMessage[]; draf
             p.status === "confirming" || p.status === "cancelling" ? { ...p, status: "pending" } : p,
           ),
           cards: Array.isArray(message.cards) ? message.cards : [],
+          suggestions: cleanSuggestions(message.suggestions),
+          links: cleanLinks(message.links),
           siteChanges: isRecord(message.siteChanges) && Array.isArray(message.siteChanges.lines)
             ? { lines: (message.siteChanges.lines as unknown[]).filter((line): line is string => typeof line === "string"), ...(message.siteChanges.stale === true && { stale: true }) }
             : null,
@@ -410,6 +444,8 @@ export function createEditWithAiChat(deps: ChatDeps) {
         cards: view.cards,
         rejected: view.rejected.length,
         creditsUsed: view.creditsUsed,
+        suggestions: cleanSuggestions(view.suggestions),
+        links: cleanLinks(view.links),
       });
     },
 

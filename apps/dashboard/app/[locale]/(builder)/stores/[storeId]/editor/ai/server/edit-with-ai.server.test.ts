@@ -128,7 +128,7 @@ const editorData = () => ({
   store: { defaultLocale: "ar", supportedLocales: ["ar", "en"], sharedHeader: headerSection(), sharedFooter: null, chromeVersion: 4 },
   designSystem: { colors: {}, typography: {}, spacing: {}, version: 1 },
   pages: [
-    { id: PAGE_ID, isHome: true, kind: "page", draftVersion: 7, draftContent: { sections: [heroSection(), faqSection()] } },
+    { id: PAGE_ID, isHome: true, kind: "page", name: { ar: "الرئيسية", en: "Home" }, draftVersion: 7, draftContent: { sections: [heroSection(), faqSection()] } },
     { id: ABOUT_ID, isHome: false, kind: "page", draftVersion: 2, draftContent: { sections: [aboutSection()] } },
   ],
 });
@@ -283,6 +283,158 @@ describe("editWithAiTurn", () => {
     const none = await editWithAiTurn(STORE_ID, input({ message: "make it say 14 days instead", attachments: [] }));
     expect(none).toMatchObject({ success: true, data: { siteChanges: null, creditsUsed: 0 } });
     expect(mocks.generateStructured).toHaveBeenCalledTimes(1);
+  });
+
+  describe("page scope", () => {
+    const noFiles = () => mocks.verify.mockResolvedValue({ ok: true, images: [], files: [], recorded: false });
+    const BOTH = [
+      { op: "set_text", sectionId: "s-hero", nodeId: "n-title", prop: "text", ar: "شتاء دافئ", en: "A warm winter" },
+      { op: "set_text", sectionId: "s-faq", nodeId: "n-ftext", prop: "text", ar: "استرجاع سهل", en: "Easy returns in 14 days" },
+    ];
+
+    it("code tells a page-wide request: one call that reads every section and edits several", async () => {
+      noFiles();
+      mocks.generateStructured.mockResolvedValue({ object: { ...editAnswer(BOTH).object, suggestions: ["Make the headline shorter", "x".repeat(61), "Make the headline shorter", "<b>Add</b> trust points", "Four", "Five"] }, cached: false });
+      const result = await editWithAiTurn(STORE_ID, input({ message: "make all buttons and texts clearer", attachments: [] }));
+      if (!result.success || !result.data.siteChanges) throw new Error("expected ops");
+      // No router call: code knew it was the website and the whole page.
+      expect(mocks.generateStructured).toHaveBeenCalledTimes(1);
+      const call = mocks.generateStructured.mock.calls[0]![0];
+      expect(call).toMatchObject({ feature: "edit_with_ai", tier: "fast", thinkingLevel: "minimal" });
+      const text: string = call.content[0].text;
+      expect(text).toContain("The request is about the whole page.");
+      expect(text).toContain("TREE SECTION s-hero");
+      expect(text).toContain("TREE SECTION s-faq");
+      expect(text).toContain('Page: "الرئيسية", the store\'s home page.');
+      expect(result.data.siteChanges.target).toEqual({ kind: "page", scope: "page" });
+      expect(result.data.siteChanges.ops.map((op) => (op as { sectionId: string }).sectionId)).toEqual(["s-hero", "s-faq"]);
+      // Still one credit, and the suggestions are cleaned, capped and deduplicated.
+      expect(result.data).toMatchObject({ creditsUsed: 1, suggestions: ["Make the headline shorter", "Add trust points", "Four"], links: [] });
+      expect(mocks.claimAiCredit).toHaveBeenCalledTimes(1);
+      // The editor applies the same ops to its drafts with the returned target.
+      const drafts = { sections: [heroSection(), faqSection()] } as unknown as Parameters<typeof applySectionOps>[0];
+      expect(applySectionOps(drafts, result.data.siteChanges.ops, { target: result.data.siteChanges.target, defaultLocale: "ar", allowCode: true }).applied).toHaveLength(2);
+    });
+
+    it("a section selected on the canvas always wins: the turn stays on it", async () => {
+      noFiles();
+      mocks.generateStructured.mockResolvedValue(editAnswer(BOTH));
+      const result = await editWithAiTurn(STORE_ID, input({ message: "make all the texts in this section clearer", attachments: [], target: { kind: "page", sectionId: "s-faq" } }));
+      if (!result.success || !result.data.siteChanges) throw new Error("expected ops");
+      const text: string = mocks.generateStructured.mock.calls[0]![0].content[0].text;
+      expect(text).not.toContain("TREE SECTION s-hero");
+      expect(text).not.toContain("whole page");
+      expect(result.data.siteChanges.target).toEqual({ kind: "page", sectionId: "s-faq" });
+      // The op on the other section is refused.
+      expect(result.data.siteChanges.ops).toHaveLength(1);
+      expect(result.data.rejected).toEqual([{ index: 0, code: "outside_target" }]);
+    });
+
+    it("the router decides the scope when code can't: page reads the sections, section adds from the outline", async () => {
+      noFiles();
+      mocks.generateStructured
+        .mockResolvedValueOnce({ object: { route: "site", target: "page", sectionId: null, scope: "page", reply: null }, cached: false })
+        .mockResolvedValueOnce(editAnswer(BOTH));
+      const page = await editWithAiTurn(STORE_ID, input({ message: "make it feel more premium", attachments: [] }));
+      expect(page).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "page", scope: "page" } }, creditsUsed: 1 } });
+      const routerText: string = mocks.generateStructured.mock.calls[0]![0].content[0].text;
+      expect(routerText).toContain('The seller is on: "الرئيسية", the home page.');
+      expect(routerText).toContain("No section is selected on the canvas.");
+      expect(mocks.generateStructured.mock.calls[1]![0].content[0].text).toContain("TREE SECTION s-faq");
+
+      mocks.generateStructured.mockReset();
+      mocks.generateStructured
+        .mockResolvedValueOnce({ object: { route: "site", target: "page", sectionId: null, scope: "section", reply: null }, cached: false })
+        .mockResolvedValueOnce(editAnswer(BOTH));
+      const add = await editWithAiTurn(STORE_ID, input({ message: "make it feel more premium", attachments: [] }));
+      const editText: string = mocks.generateStructured.mock.calls[1]![0].content[0].text;
+      expect(editText).toContain("No section is selected");
+      expect(editText).not.toContain("TREE SECTION");
+      // Without page scope the target carries no scope (the op cap stays the section one).
+      expect(add).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "page" } } } });
+      if (add.success) expect(add.data.siteChanges!.target).not.toHaveProperty("scope");
+    });
+  });
+
+  describe("advice", () => {
+    beforeEach(() => mocks.verify.mockResolvedValue({ ok: true, images: [], files: [], recorded: false }));
+
+    it("answers a question about the page: one fast call, no ops, no credit, counted by the daily cap", async () => {
+      mocks.generateStructured.mockResolvedValue({ object: { reply: `1. ${"a".repeat(1200)}`, suggestions: ["Rewrite the hero headline", "Add trust points under the button", "", "Move products up", "One more"] }, cached: false });
+      const result = await editWithAiTurn(STORE_ID, input({ message: "review my page, what should I improve?", attachments: [] }));
+      if (!result.success) throw new Error(result.error);
+      expect(result.data).toMatchObject({ route: "advice", siteChanges: null, proposals: [], creditsUsed: 0, creditsRemaining: 41, links: [] });
+      expect(result.data.reply).toHaveLength(900);
+      expect(result.data.suggestions).toEqual(["Rewrite the hero headline", "Add trust points under the button", "Move products up"]);
+      // Code knew it was a question: no router call.
+      expect(mocks.generateStructured).toHaveBeenCalledTimes(1);
+      const call = mocks.generateStructured.mock.calls[0]![0];
+      // The same feature name, so `generateStructured` logs it and the daily cap counts it.
+      expect(call).toMatchObject({ feature: "edit_with_ai", tier: "fast", thinkingLevel: "minimal", refId: STORE_ID });
+      expect(call.maxOutputTokens).toBeLessThanOrEqual(1000);
+      expect(call.cacheMs).toBeGreaterThan(0);
+      const text: string = call.content[0].text;
+      expect(text).toContain('0. s-hero | "Hero" | tree | photo: yes');
+      expect(text).toContain("Counted by code: 2 sections (0 custom-code), 0 buttons, 1 photos; the first section has a photo.");
+      expect(text).toContain("<seller_input>\nreview my page, what should I improve?\n</seller_input>");
+      // The outline only: no section's elements, no catalog.
+      expect(text).not.toContain("TREE SECTION");
+      expect(mocks.checkDailyCap).toHaveBeenCalledTimes(1);
+      expect(mocks.claimAiCredit).not.toHaveBeenCalled();
+      expect(mocks.refundAiCredit).not.toHaveBeenCalled();
+    });
+
+    it("stops at the daily cap before any call, and reports a failed call", async () => {
+      mocks.checkDailyCap.mockResolvedValueOnce({ allowed: false, remaining: 0 });
+      expect(await editWithAiTurn(STORE_ID, input({ message: "review my page", attachments: [] }))).toEqual({ success: false, error: "aiDailyLimit" });
+      expect(mocks.generateStructured).not.toHaveBeenCalled();
+      mocks.generateStructured.mockRejectedValue(new Error("busy"));
+      expect(await editWithAiTurn(STORE_ID, input({ message: "review my page", attachments: [] }))).toEqual({ success: false, error: "aiFailed" });
+      expect(mocks.claimAiCredit).not.toHaveBeenCalled();
+    });
+
+    it("is reached through the router too", async () => {
+      mocks.generateStructured
+        .mockResolvedValueOnce({ object: { route: "advice", target: null, sectionId: null, scope: null, reply: null }, cached: false })
+        .mockResolvedValueOnce({ object: { reply: "1. Make the headline say what you sell.", suggestions: null }, cached: false });
+      const result = await editWithAiTurn(STORE_ID, input({ message: "is it good enough to launch", attachments: [] }));
+      expect(result).toMatchObject({ success: true, data: { route: "advice", reply: "1. Make the headline say what you sell.", suggestions: [], creditsUsed: 0 } });
+      expect(mocks.generateStructured).toHaveBeenCalledTimes(2);
+      expect(mocks.claimAiCredit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("out of reach", () => {
+    beforeEach(() => mocks.verify.mockResolvedValue({ ok: true, images: [], files: [], recorded: false }));
+
+    it("answers by code with the page that does it: no model, no cap, no credit", async () => {
+      const result = await editWithAiTurn(STORE_ID, input({ message: "create a new page for our story", attachments: [] }));
+      expect(result).toMatchObject({ success: true, data: { route: "help", links: [{ key: "pages", href: `/stores/${STORE_ID}/website/pages` }], siteChanges: null, creditsUsed: 0, suggestions: [] } });
+      const coupon = await editWithAiTurn(STORE_ID, input({ message: "اعمل كوبون خصم ١٠٪", uiLocale: "ar", attachments: [] }));
+      expect(coupon).toMatchObject({ success: true, data: { route: "help", links: [{ key: "coupons", href: "/coupons" }] } });
+      expect(mocks.generateStructured).not.toHaveBeenCalled();
+      expect(mocks.checkDailyCap).not.toHaveBeenCalled();
+      expect(mocks.claimAiCredit).not.toHaveBeenCalled();
+      expect(mocks.runStoreAgentTurn).not.toHaveBeenCalled();
+    });
+
+    it("a website edit that only mentions such a thing is still an edit", async () => {
+      mocks.generateStructured.mockResolvedValue(editAnswer([{ op: "set_text", sectionId: "s-hero", nodeId: "n-title", prop: "text", ar: "الدفع عند الاستلام", en: "Cash on delivery" }]));
+      const result = await editWithAiTurn(STORE_ID, input({ message: "write cash on delivery in the hero heading", attachments: [] }));
+      expect(result).toMatchObject({ success: true, data: { route: "site", links: [], siteChanges: { target: { kind: "page", sectionId: "s-hero" } } } });
+    });
+
+    it("adds the link when the router or the edit ends with nothing done", async () => {
+      mocks.generateStructured.mockResolvedValueOnce({ object: { route: "none", target: null, sectionId: null, scope: null, reply: "I can't do that here." }, cached: false });
+      const none = await editWithAiTurn(STORE_ID, input({ message: "what about a coupon for my customers", attachments: [] }));
+      expect(none).toMatchObject({ success: true, data: { route: "none", reply: "I can't do that here.", links: [{ key: "coupons", href: "/coupons" }] } });
+
+      mocks.generateStructured.mockReset();
+      mocks.generateStructured.mockResolvedValue(editAnswer([], "I can't add a coupon from here."));
+      const empty = await editWithAiTurn(STORE_ID, input({ message: "put a coupon box in the hero banner", attachments: [] }));
+      expect(empty).toMatchObject({ success: true, data: { route: "site", siteChanges: null, creditsUsed: 0, links: [{ key: "coupons", href: "/coupons" }] } });
+      expect(mocks.refundAiCredit).toHaveBeenCalled();
+    });
   });
 
   it("charges one credit even when the edit retries", async () => {

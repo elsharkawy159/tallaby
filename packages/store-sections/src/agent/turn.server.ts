@@ -13,13 +13,15 @@ import { CODE_SERVER_CHECKS } from "../code/code-node.server";
 import { prepareCodePreview } from "../code/preview-code.server";
 import { joinSectionFile } from "../code/section-file";
 import type { CodeNodeProps } from "../code/code-node";
-import { cleanAgentReply, toSectionOpCandidate, type EditorAgentModelOutput } from "./model-output";
-import { buildEditorAgentSystemPrompt, buildEditorAgentTurnText, type EditorAgentTurnText } from "./prompt.lib";
+import { cleanAgentReply, cleanAgentSuggestions, toSectionOpCandidate, type EditorAgentModelOutput } from "./model-output";
+import { buildEditorAgentSystemPrompt, buildEditorAgentTurnText, isPageScopeTurn, type EditorAgentTurnText } from "./prompt.lib";
+import { serializePageSections } from "./serialize";
 import {
   applySectionOps,
   describeAppliedOp,
   codeSectionNode,
   type AgentIssue,
+  type AgentTarget,
   type AppliedOp,
   type ApplySectionOpsOptions,
   type CodePropsBuilder,
@@ -45,6 +47,10 @@ export type EditorAgentCodeNode = { nodeId: string; opIndex: number; file: strin
 
 export type EditorAgentTurnResult = {
   reply: string;
+  /** Follow-up prompts the model proposed (cleaned; empty unless the host's schema asks for them). */
+  suggestions: string[];
+  /** The target the ops were checked against, and the one the editor must apply them with (`scope: "page"` on a page-scope turn). */
+  target: AgentTarget;
   /** The applied ops, normalised (the editor applies exactly these). */
   ops: SectionOp[];
   applied: AppliedOp[];
@@ -62,7 +68,9 @@ export type EditorAgentTurnResult = {
 const MAX_RETRY_ISSUES_BYTES = 3 * 1024;
 
 export { buildEditorAgentSystemPrompt, buildEditorAgentTurnText, EDITOR_AGENT_FEATURE, MAX_AGENT_IMAGES, type EditorAgentImage } from "./prompt.lib";
-export { editorAgentModelOutputSchema, type EditorAgentModelOutput } from "./model-output";
+export { cleanAgentReply, cleanAgentSuggestions, editorAgentModelOutputSchema, editorAgentModelOutputWithSuggestionsSchema, MAX_AGENT_SUGGESTION_LENGTH, MAX_AGENT_SUGGESTIONS, type EditorAgentModelOutput } from "./model-output";
+export { pageLine, type EditorAgentPage } from "./prompt.lib";
+export { MAX_PAGE_PROMPT_BYTES, serializePageSections } from "./serialize";
 export { MAX_SITE_OUTLINE_SECTIONS, sectionDisplayName, serializeSiteOutline, siteOutline, siteOutlineEntry, type SiteOutlineEntry } from "./site-outline";
 
 /**
@@ -131,8 +139,13 @@ type Attempt = {
 /** Runs one turn. Throws only when the first model call fails (the host reports it); a failed retry keeps the first answer. */
 export async function runEditorAgentTurn(req: EditorAgentTurnRequest, deps: { callModel: EditorAgentModelCall }): Promise<EditorAgentTurnResult> {
   const system = buildEditorAgentSystemPrompt({ allowCode: req.allowCode });
+  // Page scope is decided here, from what the model is shown: the host can't raise the op cap without it.
+  const pageScope = isPageScopeTurn(req);
+  const target: AgentTarget = { kind: req.target.kind, ...(req.target.sectionId && { sectionId: req.target.sectionId }), ...(pageScope && { scope: "page" as const }) };
   const options: ApplySectionOpsOptions = {
-    target: req.target,
+    target,
+    // Element ops only on the sections the model read in full (the same pure serialisation as the request text).
+    ...(pageScope && { editableSectionIds: new Set(serializePageSections(req.pageSections!, req.store.defaultLocale).editableIds) }),
     defaultLocale: req.store.defaultLocale,
     allowCode: req.allowCode,
     codeProps: serverCodeProps,
@@ -177,6 +190,8 @@ export async function runEditorAgentTurn(req: EditorAgentTurnRequest, deps: { ca
 
   return {
     reply: cleanAgentReply(kept.output.reply),
+    suggestions: cleanAgentSuggestions(kept.output.suggestions),
+    target,
     ops: result.applied.map((a) => a.op),
     applied: result.applied,
     summary: result.applied.map((a) => describeAppliedOp(a, req.uiLocale)),

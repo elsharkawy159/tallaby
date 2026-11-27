@@ -22,7 +22,7 @@ vi.mock("@/i18n/navigation", () => ({
 }));
 
 const { ChatMessages, ConfirmCard, ErrorText, ImportCard } = await import("./edit-with-ai-messages.client");
-const { CreditsChip, EditWithAiPanel } = await import("./edit-with-ai-panel.client");
+const { CreditsChip, EditWithAiPanel, FollowUps } = await import("./edit-with-ai-panel.client");
 
 const render = (node: ReactNode, locale: "ar" | "en" = "en") =>
   renderToStaticMarkup(createElement(NextIntlClientProvider, { locale, timeZone: "Africa/Cairo", messages: locale === "ar" ? ar : en } as never, node));
@@ -154,6 +154,19 @@ describe("the chat", () => {
     expect(html).toContain("Stopped.");
   });
 
+  it("links to the dashboard page that does what the chat couldn't, in a new tab", () => {
+    const withLinks: ChatMessage[] = [{ id: "9", role: "assistant", text: "Not from here.", siteChanges: null, proposals: [], cards: [], rejected: 0, creditsUsed: 0, links: [{ key: "coupons", href: "/coupons" }, { key: "domain", href: "/stores/s1/website/domain" }] }];
+    const html = render(createElement(ChatMessages, { messages: withLinks, pending: false, ...handlers }));
+    expect(html).toContain('href="/coupons"');
+    expect(html).toContain(">Coupons<");
+    expect(html).toContain('href="/stores/s1/website/domain"');
+    expect(html).toContain('target="_blank"');
+    expect(render(createElement(ChatMessages, { messages: withLinks, pending: false, ...handlers }), "ar")).toContain("الكوبونات");
+    // A link that isn't a dashboard path is never rendered.
+    const bad: ChatMessage[] = [{ ...withLinks[0]!, links: [{ key: "coupons", href: "https://evil.example" }] } as ChatMessage];
+    expect(render(createElement(ChatMessages, { messages: bad, pending: false, ...handlers }))).not.toContain("evil.example");
+  });
+
   it("offers Undo only while the turn is still the editor's newest undo step", () => {
     const html = render(createElement(ChatMessages, { messages, pending: false, ...handlers, canUndo: () => false }));
     expect(html).toContain("Changed the hero photo");
@@ -224,6 +237,17 @@ describe("the chat panel", () => {
     expect(html).not.toContain("<iframe");
     // The canvas is beside the chat from lg up: no Preview button.
     expect(html).not.toContain(">Preview<");
+  });
+
+  it("shows the AI's follow-up ideas as chips under its newest reply only", () => {
+    // Which reply's ideas are shown is `activeSuggestions` (tested with the chat); here, how they look.
+    const html = render(createElement(FollowUps, { items: ["Shorten the headline", "Add trust points"], onPick: noop }));
+    expect(html).toContain('aria-label="Ideas for the next step"');
+    expect(html).toContain(">Shorten the headline<");
+    expect(html).toContain(">Add trust points<");
+    expect(html.match(/<button/g)).toHaveLength(2);
+    expect(render(createElement(FollowUps, { items: ["قصّر العنوان"], onPick: noop }), "ar")).toContain('aria-label="أفكار للخطوة التالية"');
+    expect(render(createElement(FollowUps, { items: [], onPick: noop }))).toBe("");
   });
 
   it("hides the credits before the USD switch", () => {

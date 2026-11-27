@@ -9,7 +9,9 @@ import { getBillingState } from "@workspace/lib/billing/server";
 import { getStoreForEditor } from "@workspace/lib/store-sites/server";
 import { validatePageContent, type SectionInstance, type SiteLocale } from "@workspace/store-sections";
 import {
-  editorAgentModelOutputSchema,
+  cleanAgentReply,
+  cleanAgentSuggestions,
+  editorAgentModelOutputWithSuggestionsSchema,
   runEditorAgentTurn,
   serializeSiteOutline,
   siteOutline,
@@ -41,14 +43,22 @@ import {
   type EditWithAiUploadsInput,
 } from "./edit-with-ai.dto";
 import {
+  EDIT_WITH_AI_ADVICE_SYSTEM,
   EDIT_WITH_AI_FEATURE,
   EDIT_WITH_AI_ROUTER_SYSTEM,
+  editWithAiAdviceSchema,
+  editWithAiAdviceText,
   editWithAiRouterSchema,
   editWithAiRouterText,
+  MAX_ADVICE_REPLY_LENGTH,
+  outOfReach,
+  pageFacts,
   pickTargetByCode,
   routeByCode,
+  scopeByCode,
   wantsPublish,
   type CodeTarget,
+  type EditWithAiPageContext,
 } from "./edit-with-ai.lib";
 import { agentErrorKey, editWithAiContext, editWithAiRuntime, pendingPublishes, runStoreAgentTurn, storeTurnSummary, toProposalView } from "./edit-with-ai-agent.server";
 import { signEditWithAiFileLink, signEditWithAiUploads, verifyEditWithAiAttachments } from "./edit-with-ai-files.server";
@@ -76,14 +86,23 @@ import { signEditWithAiFileLink, signEditWithAiUploads, verifyEditWithAiAttachme
  * Store-data turns cost nothing here: the core charges 1 credit when the
  * seller confirms a card. Logs ids and counts only.
  *
- * Cost (docs/ai.md): code routes and picks the section when it can; else one
- * `fast`, thinking-minimal router call on a capped outline; then the editor
- * agent's one `fast` call (one retry only for a failed code op).
+ * Cost (docs/ai.md): code routes, picks the section and tells a page-wide
+ * request when it can; else one `fast`, thinking-minimal router call on a
+ * capped outline; then the editor agent's one `fast` call (one retry only
+ * for a failed code op). A page-wide request shows the model the page's tree
+ * sections within `MAX_PAGE_PROMPT_BYTES`, still in that one call.
+ *
+ * Two answers change nothing and cost no credit: "advice" (a question about
+ * the website: one `fast` call on the capped outline and facts counted by
+ * code; it counts toward the daily cap) and "help" (something this chat
+ * can't do: code answers with a link to the page that does it, no model).
  */
 
 const RESULT_CACHE_MS = 10 * 60_000;
 const MAX_OUTPUT_TOKENS = 12_000;
 const ROUTER_OUTPUT_TOKENS = 300;
+/** An advice answer is at most 900 characters and 3 short suggestions. */
+const ADVICE_OUTPUT_TOKENS = 1000;
 const PRO_DAILY_MULTIPLIER = 10;
 
 /** Model calls a day for this feature (router + edit); ×10 on Pro. */
@@ -114,7 +133,7 @@ async function access(storeId: unknown): Promise<Access | EditWithAiError> {
 const switchOn = () => isSwitchOn("editor_agent").catch(() => false);
 
 function emptyView(route: EditWithAiRoute, reply: string): EditWithAiTurnView {
-  return { reply, route, siteChanges: null, proposals: [], cards: [], rejected: [], creditsUsed: 0, creditsRemaining: null };
+  return { reply, route, siteChanges: null, proposals: [], cards: [], suggestions: [], links: [], rejected: [], creditsUsed: 0, creditsRemaining: null };
 }
 
 /** The seller's AI credits now, read after the turn's claim or refund settled. Never cached; null before the USD switch or when the read fails. */
@@ -129,6 +148,7 @@ const REPLIES = {
   import: { ar: "جهزت لك ملف المنتجات. اضغط على البطاقة عشان تراجع المنتجات قبل ما تضيفها.", en: "Your products file is ready. Open the card to review the products before adding them." },
   noTarget: { ar: "مش لاقي الجزء ده في الموقع. قولّي اسم القسم أو مكانه.", en: "I couldn't find that part of the site. Tell me the section's name or where it is." },
   none: { ar: "قولّي تحب تغيّر إيه في موقعك أو منتجاتك.", en: "Tell me what you'd like to change on your site or products." },
+  help: { ar: "ده مش بيتعمل من المحادثة دي. هتلاقيه في الصفحة دي من لوحة التحكم:", en: "I can't do that from this chat. You'll find it on this page of your dashboard:" },
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -214,6 +234,17 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
       return { success: true, data: { ...emptyView("import", REPLIES.import[turn.uiLocale]), cards } };
     }
 
+    // Something this chat can't do, said plainly: code answers with the page that does it (no model, no cap).
+    // A website edit that only mentions such a thing ("write cash on delivery in the banner") goes on as an edit,
+    // and so do a question (advice) and a product request.
+    if (code?.route !== "advice" && code?.route !== "products") {
+      const help = outOfReach(turn.message, ownStoreId, { strongOnly: true }).filter((link) => code?.route !== "site" || link.key === "pages");
+      if (help.length) {
+        console.info("[edit-with-ai] turn", { storeId: ownStoreId, route: "help", links: help.length });
+        return { success: true, data: { ...emptyView("help", REPLIES.help[turn.uiLocale]), links: help } };
+      }
+    }
+
     const billing = await getBillingState().catch(() => null);
     if (!billing) return fail("generic");
     const planRow = billing.usdLive
@@ -245,13 +276,17 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     const header = validChrome(editor.store.sharedHeader);
     const footer = validChrome(editor.store.sharedFooter);
     const outline = siteOutline(pageContent.data.sections, defaultLocale);
+    const pageContext: EditWithAiPageContext = { name: pageName(page.name, defaultLocale), kind: page.kind === "product" ? "product" : page.isHome ? "home" : "page" };
+    const outlineText = () => serializeSiteOutline({ page: outline, header: header ? siteOutlineEntry(header, defaultLocale) : null, footer: footer ? siteOutlineEntry(footer, defaultLocale) : null });
     // The canvas selection: ids only, used only when they are in the loaded drafts.
     const selected = selectedTarget(turn.target, pageContent.data.sections, !!header, !!footer);
     const withCredits = async (view: EditWithAiTurnView): Promise<EditWithAiTurnView> => ({ ...view, creditsRemaining: await creditsLeft(sellerId, billing.usdLive) });
 
     // Route and section: code first, else one cheap router call on the outline.
-    let route: Exclude<EditWithAiRoute, "import"> | null = code ? code.route : null;
+    let route: Exclude<EditWithAiRoute, "import" | "help"> | null = code ? code.route : null;
     let target: CodeTarget | null = null;
+    /** A site turn about the whole page: the model reads the page's sections, not one. */
+    let pageScope = false;
     let calls = 0;
     let cachedCalls = 0;
     const routerCall = async () => {
@@ -266,11 +301,7 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
         content: [
           {
             type: "text",
-            text: editWithAiRouterText({
-              outlineText: serializeSiteOutline({ page: outline, header: header ? siteOutlineEntry(header, defaultLocale) : null, footer: footer ? siteOutlineEntry(footer, defaultLocale) : null }),
-              message: turn.message,
-              imageCount: verified.images.length,
-            }),
+            text: editWithAiRouterText({ outlineText: outlineText(), message: turn.message, imageCount: verified.images.length, page: pageContext, selected: !!selected }),
           },
         ],
         thinkingLevel: "minimal",
@@ -284,6 +315,11 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     if (route === null || route === "site") {
       // A selected section is the target; else code picks it when it can.
       target = route === "site" ? (selected ?? pickTargetByCode({ message: turn.message, outline, hasHeader: !!header, hasFooter: !!footer })) : null;
+      // Code can tell the request is about the whole page: no router call.
+      if (route === "site" && !target && scopeByCode(turn.message) === "page") {
+        target = { kind: "page" };
+        pageScope = true;
+      }
       if (!target) {
         let routed: Awaited<ReturnType<typeof routerCall>>;
         try {
@@ -295,19 +331,70 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
         if (route === null) route = routed.route;
         if (route === "none") {
           console.info("[edit-with-ai] turn", { storeId: ownStoreId, route: "none", calls });
-          return { success: true, data: await withCredits(emptyView("none", (routed.reply ?? "").trim().slice(0, 300) || REPLIES.none[turn.uiLocale])) };
+          return { success: true, data: await withCredits({ ...emptyView("none", (routed.reply ?? "").trim().slice(0, 300) || REPLIES.none[turn.uiLocale]), links: outOfReach(turn.message, ownStoreId) }) };
         }
-        if (route === "site") target = selected ?? targetFromRouter(routed, outline, !!header, !!footer);
+        if (route === "site") {
+          target = selected ?? targetFromRouter(routed, outline, !!header, !!footer);
+          // The whole page, when the router (or code, when the router left the scope out) says so and nothing is selected.
+          if (!selected && target?.kind === "page" && !target.sectionId && (routed.scope === "page" || (routed.scope == null && scopeByCode(turn.message) === "page"))) {
+            target = { kind: "page" };
+            pageScope = true;
+          }
+        }
       }
     }
 
+    // ---- A question about the website: an answer and follow-ups, no ops and no credit ----
+    if (route === "advice") {
+      let advice: { reply: string; suggestions: string[] | null };
+      try {
+        calls += 1;
+        const { object } = await generateStructured({
+          feature: EDIT_WITH_AI_FEATURE,
+          refId: ownStoreId,
+          sellerId,
+          tier: "fast",
+          schema: editWithAiAdviceSchema,
+          system: EDIT_WITH_AI_ADVICE_SYSTEM,
+          content: [
+            {
+              type: "text",
+              text: editWithAiAdviceText({
+                outlineText: outlineText(),
+                message: turn.message,
+                facts: pageFacts(pageContent.data.sections, outline),
+                page: pageContext,
+                selected: !!selected,
+                locales: locales.length ? locales : [defaultLocale],
+                history: turn.history,
+              }),
+            },
+          ],
+          // The facts are counted by code and the answer is short copy, so no reasoning budget (docs/ai.md rule 5).
+          thinkingLevel: "minimal",
+          maxOutputTokens: ADVICE_OUTPUT_TOKENS,
+          cacheMs: RESULT_CACHE_MS,
+        });
+        advice = object;
+      } catch (error) {
+        console.error("[edit-with-ai] advice failed", { storeId: ownStoreId, kind: aiErrorKind(error) });
+        return fail("aiFailed");
+      }
+      const suggestions = cleanAgentSuggestions(advice.suggestions);
+      console.info("[edit-with-ai] turn", { storeId: ownStoreId, route: "advice", calls, suggestions: suggestions.length });
+      return {
+        success: true,
+        data: await withCredits({ ...emptyView("advice", cleanAgentReply(advice.reply, MAX_ADVICE_REPLY_LENGTH) || REPLIES.none[turn.uiLocale]), suggestions }),
+      };
+    }
+
     if (route !== "site") {
-      const answered = await storeTurn({ who, route: route!, message: turn.message, uiLocale: turn.uiLocale, history: turn.history, images: verified.images, currency: parseStoreCurrency(row.settings).currency });
+      const answered = await storeTurn({ who, route: route as StoreRoute, message: turn.message, uiLocale: turn.uiLocale, history: turn.history, images: verified.images, currency: parseStoreCurrency(row.settings).currency });
       return answered.success ? { success: true, data: await withCredits(answered.data) } : answered;
     }
 
     // ---- A site turn ----
-    const noTarget = async () => ({ success: true as const, data: await withCredits(emptyView("site", REPLIES.noTarget[turn.uiLocale])) });
+    const noTarget = async () => ({ success: true as const, data: await withCredits({ ...emptyView("site", REPLIES.noTarget[turn.uiLocale]), links: outOfReach(turn.message, ownStoreId) }) });
     if (!target) return await noTarget();
     const chrome = target.kind === "header" ? header : target.kind === "footer" ? footer : null;
     if (target.kind !== "page" && !chrome) return await noTarget();
@@ -334,6 +421,8 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     }
 
     const agentTarget = target.kind === "page" ? { kind: "page" as const, ...(sectionId && { sectionId }) } : { kind: target.kind };
+    // Page scope only with nothing targeted: the core checks it again and marks the target it returns.
+    const pageSections = pageScope && target.kind === "page" && !sectionId ? pageContent.data.sections : undefined;
     let result: Awaited<ReturnType<typeof runEditorAgentTurn>>;
     try {
       result = await runEditorAgentTurn(
@@ -350,6 +439,8 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
           // The saved drafts (the editor saved its pending edits before the turn): the page, or the header or footer alone.
           content: target.kind === "page" ? { sections: pageContent.data.sections } : { sections: [chrome!] },
           maxModelCalls: Math.max(1, cap.remaining - calls),
+          page: pageContext,
+          ...(pageSections && { pageSections }),
           images,
           allowImage: mediaImageCheck(media),
         },
@@ -361,7 +452,7 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
               refId: ownStoreId,
               sellerId,
               tier: "fast",
-              schema: editorAgentModelOutputSchema,
+              schema: editorAgentModelOutputWithSuggestionsSchema,
               system,
               content: [{ type: "text", text }],
               thinkingLevel: "minimal",
@@ -382,7 +473,7 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     const rejected = result.rejected.map(({ index, code: reason }) => ({ index, code: reason }));
     if (result.applied.length === 0) {
       await giveBack();
-      return { success: true, data: await withCredits({ ...emptyView("site", result.reply), rejected }) };
+      return { success: true, data: await withCredits({ ...emptyView("site", result.reply), suggestions: result.suggestions, links: outOfReach(turn.message, ownStoreId), rejected }) };
     }
 
     // Nothing is written here: the editor applies the ops to its drafts (one undo step) and autosave saves them.
@@ -394,15 +485,18 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
       ? await renderAgentCodePreviews(sellerId, ownStoreId, { ...row, pageKind: page.kind ?? null }, contentLocale, defaultLocale, result.codeNodes).catch(() => ({}))
       : {};
 
-    console.info("[edit-with-ai] turn", { storeId: ownStoreId, route: "site", target: target.kind, applied: result.applied.length, rejected: rejected.length, calls, retried: result.retried, code: allowCode, images: images.length });
+    console.info("[edit-with-ai] turn", { storeId: ownStoreId, route: "site", target: target.kind, scope: result.target.scope ?? "section", applied: result.applied.length, rejected: rejected.length, calls, retried: result.retried, code: allowCode, images: images.length });
     return {
       success: true,
       data: {
         reply: result.reply,
         route: "site",
-        siteChanges: { pageId: page.id, target: agentTarget, ops: result.ops, applied: result.summary, previews, contentLocale },
+        // The target the core checked the ops against (page scope marked), so the editor applies them the same way.
+        siteChanges: { pageId: page.id, target: result.target, ops: result.ops, applied: result.summary, previews, contentLocale },
         proposals: [],
         cards: [],
+        suggestions: result.suggestions,
+        links: [],
         rejected,
         creditsUsed,
         creditsRemaining: await creditsLeft(sellerId, billing.usdLive),
@@ -417,10 +511,12 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
   }
 }
 
+type StoreRoute = "products" | "settings" | "shipping" | "design";
+
 /** A store-data turn on the agent core: confirm cards only, nothing written. */
 async function storeTurn(input: {
   who: Access;
-  route: Exclude<EditWithAiRoute, "site" | "import" | "none">;
+  route: StoreRoute;
   message: string;
   uiLocale: "ar" | "en";
   history: readonly { role: "user" | "assistant"; text: string }[];
@@ -442,6 +538,8 @@ async function storeTurn(input: {
       data: {
         ...emptyView(input.route, result.text),
         proposals: result.proposals.map(toProposalView),
+        // Nothing proposed: when the request names something done elsewhere, say where.
+        links: result.proposals.length ? [] : outOfReach(input.message, input.who.storeId),
         rejected: result.rejected.map(({ tool, code }) => ({ tool, code })),
       },
     };
@@ -450,6 +548,14 @@ async function storeTurn(input: {
     console.error("[edit-with-ai] agent turn failed", { storeId: input.who.storeId, route: input.route, error: key });
     return fail(key === "actionFailed" ? "aiFailed" : key);
   }
+}
+
+/** A page's name for the prompt, in the store's default language (names may be stored per language). */
+function pageName(name: unknown, locale: SiteLocale): string {
+  if (typeof name === "string") return name;
+  const bag = asRecord(name);
+  const value = bag?.[locale] ?? bag?.ar ?? bag?.en;
+  return typeof value === "string" ? value : "";
 }
 
 function targetFromRouter(routed: { target: "page" | "header" | "footer" | null; sectionId: string | null }, outline: readonly SiteOutlineEntry[], hasHeader: boolean, hasFooter: boolean): CodeTarget | null {

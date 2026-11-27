@@ -8,7 +8,7 @@ import type { EditorAssistantApi } from "@workspace/store-editor/editor.client";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/app/[locale]/(builder)/ai-builder/_components/use-reduced-motion.client";
-import type { ChatState, EditWithAiChat } from "./edit-with-ai-chat.lib";
+import { activeSuggestions, type ChatState, type EditWithAiChat } from "./edit-with-ai-chat.lib";
 import { CREDITS_HREF, ChatMessages } from "./edit-with-ai-messages.client";
 import { Composer } from "./edit-with-ai-composer.client";
 import { creditsTone, turnContextOf } from "./edit-with-ai-page.lib";
@@ -70,6 +70,13 @@ export function EditWithAiPanel({
     requestAnimationFrame(() => input.current?.focus());
   };
 
+  // The AI's follow-up ideas under its newest reply. Like the first ideas, a tap fills the composer; the seller sends.
+  const followUps = activeSuggestions(state);
+  const pickFollowUp = (text: string) => {
+    chat.setDraft(text);
+    requestAnimationFrame(() => input.current?.focus());
+  };
+
   const stop = () => {
     chat.stop();
     input.current?.focus();
@@ -127,6 +134,7 @@ export function EditWithAiPanel({
                 onConfirm={(id, actionId) => void chat.confirm(id, actionId)}
                 onCancel={(id, actionId) => void chat.cancel(id, actionId)}
               />
+              {!readOnly && <FollowUps items={followUps} onPick={pickFollowUp} />}
               {!state.pending && (
                 <div className="flex justify-center">
                   <button
@@ -205,6 +213,28 @@ export function CreditsChip({ credits }: { credits: number }) {
       <span aria-hidden>{credits}</span>
       {tone === "empty" && <span className="max-[420px]:sr-only">{t("get")}</span>}
     </Link>
+  );
+}
+
+/** The AI's follow-up ideas under its newest reply: a tap puts one in the composer. */
+export function FollowUps({ items, onPick }: { items: readonly string[]; onPick: (text: string) => void }) {
+  const t = useTranslations("editWithAi.followUps");
+  if (items.length === 0) return null;
+  return (
+    <ul aria-label={t("label")} className="ms-10 flex flex-wrap gap-2">
+      {items.map((text) => (
+        <li key={text}>
+          <button
+            type="button"
+            onClick={() => onPick(text)}
+            dir="auto"
+            className="min-h-10 cursor-pointer rounded-full border border-(--s-line) bg-(--s-surface) px-3.5 py-1.5 text-start text-[13px] text-(--s-muted) transition-colors hover:border-(--s-primary) hover:text-(--s-ink)"
+          >
+            {text}
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

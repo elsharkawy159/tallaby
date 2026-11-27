@@ -9497,6 +9497,20 @@
         "import": "Import the products in this file"
       }
     },
+    "followUps": {
+      "label": "Ideas for the next step"
+    },
+    "links": {
+      "label": "Pages in your dashboard",
+      "pages": "Website pages",
+      "coupons": "Coupons",
+      "discounts": "Discounts",
+      "domain": "Store domain",
+      "payments": "Payment methods",
+      "orders": "Orders",
+      "apps": "Apps",
+      "blog": "Blog"
+    },
     "composer": {
       "label": "Your message",
       "placeholder": "Write what you want to change…",
