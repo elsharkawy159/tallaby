@@ -30,8 +30,8 @@ import type { SavedCheckoutAddress, useCheckoutAddress } from "./use-checkout-ad
 
 /**
  * The checkout's one form (ROADMAP.md F-64): name, mobile, country, one line of
- * address with a location button, and the note passed in as children. The
- * governorate picker appears only when the address doesn't say where it is.
+ * address with a location button, and the note passed in as children. In Egypt
+ * the customer picks the governorate, then an area of it, which prices delivery.
  */
 export function SimpleCheckoutForm({
   address,
@@ -60,6 +60,7 @@ export function SimpleCheckoutForm({
   };
   const regions = abroad ? childrenOf(values.country) : [];
   const cities = values.regionKey ? childrenOf(values.regionKey) : [];
+  const areas = !abroad && values.governorate ? childrenOf(`${EGYPT}/${values.governorate}`) : [];
 
   const fieldError = (field: "fullName" | "phone" | "address" | "governorate" | "region") =>
     address.errorFor(field) ? (
@@ -221,6 +222,49 @@ export function SimpleCheckoutForm({
           </div>
         )}
 
+        {!abroad && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="checkout-governorate">{t("governorate")}</Label>
+              <Select value={values.governorate} onValueChange={(value) => address.setField("governorate", value)}>
+                <SelectTrigger
+                  id="checkout-governorate"
+                  className="w-full"
+                  aria-invalid={address.errorFor("governorate") || undefined}
+                >
+                  <SelectValue placeholder={t("governoratePlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {EGYPT_GOVERNORATES.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {getGovernorateLabel(code, locale)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fieldError("governorate")}
+            </div>
+            {areas.length > 0 && (
+              <div className="grid gap-1.5">
+                <Label htmlFor="checkout-area">{t("area")}</Label>
+                <Select value={values.cityKey} onValueChange={(value) => address.setField("cityKey", value)}>
+                  <SelectTrigger id="checkout-area" className="w-full">
+                    <SelectValue placeholder={t("areaPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {areas.map((area) => (
+                      <SelectItem key={area.key} value={area.key}>
+                        {placeName(area.key)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {!values.cityKey && <p className="text-xs text-muted-foreground">{t("areaHint")}</p>}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid gap-1.5">
           <Label htmlFor="checkout-address">{t("address")}</Label>
           <div className="relative">
@@ -265,26 +309,6 @@ export function SimpleCheckoutForm({
           )}
           {fieldError("address")}
         </div>
-
-        {address.needsGovernorate && (
-          <div className="grid gap-1.5">
-            <Label htmlFor="checkout-governorate">{t("governorate")}</Label>
-            <Select value={values.governorate} onValueChange={(value) => address.setField("governorate", value)}>
-              <SelectTrigger id="checkout-governorate" className="w-full">
-                <SelectValue placeholder={t("governoratePlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {EGYPT_GOVERNORATES.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {getGovernorateLabel(code, locale)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">{t("governorateHint")}</p>
-            {fieldError("governorate")}
-          </div>
-        )}
 
         {address.saveFailed && (
           <p role="alert" className="text-xs text-red-500">

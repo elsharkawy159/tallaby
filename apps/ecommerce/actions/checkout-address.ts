@@ -12,15 +12,15 @@ import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 
 /**
  * The simple checkout form (ROADMAP.md F-64). The user comes from the session
- * (a guest gets their guest row). The governorate is worked out here again: a
- * client can't pick a delivery price by sending a state.
+ * (a guest gets their guest row). The governorate and area are checked here
+ * again: only a real governorate, and only an area inside it, can price the order.
  */
 
 // The form saves as the customer pauses typing, so this only stops abuse.
 const saveLimiter = createRateLimiter({ limit: 40, windowMs: 60_000 });
 
 export type SaveCheckoutAddressResult =
-  | { success: true; data: { id: string; state: string; city: string; country: string; addressLine1: string; fullName: string; phone: string } }
+  | { success: true; data: { id: string; state: string; city: string; country: string; placeKey: string; addressLine1: string; fullName: string; phone: string } }
   | { success: false; errors: CheckoutAddressField[]; needsGovernorate: boolean; failed?: "rateLimited" | "generic" };
 
 export async function saveCheckoutAddress(
@@ -37,8 +37,8 @@ export async function saveCheckoutAddress(
     }
 
     const { id } = await saveCheckoutAddressRow(userId, parsed.value, input?.addressId ?? null);
-    const { state, city, country, addressLine1, fullName, phone } = parsed.value;
-    return { success: true, data: { id, state, city, country, addressLine1, fullName, phone } };
+    const { state, city, country, placeKey, addressLine1, fullName, phone } = parsed.value;
+    return { success: true, data: { id, state, city, country, placeKey, addressLine1, fullName, phone } };
   } catch {
     // No customer details in the logs.
     console.error("[checkout] address save failed");

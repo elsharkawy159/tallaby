@@ -161,6 +161,27 @@ export function resolveCheckoutGovernorate(input: {
   return code ? { code, cityKey: null } : null
 }
 
+/**
+ * The governorate and area the customer picked from the lists. Only an exact
+ * governorate code counts, and only an area of that governorate. With no area
+ * picked, an area the address names inside that governorate still prices it.
+ * Null when no governorate was picked, so the address text decides as before.
+ */
+export function resolvePickedPlace(
+  governorate: string | null | undefined,
+  cityKey: string | null | undefined,
+  address: string,
+): ResolvedGovernorate {
+  const code = governorate?.trim()
+  if (!code || getPlace(`${EGYPT}/${code}`)?.level !== 'region') return null
+  const picked = cityKey?.trim()
+  if (picked && picked.startsWith(`${EGYPT}/${code}/`) && getPlace(picked)?.level === 'city') {
+    return { code, cityKey: picked }
+  }
+  const match = matchGovernorateInText(address)
+  return { code, cityKey: match.kind === 'one' && match.code === code ? match.cityKey : null }
+}
+
 export const checkoutAddressInputSchema = z.object({
   fullName: z.string(),
   phone: z.string(),
@@ -190,6 +211,8 @@ export type ParsedCheckoutAddress =
         city: string
         /** "Egypt", or the country's English name, which `resolveAddressPlace` reads back. */
         country: string
+        /** The priced place: `EG/CAIRO/nasr-city`, `EG/CAIRO`, or the picked region or city abroad. */
+        placeKey: string
         latitude: number | null
         longitude: number | null
       }
@@ -243,6 +266,7 @@ function parseForeignAddress(
       state,
       city: name(city?.key) || state,
       country: country!.nameEn,
+      placeKey: city?.key ?? region?.key ?? countryCode,
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
     },
@@ -270,7 +294,8 @@ export function parseCheckoutAddress(raw: unknown, locale: string): ParsedChecko
 
   // Only an address worth saving asks for a governorate.
   const resolved = addressOk
-    ? resolveCheckoutGovernorate({ address: addressLine1, picked: input.governorate, locationState: input.locationState })
+    ? (resolvePickedPlace(input.governorate, input.cityKey, addressLine1) ??
+      resolveCheckoutGovernorate({ address: addressLine1, picked: input.governorate, locationState: input.locationState }))
     : null
   const needsGovernorate = addressOk && !resolved
   if (needsGovernorate) errors.push('governorate')
@@ -285,6 +310,7 @@ export function parseCheckoutAddress(raw: unknown, locale: string): ParsedChecko
       state: resolved.code,
       city: placeName(resolved.cityKey ?? `${EGYPT}/${resolved.code}`, locale),
       country: 'Egypt',
+      placeKey: resolved.cityKey ?? `${EGYPT}/${resolved.code}`,
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
     },

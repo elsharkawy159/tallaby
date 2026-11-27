@@ -3,6 +3,7 @@ import {
   matchGovernorateInText,
   parseCheckoutAddress,
   resolveCheckoutGovernorate,
+  resolvePickedPlace,
   savedAddressLine,
   validGovernorate,
 } from './checkout-address.lib'
@@ -201,5 +202,53 @@ describe("parseCheckoutAddress abroad (F-61e)", () => {
     expect(parseCheckoutAddress({ ...plain, country: "EG" }, "ar")).toEqual(parseCheckoutAddress(plain, "ar"));
     expect(parseCheckoutAddress(plain, "ar")).toMatchObject({ ok: true, value: { country: "Egypt", state: "CAIRO", phone: "01012345678" } });
     expect(parseCheckoutAddress({ ...plain, phone: "0512345678" }, "ar")).toMatchObject({ ok: false, errors: ["phone"] });
+  });
+});
+
+describe("picked governorate and area (checkout lists)", () => {
+  const plain = { fullName: "Sara Ahmed", phone: "01012345678", address: "5 شارع النصر، الدور 2" };
+
+  it("takes the picked area of the picked governorate", () => {
+    expect(resolvePickedPlace("CAIRO", "EG/CAIRO/maadi", "عمارة 5")).toEqual({ code: "CAIRO", cityKey: "EG/CAIRO/maadi" });
+  });
+
+  it("ignores an area of another governorate, a made-up area and a made-up governorate", () => {
+    expect(resolvePickedPlace("GIZA", "EG/CAIRO/maadi", "عمارة 5")).toEqual({ code: "GIZA", cityKey: null });
+    expect(resolvePickedPlace("CAIRO", "EG/CAIRO/nowhere", "عمارة 5")).toEqual({ code: "CAIRO", cityKey: null });
+    expect(resolvePickedPlace("CAIRO", "EG/CAIRO", "عمارة 5")).toEqual({ code: "CAIRO", cityKey: null });
+    expect(resolvePickedPlace("NOWHERE", "EG/CAIRO/maadi", "عمارة 5")).toBeNull();
+    expect(resolvePickedPlace("Cairo", null, "عمارة 5")).toBeNull();
+    expect(resolvePickedPlace(null, "EG/CAIRO/maadi", "عمارة 5")).toBeNull();
+  });
+
+  it("with no area picked, uses an area the address names inside the governorate only", () => {
+    expect(resolvePickedPlace("CAIRO", null, "شارع 9، المعادي")).toEqual({ code: "CAIRO", cityKey: "EG/CAIRO/maadi" });
+    expect(resolvePickedPlace("GIZA", null, "شارع 9، المعادي")).toEqual({ code: "GIZA", cityKey: null });
+  });
+
+  it("lets the picked governorate win over the address text", () => {
+    const parsed = parseCheckoutAddress({ ...plain, address: "شارع 9، الجيزة", governorate: "CAIRO" }, "ar");
+    expect(parsed).toMatchObject({ ok: true, value: { state: "CAIRO", placeKey: "EG/CAIRO" } });
+  });
+
+  it("resolves every Egyptian area picked from the list back to itself, in both languages", () => {
+    for (const locale of ["ar", "en"]) {
+      for (const region of childrenOf("EG")) {
+        const code = region.key.split("/")[1]!;
+        for (const area of childrenOf(region.key)) {
+          const parsed = parseCheckoutAddress({ ...plain, governorate: code, cityKey: area.key }, locale);
+          if (!parsed.ok) throw new Error(area.key);
+          expect(parsed.value.placeKey).toBe(area.key);
+          expect(resolveAddressPlace(parsed.value), `${locale} ${area.key}`).toBe(area.key);
+        }
+      }
+    }
+  });
+
+  it("still reads the governorate from the text when none is picked", () => {
+    expect(parseCheckoutAddress({ ...plain, address: "شارع 9، المعادي" }, "ar")).toMatchObject({
+      ok: true,
+      value: { state: "CAIRO", placeKey: "EG/CAIRO/maadi" },
+    });
   });
 });

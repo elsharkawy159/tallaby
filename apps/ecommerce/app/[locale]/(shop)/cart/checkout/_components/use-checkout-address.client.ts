@@ -22,10 +22,13 @@ type Values = {
   fullName: string;
   phone: string;
   address: string;
+  /** Egypt: the picked governorate code (`CAIRO`). */
   governorate: string;
   /** Only used when the store offers a country choice (F-61e). */
   country: string;
+  /** Outside Egypt: the picked region key (`SA/RIYADH`). */
   regionKey: string;
+  /** The picked city or area key, in Egypt (`EG/CAIRO/nasr-city`) or abroad. */
   cityKey: string;
 };
 type Prefill = { fullName?: string | null; phone?: string | null };
@@ -38,19 +41,26 @@ const SAVE_AFTER_MS = 900;
 
 const blankPlace = (countries: CheckoutCountries) => ({ country: countries?.default ?? EGYPT, regionKey: "", cityKey: "" });
 
-/** A saved address outside Egypt is shown by its place keys, and only its own line in the address box. */
+/** The street part of a saved address: the lists show its place, so the city isn't repeated. */
+function streetLine(a: SavedCheckoutAddress): string {
+  return [a.addressLine1, a.addressLine2].map((part) => part?.trim()).filter(Boolean).join("، ");
+}
+
+/** A saved address is shown by its place keys, and only its own line in the address box. */
 function fromSaved(a: SavedCheckoutAddress, countries: CheckoutCountries): Values {
-  const parts = countries ? (resolveAddressPlace(a)?.split("/") ?? []) : [];
-  const country = parts[0] ?? countries?.default ?? EGYPT;
+  const parts = resolveAddressPlace(a)?.split("/") ?? [];
+  const country = (countries ? parts[0] : null) ?? countries?.default ?? EGYPT;
+  const inCountry = parts[0] === country;
   const abroad = country !== EGYPT;
+  const cityKey = inCountry && parts[2] ? parts.join("/") : "";
   return {
     fullName: a.fullName ?? "",
     phone: a.phone ?? "",
-    address: abroad ? (a.addressLine1 ?? "") : savedAddressLine(a),
-    governorate: abroad ? "" : (a.state ?? ""),
+    address: abroad || cityKey ? streetLine(a) : savedAddressLine(a),
+    governorate: !abroad && inCountry ? (parts[1] ?? "") : "",
     country,
-    regionKey: abroad && parts[1] ? parts.slice(0, 2).join("/") : "",
-    cityKey: abroad && parts[2] ? parts.join("/") : "",
+    regionKey: abroad && inCountry && parts[1] ? parts.slice(0, 2).join("/") : "",
+    cityKey,
   };
 }
 
@@ -76,7 +86,6 @@ export function useCheckoutAddress(input: {
   const [addressId, setAddressId] = useState<string | null>(input.initial?.id ?? null);
   const [dirty, setDirty] = useState(false);
   const [errors, setErrors] = useState<CheckoutAddressField[]>([]);
-  const [needsGovernorate, setNeedsGovernorate] = useState(false);
   const [touched, setTouched] = useState<Partial<Record<CheckoutAddressField, boolean>>>({});
   const [showAll, setShowAll] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -93,8 +102,6 @@ export function useCheckoutAddress(input: {
   onSavedRef.current = input.onSaved;
   const onClearedRef = useRef(input.onCleared);
   onClearedRef.current = input.onCleared;
-  const pickerOpen = useRef(false);
-  pickerOpen.current = needsGovernorate;
   // Saves run one after another, so the first save's new id reaches the next.
   const chain = useRef<Promise<string | null>>(Promise.resolve(null));
   const editCount = useRef(0);
@@ -113,26 +120,32 @@ export function useCheckoutAddress(input: {
           fullName: v.fullName,
           phone: v.phone,
           address: v.address,
-          governorate: v.governorate || null,
-          ...(countriesRef.current ? { country: v.country, regionKey: v.regionKey || null, cityKey: v.cityKey || null } : {}),
+          ...(v.country === EGYPT
+            ? { governorate: v.governorate || null, cityKey: v.cityKey || null }
+            : { regionKey: v.regionKey || null, cityKey: v.cityKey || null }),
+          ...(countriesRef.current ? { country: v.country } : {}),
           locationState: hint?.state ?? null,
           latitude: hint?.latitude ?? null,
           longitude: hint?.longitude ?? null,
         });
         if (!result.success) {
           setErrors(result.errors);
-          if (result.needsGovernorate) setNeedsGovernorate(true);
           if (result.failed) setSaveFailed(true);
           return null;
         }
         setErrors([]);
         setAddressId(result.data.id);
         stateRef.current.addressId = result.data.id;
-        // Keep the picker only while the text alone doesn't decide it.
-        setNeedsGovernorate((open) => open && !!v.governorate && result.data.state === v.governorate);
         if (editCount.current === startedAt) {
           setDirty(false);
           stateRef.current.dirty = false;
+          // The address or location named the governorate: show it in the lists.
+          const [country, region] = result.data.placeKey.split("/");
+          if (country === EGYPT && region && !v.governorate) {
+            const next = { ...v, governorate: region, cityKey: result.data.placeKey.split("/").length > 2 ? result.data.placeKey : "" };
+            stateRef.current.values = next;
+            setValues(next);
+          }
         }
         onSavedRef.current({ ...result.data });
         return result.data.id;
@@ -150,16 +163,12 @@ export function useCheckoutAddress(input: {
   const setField = useCallback((field: keyof Values, value: string) => {
     editCount.current += 1;
     if (field === "address") locationRef.current = null;
-    // A saved address's governorate says nothing about newly written text: only
-    // the picker, while it's showing, may keep deciding it.
-    const dropGovernorate = field === "address" && !pickerOpen.current;
     setValues((prev) => ({
       ...prev,
       [field]: value,
-      ...(dropGovernorate ? { governorate: "" } : {}),
       // A place below the one changed no longer applies.
       ...(field === "country" ? { regionKey: "", cityKey: "", governorate: "" } : {}),
-      ...(field === "regionKey" ? { cityKey: "" } : {}),
+      ...(field === "regionKey" || field === "governorate" ? { cityKey: "" } : {}),
     }));
     setDirty(true);
     stateRef.current.dirty = true;
@@ -191,7 +200,6 @@ export function useCheckoutAddress(input: {
     stateRef.current = { values: next, addressId: address.id, dirty: false };
     setDirty(false);
     setErrors([]);
-    setNeedsGovernorate(false);
     setTouched({});
     setShowAll(false);
     setLocation("idle");
@@ -215,7 +223,6 @@ export function useCheckoutAddress(input: {
     stateRef.current.addressId = null;
     setDirty(true);
     setErrors([]);
-    setNeedsGovernorate(false);
     setTouched({});
     setShowAll(false);
     setLocation("idle");
@@ -242,7 +249,8 @@ export function useCheckoutAddress(input: {
         }
         editCount.current += 1;
         locationRef.current = { state: found.state || null, latitude: coords.latitude, longitude: coords.longitude };
-        setValues((prev) => ({ ...prev, address: line.slice(0, 200), ...(pickerOpen.current ? {} : { governorate: "" }) }));
+        // The location decides the governorate and area again, and the save fills the lists.
+        setValues((prev) => ({ ...prev, address: line.slice(0, 200), ...(prev.country === EGYPT ? { governorate: "", cityKey: "" } : {}) }));
         setDirty(true);
         stateRef.current.dirty = true;
         setLocation("idle");
@@ -262,7 +270,6 @@ export function useCheckoutAddress(input: {
     saving,
     saveFailed,
     location,
-    needsGovernorate,
     setField,
     ensureSaved,
     selectSaved,
