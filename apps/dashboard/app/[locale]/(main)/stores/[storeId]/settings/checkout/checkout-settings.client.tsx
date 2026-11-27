@@ -22,7 +22,6 @@ import {
   IconButton,
   Note,
   Row,
-  Rows,
   SaveBar,
   SectionCard,
   Segmented,
@@ -31,6 +30,7 @@ import {
   TextInput,
   TwoColumns,
 } from "@/components/seller-ui";
+import { SortableList } from "@/components/form/sortable-list.client";
 import type { MoneyUnit } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { saveStoreCheckoutSettings } from "./checkout-settings.server";
@@ -128,7 +128,7 @@ export function StoreCheckoutSettingsForm({
 
       <StoreMinOrderCard money={money} state={minOrder} disabled={disabled} />
 
-      <SectionCard icon={ListChecks} title={t("formTitle")} description={t("formDescription")}>
+      <SectionCard id="checkout-form" className="scroll-mt-24" icon={ListChecks} title={t("formTitle")} description={t("formDescription")}>
         <Field label={tSetup("fixedFieldsLabel")} note={t("alwaysRequired")}>
           <div className="flex flex-wrap gap-1.5">
             {fixedFields.map((key) => (
@@ -141,13 +141,21 @@ export function StoreCheckoutSettingsForm({
         </Field>
 
         <TwoColumns>
-          <Rows>
-            {form.order.map((key, index) => (
+          <SortableList
+            id="checkout-form-fields"
+            className="gap-2"
+            items={form.order}
+            getId={(key) => key}
+            handleLabel={(key) => t("dragField", { field: fieldLabel(key) })}
+            handleClassName="size-7 max-[600px]:size-10"
+            disabled={disabled}
+            onReorder={(order) => setForm((current) => ({ ...current, order }))}
+            renderItem={(key, index, { isDragging, handle }) => (
               <Row
-                key={key}
-                className="items-start"
+                className={cn("items-start rounded-[18px] border border-(--s-line) bg-(--s-surface)", isDragging && "shadow-lg")}
                 start={
-                  <div className="flex shrink-0 flex-col">
+                  <div className="flex shrink-0 flex-col items-center">
+                    {handle}
                     <IconButton
                       className={MOVE}
                       disabled={disabled || index === 0}
@@ -193,8 +201,8 @@ export function StoreCheckoutSettingsForm({
                   )}
                 </div>
               </Row>
-            ))}
-          </Rows>
+            )}
+          />
 
           {/* What the customer sees under "Order details", from the unsaved edits. */}
           <div className="flex flex-col gap-2.5 rounded-[20px] border border-(--s-line) bg-(--s-tint) p-4">

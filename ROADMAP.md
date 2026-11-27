@@ -2173,6 +2173,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Website › Forms lists the storefront's own forms, and a simpler form editor (owner request; no migration)
+
+- **Owner:** "For the forms, make it includes all forms that already on the storefront like Checkout form, Newsletter form, etc, so user can edit them directly and improve the UX of editing form to be very easy to users."
+- **Changed:** Website › Forms opens with a "Store forms" section: cards for the Checkout form (opens Store settings › Checkout at `#checkout-form`, which stays where it was), the Newsletter and the Contact form (on/off, fields, messages, new count, Edit). Forms have no "kind", so the hub finds the newsletter and contact `store_forms` rows by a pointer in `stores.settings.builtInForms` (dashboard-only key), else the starter name (ar/en), else the starter field IDs (`website/forms/built-in-forms.lib.ts`, tested). The first Edit goes through `openBuiltInForm` (`built-in-forms.server.ts`: `requireStore` forWrite, rate-limited), which saves the pointer, or creates the form from the starter copy in the store's language when the store has none. The seller's other forms follow under "Your forms". The form editor is rebuilt: field cards reordered by Drag & Drop (new shared `components/form/sortable-list.client.tsx`, dnd-kit, keyboard too), label and Required right on the card, the rest under "More options", "Add a field" as a short type menu with one-line hints, a live preview beside the list (under it on a phone; clicking a field opens it), an on/off switch in the header, one sticky save bar that opens the field with the error. The checkout editor's field order also takes Drag & Drop (arrows kept). Submissions, validation and caches unchanged (the save still goes through `saveForm`). Other storefront forms found but not in the hub: product reviews and questions, back-in-stock alerts and per-product customer requirements (F-91), none with store-level form settings.
+- **Checks:** dashboard typecheck clean except `website/seo/*` (another agent's work in progress); vitest on `website/forms` and `settings/checkout`: 17 pass; eslint 0 errors on the changed files; not tried in a browser.
+
+
 ### 2026-11-27 — Sidebar: "Store design" group, a separate Blog group, and blog categories (owner request; no migration)
 
 - **Owner:** "change 'المتجر الإلكتروني' tab to be 'تصميم المتجر'; keep first page to be نظرة عامة; make 2nd page to be الثيمات; 3rd page is تعديل تصميم المتجر; Move Blogs to be outside, make it separated accordion and include it إدارة المدونات and اقسام المدونات; change التواصل الإجتماعي to be ربط التواصل الإجتماعي".

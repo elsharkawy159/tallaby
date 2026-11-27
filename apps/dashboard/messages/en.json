@@ -7318,8 +7318,30 @@
     "cancel": "Cancel",
     "sections": {
       "label": "On this page",
-      "forms": "Forms",
+      "builtIn": "Store forms",
+      "forms": "Your forms",
       "submissions": "Leads"
+    },
+    "hub": {
+      "title": "Store forms",
+      "description": "Forms your website already shows. Open one to change its fields and text.",
+      "edit": "Edit",
+      "setUp": "Set up",
+      "notSetUp": "Not set up",
+      "notSetUpHint": "Set it up, then add it to a page in the website editor.",
+      "fields": "{count, plural, one {# field} other {# fields}}",
+      "checkout": {
+        "title": "Checkout form",
+        "description": "What customers fill in to place an order, and the thank-you page."
+      },
+      "newsletter": {
+        "title": "Newsletter",
+        "description": "Collects customers' emails for offers and new arrivals."
+      },
+      "contact": {
+        "title": "Contact form",
+        "description": "Customers send you a message from your Contact page."
+      }
     },
     "status": {
       "active": "On",
@@ -7340,10 +7362,10 @@
       "checkbox": "Checkbox"
     },
     "list": {
-      "title": "Store forms",
+      "title": "Your forms",
       "description": "Forms customers fill in on your website. Messages arrive in your inbox.",
       "create": "New form",
-      "emptyTitle": "No forms yet",
+      "emptyTitle": "No forms of your own yet",
       "emptyBody": "Start from a ready-made form, then add it to a page from the Forms tab in the website editor.",
       "meta": "{fields, plural, one {# field} other {# fields}} · {submissions, plural, one {# message} other {# messages}}",
       "lastSubmission": "last on {date}",
@@ -7397,7 +7419,32 @@
       "errorNoFields": "Add at least one field.",
       "errorDuplicateKey": "Two fields have the same field ID.",
       "errorOptions": "Every dropdown needs at least one choice.",
-      "errorInvalid": "Check the fields: every field needs a label and a valid field ID."
+      "errorInvalid": "Check the fields: every field needs a label and a valid field ID.",
+      "errorName": "Give the form a name.",
+      "pageDescription": "Change the fields and the text customers see. The preview shows the form as it looks on your website.",
+      "inactive": "Form is off",
+      "buttonTitle": "Button and thank-you message",
+      "buttonDescription": "Leave a box empty to use the default text.",
+      "dragHint": "Drag & Drop a field by its handle to change the order.",
+      "dragField": "Drag {field}",
+      "fieldsFull": "This form has the most fields allowed ({max}).",
+      "untitled": "Untitled field",
+      "moreOptions": "More options",
+      "lessOptions": "Fewer options",
+      "typeHints": {
+        "text": "A name, city or short answer",
+        "email": "Checks that it's a valid email",
+        "phone": "A phone number",
+        "textarea": "A message or longer answer",
+        "select": "One choice from a list",
+        "checkbox": "A yes, such as agreeing to terms"
+      },
+      "previewTitle": "Preview",
+      "previewOff": "Hidden on your website",
+      "previewEmpty": "Add a field to see the form.",
+      "previewPick": "Edit {field}",
+      "previewAfterSend": "After sending",
+      "previewHint": "Click a field to edit it."
     },
     "inbox": {
       "title": "Leads",
@@ -8530,6 +8577,7 @@
       "required": "Required"
     },
     "moveUp": "Move {field} up",
+    "dragField": "Drag {field}",
     "moveDown": "Move {field} down",
     "questionLabel": "Question shown to the customer",
     "questionPlaceholder": "e.g. Which size do you want?",
