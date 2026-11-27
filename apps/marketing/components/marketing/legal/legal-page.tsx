@@ -107,7 +107,10 @@ export async function LegalPage({
         </div>
 
         <div className="grid gap-6 pt-16 pb-24 lg:grid-cols-[260px_minmax(0,720px)] lg:gap-[72px] print:block">
-          <LegalToc sections={sections.map((s) => ({ id: s.id, title: s.title }))} />
+          <LegalToc
+            sections={sections.map((s) => ({ id: s.id, title: s.title }))}
+            labels={{ contents: t("contents"), print: t("print") }}
+          />
           <article id="legal-doc">
             {sections.map((s, i) => (
               <section key={s.id} id={s.id} className="mb-10 scroll-mt-[100px] border-b border-line pb-10 last:border-0">

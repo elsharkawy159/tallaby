@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { HelpCenterProvider, HelpResults, HelpSearch } from "@/components/marketing/faq/help-center.client";
+import { HelpCenterProvider, HelpResults, HelpSearch, type HelpCopy } from "@/components/marketing/faq/help-center.client";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { Container } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
@@ -39,8 +39,25 @@ export default async function FaqPage({ params }: Props) {
     ),
   };
 
+  // The strings the search and results show, sent with this page only (not in every page's translations).
+  const copy: HelpCopy = {
+    search: t("search"),
+    placeholder: t("placeholder"),
+    popular: t("popular"),
+    popularTerms: t.raw("popularTerms") as string[],
+    categories: t("categories"),
+    noResults: t("noResults"),
+    noResultsBody: t("noResultsBody"),
+    groups: Object.fromEntries(
+      GROUP_IDS.map((id) => [
+        id,
+        { title: t(`groups.${id}.title`), sub: t(`groups.${id}.sub`), items: t.raw(`groups.${id}.items`) as HelpCopy["groups"]["start"]["items"] },
+      ]),
+    ) as HelpCopy["groups"],
+  };
+
   return (
-    <HelpCenterProvider>
+    <HelpCenterProvider copy={copy}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <PageHero
         eyebrow={t("eyebrow")}

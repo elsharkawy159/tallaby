@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { BadgePercent, CreditCard, Globe, Palette, Rocket, Search, Truck } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { FaqAccordion } from "@/components/marketing/site/faq-accordion";
 import { useScrollSpy } from "@/components/marketing/site/use-scroll-spy.client";
@@ -24,6 +23,22 @@ type GroupId = (typeof GROUPS)[number]["id"];
 /** `aOutsideEgypt`: the wallet top-up answer for visitors outside Egypt (owner, 2026-11-10). */
 type QA = { q: string; a: string; aOutsideEgypt?: string };
 
+/**
+ * The FAQ strings these components show, read on the server by the FAQ page
+ * (`faq` in the messages). Passed as props so the FAQ answers are not in the
+ * translations every tallaby.com page sends to the browser.
+ */
+export type HelpCopy = {
+  search: string;
+  placeholder: string;
+  popular: string;
+  popularTerms: string[];
+  categories: string;
+  noResults: string;
+  noResultsBody: string;
+  groups: Record<GroupId, { title: string; sub: string; items: QA[] }>;
+};
+
 function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -44,25 +59,38 @@ function highlight(text: string, query: string): React.ReactNode {
 }
 
 /** Search box for the FAQ hero. Lives in the hero, shares state through context. */
-const HelpQuery = React.createContext<{ query: string; setQuery: (q: string) => void; group: GroupId | null; setGroup: (g: GroupId | null) => void }>({
+const HelpQuery = React.createContext<{
+  copy: HelpCopy | null;
+  query: string;
+  setQuery: (q: string) => void;
+  group: GroupId | null;
+  setGroup: (g: GroupId | null) => void;
+}>({
+  copy: null,
   query: "",
   setQuery: () => {},
   group: null,
   setGroup: () => {},
 });
 
-export function HelpCenterProvider({ children }: { children: React.ReactNode }) {
+function useHelpCopy(): HelpCopy {
+  const { copy } = React.useContext(HelpQuery);
+  if (!copy) throw new Error("HelpSearch and HelpResults must be inside HelpCenterProvider");
+  return copy;
+}
+
+export function HelpCenterProvider({ copy, children }: { copy: HelpCopy; children: React.ReactNode }) {
   const [query, setQuery] = React.useState("");
   const [group, setGroup] = React.useState<GroupId | null>(null);
-  const value = React.useMemo(() => ({ query, setQuery, group, setGroup }), [query, group]);
+  const value = React.useMemo(() => ({ copy, query, setQuery, group, setGroup }), [copy, query, group]);
   return <HelpQuery.Provider value={value}>{children}</HelpQuery.Provider>;
 }
 
 export function HelpSearch() {
-  const t = useTranslations("faq");
+  const copy = useHelpCopy();
   const { query, setQuery, setGroup } = React.useContext(HelpQuery);
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const popular = t.raw("popularTerms") as string[];
+  const popular = copy.popularTerms;
 
   // "/" focuses the search, as in the design.
   React.useEffect(() => {
@@ -81,20 +109,20 @@ export function HelpSearch() {
     <>
       <label className="mt-8 flex h-[62px] w-full max-w-[640px] items-center gap-2.5 rounded-full border-[1.5px] border-line-strong bg-surface px-[22px] text-ink-400 shadow-[0_10px_30px_rgba(20,81,99,0.08)] transition-[border-color,box-shadow] duration-150 focus-within:border-ink-brand focus-within:shadow-[var(--ring-focus),0_10px_30px_rgba(20,81,99,0.08)]">
         <Search className="size-5" aria-hidden />
-        <span className="sr-only">{t("search")}</span>
+        <span className="sr-only">{copy.search}</span>
         <input
           ref={inputRef}
           type="search"
           autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("placeholder")}
+          placeholder={copy.placeholder}
           className="h-full min-w-0 flex-1 bg-transparent text-[17px] text-ink-900 outline-none"
         />
         <kbd className="hidden rounded-md border border-neutral-200 dark:border-line px-2 py-0.5 font-latin text-xs font-semibold text-neutral-500 dark:text-ink-500 sm:inline">/</kbd>
       </label>
       <div className="mt-[18px] flex flex-wrap items-center justify-center gap-2 text-[13px] text-ink-400">
-        <span>{t("popular")}</span>
+        <span>{copy.popular}</span>
         {popular.map((term) => (
           <button
             key={term}
@@ -115,7 +143,7 @@ export function HelpSearch() {
 
 /** Category tiles (overlapping the hero), table of contents and the grouped questions. */
 export function HelpResults({ still }: { still: React.ReactNode }) {
-  const t = useTranslations("faq");
+  const copy = useHelpCopy();
   // `{orderFee}`-style tokens in the answers, in the visitor's currency.
   const prices = useVisitorPrices()?.vars ?? {};
   const outsideEgypt = topUpCopyVariant(useVisitorCountry()) === "usdCard";
@@ -124,7 +152,7 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
   const active = useScrollSpy(GROUPS.map((g) => g.id), 120);
 
   const groups = GROUPS.filter((g) => !group || g.id === group).map((g) => {
-    const items = (t.raw(`groups.${g.id}.items`) as QA[]).map((x) => ({ q: x.q, a: fillPriceTokens(outsideEgypt && x.aOutsideEgypt ? x.aOutsideEgypt : x.a, prices) })).filter(
+    const items = copy.groups[g.id].items.map((x) => ({ q: x.q, a: fillPriceTokens(outsideEgypt && x.aOutsideEgypt ? x.aOutsideEgypt : x.a, prices) })).filter(
       (x) => !q || `${x.q} ${x.a}`.toLowerCase().includes(q.toLowerCase()),
     );
     return { ...g, items };
@@ -145,14 +173,14 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
             <span className="mb-2 grid size-[42px] place-items-center rounded-xl bg-tint text-ink-brand group-aria-pressed:bg-amber-600 group-aria-pressed:text-teal-900">
               <g.icon className="size-[18px]" aria-hidden />
             </span>
-            <b className="text-base text-ink-900">{t(`groups.${g.id}.title`)}</b>
-            <span className="text-[13px] text-neutral-600 dark:text-ink-700">{t(`groups.${g.id}.sub`)}</span>
+            <b className="text-base text-ink-900">{copy.groups[g.id].title}</b>
+            <span className="text-[13px] text-neutral-600 dark:text-ink-700">{copy.groups[g.id].sub}</span>
           </button>
         ))}
       </div>
 
       <div className="grid items-start gap-14 pt-[72px] pb-24 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <nav aria-label={t("categories")} className="sticky top-24 hidden gap-0.5 lg:grid">
+        <nav aria-label={copy.categories} className="sticky top-24 hidden gap-0.5 lg:grid">
           {GROUPS.map((g) => (
             <a
               key={g.id}
@@ -165,8 +193,8 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
                 (group ?? active) === g.id && "bg-tint text-ink-900",
               )}
             >
-              {t(`groups.${g.id}.title`)}
-              <span className="font-latin opacity-50">{(t.raw(`groups.${g.id}.items`) as QA[]).length}</span>
+              {copy.groups[g.id].title}
+              <span className="font-latin opacity-50">{copy.groups[g.id].items.length}</span>
             </a>
           ))}
         </nav>
@@ -177,7 +205,7 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
                 <div key={g.id} id={g.id} className="mb-12 scroll-mt-24">
                   <h2 className="mb-2 flex items-center gap-2.5 text-[22px] font-bold text-ink-900">
                     <g.icon className="size-5 text-amber-700" aria-hidden />
-                    {t(`groups.${g.id}.title`)}
+                    {copy.groups[g.id].title}
                   </h2>
                   <FaqAccordion
                     defaultOpen={Boolean(q)}
@@ -188,8 +216,8 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
             )
           ) : (
             <div className="rounded-card border border-dashed border-line-strong p-12 text-center text-slate-ink">
-              <b className="mb-1 block text-lg text-ink-900">{t("noResults")}</b>
-              {t("noResultsBody")}
+              <b className="mb-1 block text-lg text-ink-900">{copy.noResults}</b>
+              {copy.noResultsBody}
             </div>
           )}
           {still}

@@ -1,13 +1,21 @@
 "use client";
 
 import { Printer } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { useScrollSpy } from "@/components/marketing/site/use-scroll-spy.client";
 
-/** Numbered contents with scroll-spy and a print button. */
-export function LegalToc({ sections }: { sections: { id: string; title: string }[] }) {
-  const t = useTranslations("legal");
+/**
+ * Numbered contents with scroll-spy and a print button. The two labels come
+ * from the server (LegalPage), so the legal texts stay out of the translations
+ * every tallaby.com page sends to the browser.
+ */
+export function LegalToc({
+  sections,
+  labels,
+}: {
+  sections: { id: string; title: string }[];
+  labels: { contents: string; print: string };
+}) {
   const active = useScrollSpy(
     sections.map((s) => s.id),
     140,
@@ -15,11 +23,11 @@ export function LegalToc({ sections }: { sections: { id: string; title: string }
 
   return (
     <nav
-      aria-label={t("contents")}
+      aria-label={labels.contents}
       data-print="hide"
       className="grid gap-0.5 self-start rounded-2xl border border-neutral-200 dark:border-line bg-surface p-3 lg:sticky lg:top-[100px] lg:max-h-[calc(100vh-120px)] lg:overflow-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0"
     >
-      <b className="block px-3 pb-2 text-xs font-bold text-neutral-500 dark:text-ink-500 en:tracking-[0.08em] en:uppercase">{t("contents")}</b>
+      <b className="block px-3 pb-2 text-xs font-bold text-neutral-500 dark:text-ink-500 en:tracking-[0.08em] en:uppercase">{labels.contents}</b>
       {sections.map((s, i) => (
         <a
           key={s.id}
@@ -39,7 +47,7 @@ export function LegalToc({ sections }: { sections: { id: string; title: string }
         className="mt-3.5 flex items-center gap-2 px-3 py-2 text-[13px] font-semibold text-ink-brand"
       >
         <Printer className="size-4" aria-hidden />
-        {t("print")}
+        {labels.print}
       </button>
     </nav>
   );

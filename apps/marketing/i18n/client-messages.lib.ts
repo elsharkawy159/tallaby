@@ -14,6 +14,10 @@ import type { Messages } from "./merge-messages.lib";
  * client-messages.lib.test.ts walks the imports of each route tree and fails
  * when a client component uses a namespace that is not listed here. Add the
  * namespace (dotted paths pick a part of one) when it does.
+ *
+ * Strings only one page's client components need (the FAQ answers, the legal
+ * contents labels) are passed to them as props by that page instead, so they
+ * are not sent with every page.
  */
 export const ROOT_CLIENT_NAMESPACES = ["trackingConsent"] as const;
 
@@ -22,17 +26,13 @@ export const MARKETING_CLIENT_NAMESPACES = [
   "careers",
   "common",
   "contact",
-  "faq",
   "home.hero.live",
-  "legal",
   "nav",
   "pricing.estimate",
   "pricing.plans.currency",
-  "product",
   "signup",
   "site",
   "templates",
-  "toast",
   "toolPages.profit-margin-calculator.calculator",
   "toolPages.store-cost-calculator.calculator",
   "trackingConsent",
