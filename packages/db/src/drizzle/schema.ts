@@ -205,7 +205,10 @@ export const categories = pgTable("categories", {
 	nameAr: text("name_ar"),
 	/** Denormalized count of storefront-visible (status = active) products. */
 	productCount: integer("product_count").default(0).notNull(),
+	/** F-108e (0191): which product type this category is for; a child always has its parent's kind (trigger). */
+	productKind: text("product_kind").default('physical').notNull(),
 }, (table) => [
+	check("categories_product_kind_check", sql`product_kind IN ('physical', 'digital')`),
 	// This table had no indexes at all.
 	index("category_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
 	index("category_parent_id_idx").using("btree", table.parentId.asc().nullsLast().op("uuid_ops")),
@@ -406,9 +409,7 @@ export const sellers = pgTable("sellers", {
 	logoUrl: text("logo_url"),
 	bannerUrl: text("banner_url"),
 	taxId: text("tax_id"),
-	businessType: text("business_type").notNull(),
 	registrationNumber: text("registration_number"),
-	legalAddress: jsonb("legal_address").notNull(),
 	status: sellerStatus().default('pending'),
 	verificationDetails: jsonb("verification_details"),
 	returnPolicy: text("return_policy"),
@@ -423,7 +424,6 @@ export const sellers = pgTable("sellers", {
 	freeDelivery: boolean("free_delivery").default(false).notNull(),
 	feeStructure: jsonb("fee_structure"),
 	taxInformation: jsonb("tax_information"),
-	paymentDetails: jsonb("payment_details"),
 	storeRating: real("store_rating"),
 	positiveRatingPercent: real("positive_rating_percent"),
 	totalRatings: integer("total_ratings").default(0),
@@ -1123,31 +1123,6 @@ export const searchLogs = pgTable("search_logs", {
 		}).onDelete("cascade"),
 ]);
 
-export const sellerDocuments = pgTable("seller_documents", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	sellerId: uuid("seller_id").notNull(),
-	documentType: text("document_type").notNull(),
-	fileUrl: text("file_url").notNull(),
-	status: text().default('pending'),
-	notes: text(),
-	expiryDate: date("expiry_date"),
-	uploadedAt: timestamp("uploaded_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
-	reviewedBy: uuid("reviewed_by"),
-}, (table) => [
-	index("seller_docs_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.reviewedBy],
-			foreignColumns: [users.id],
-			name: "seller_documents_reviewed_by_users_id_fk"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.sellerId],
-			foreignColumns: [sellers.id],
-			name: "seller_documents_seller_id_sellers_id_fk"
-		}).onDelete("cascade"),
-]);
-
 export const sellerPayoutItems = pgTable("seller_payout_items", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	payoutId: uuid("payout_id").notNull(),
@@ -1375,6 +1350,8 @@ export const orderItems = pgTable("order_items", {
 	customerInputs: jsonb("customer_inputs"),
 	/** Pre-order snapshot (0179, F-23b): the product's expected delivery date when the order was placed; null = not a pre-order line. */
 	preorderShipsAt: date("preorder_ships_at", { mode: "string" }),
+	/** Bundle snapshot (0188, F-07f): `[{productId, variantId, sku, name, variantName, quantity}]` of the bundle's items when the order was placed; null = not a bundle line. */
+	bundleItems: jsonb("bundle_items"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -1403,6 +1380,7 @@ export const orderItems = pgTable("order_items", {
 			foreignColumns: [productVariants.id],
 			name: "order_items_variant_id_fkey"
 		}).onDelete("set null"),
+	check("order_items_bundle_items_check", sql`bundle_items IS NULL OR jsonb_typeof(bundle_items) = 'array'`),
 ]);
 
 export const brands = pgTable("brands", {
@@ -1601,6 +1579,8 @@ export const products = pgTable("products", {
 	preorderEnabled: boolean("preorder_enabled").default(false).notNull(),
 	/** Pre-order expected delivery date (0179), YYYY-MM-DD; required while `preorder_enabled`. */
 	preorderShipsAt: date("preorder_ships_at", { mode: "string" }),
+	/** Bundle (0188, F-07f): sold as one product, stock from `product_bundle_items`; a trigger forces `track_stock` false while it is on. */
+	isBundle: boolean("is_bundle").default(false).notNull(),
 	/** Store product page urgency badge and card tag at low real stock (0122, F-34; off by default). */
 	showLowStockBadge: boolean("show_low_stock_badge").default(false).notNull(),
 	/** Badge threshold, 1-99; null = 5 (0122). */
@@ -4758,6 +4738,63 @@ export const productCrossSells = pgTable("product_cross_sells", {
 	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "product_cross_sells_product_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.offerProductId], foreignColumns: [products.id], name: "product_cross_sells_offer_product_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.offerVariantId], foreignColumns: [productVariants.id], name: "product_cross_sells_offer_variant_id_fkey" }).onDelete("cascade"),
+]);
+
+/**
+ * Downsell offers (0185, ROADMAP.md F-116): one per product per store, shown when a
+ * shopper tries to leave the store website's checkout. Exactly one of
+ * `offerProductId` (a cheaper product) and `couponId`. Server-only: RLS on, no policies.
+ */
+export const productDownsells = pgTable("product_downsells", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	productId: uuid("product_id").notNull(),
+	offerProductId: uuid("offer_product_id"),
+	couponId: uuid("coupon_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("product_downsells_store_product_key").using("btree", table.storeId, table.productId),
+	index("product_downsells_seller_store_idx").using("btree", table.sellerId, table.storeId),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "product_downsells_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "product_downsells_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "product_downsells_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.offerProductId], foreignColumns: [products.id], name: "product_downsells_offer_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.couponId], foreignColumns: [coupons.id], name: "product_downsells_coupon_id_fkey" }).onDelete("cascade"),
+	check("product_downsells_one_offer", sql`num_nonnulls(offer_product_id, coupon_id) = 1`),
+	check("product_downsells_not_self", sql`offer_product_id IS NULL OR offer_product_id <> product_id`),
+]);
+
+/**
+ * Bundle items (0188, ROADMAP.md F-07f; docs/plans/bundles.md §1): the products a
+ * bundle (`products.is_bundle`) is made of. Guard triggers keep the bundle and
+ * every item in the row's seller and store. Server-only: RLS on, no policies.
+ */
+export const productBundleItems = pgTable("product_bundle_items", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	bundleProductId: uuid("bundle_product_id").notNull(),
+	itemProductId: uuid("item_product_id").notNull(),
+	/** Required when the item has variants (trigger). */
+	itemVariantId: uuid("item_variant_id"),
+	quantity: integer().notNull(),
+	position: integer().default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("product_bundle_items_bundle_item_key").using("btree", table.bundleProductId, table.itemProductId, sql`coalesce(item_variant_id, '00000000-0000-0000-0000-000000000000'::uuid)`),
+	index("product_bundle_items_bundle_idx").using("btree", table.bundleProductId, table.position),
+	index("product_bundle_items_item_idx").using("btree", table.itemProductId),
+	index("product_bundle_items_variant_idx").using("btree", table.itemVariantId).where(sql`item_variant_id IS NOT NULL`),
+	index("product_bundle_items_store_idx").using("btree", table.storeId),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "product_bundle_items_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "product_bundle_items_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.bundleProductId], foreignColumns: [products.id], name: "product_bundle_items_bundle_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.itemProductId], foreignColumns: [products.id], name: "product_bundle_items_item_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.itemVariantId], foreignColumns: [productVariants.id], name: "product_bundle_items_item_variant_id_fkey" }).onDelete("cascade"),
+	check("product_bundle_items_quantity_check", sql`quantity BETWEEN 1 AND 99`),
+	check("product_bundle_items_not_self", sql`item_product_id <> bundle_product_id`),
 ]);
 
 // ---------------------------------------------------------------------------

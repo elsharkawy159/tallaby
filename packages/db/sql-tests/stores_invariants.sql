@@ -24,9 +24,9 @@ BEGIN
   SELECT id INTO u_b FROM users u WHERE NOT EXISTS (SELECT 1 FROM sellers s WHERE s.id = u.id) AND id <> u_a ORDER BY created_at LIMIT 1;
   IF u_a IS NULL OR u_b IS NULL THEN RAISE EXCEPTION 'need two users without a seller row'; END IF;
 
-  INSERT INTO sellers (id, business_name, display_name, slug, business_type, legal_address, support_email)
-  VALUES (u_a, 'Inv Test A', 'Inv Test A', 'inv-test-a-zz', 'individual', '{"country":"EG"}', 'a@example.com'),
-         (u_b, 'Inv Test B', 'Inv Test B', 'inv-test-b-zz', 'individual', '{"country":"EG"}', 'b@example.com');
+  INSERT INTO sellers (id, business_name, display_name, slug, support_email)
+  VALUES (u_a, 'Inv Test A', 'Inv Test A', 'inv-test-a-zz', 'a@example.com'),
+         (u_b, 'Inv Test B', 'Inv Test B', 'inv-test-b-zz', 'b@example.com');
 
   -- 1. A new seller gets exactly one primary store with its subdomain.
   SELECT id, subdomain INTO store_a, v FROM stores WHERE seller_id = u_a AND is_primary;

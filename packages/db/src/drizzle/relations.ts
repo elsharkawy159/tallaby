@@ -2,13 +2,15 @@ import { relations } from "drizzle-orm/relations";
 import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuilds, storeBuildItems, storeBuildClaims, storeBuildIntakes } from "./schema";
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows, agentPendingActions, agentReadCounts } from "./schema";
 import { productStoreSplit } from "./schema";
+import { productDownsells } from "./schema";
+import { productBundleItems } from "./schema";
 import { storeSizeCharts, storeSizeChartTargets } from "./schema";
 import { productAiPrompts } from "./schema";
 import { tallabyPayWallets, tallabyPaySales, tallabyPayPayouts, tallabyPayEntries, tallabyPayKyc } from "./schema";
 import { sellerSetupReminders, sellerEmailOptOuts } from "./schema";
 import { storeWhatsappSettings, whatsappSettings, whatsappContacts, whatsappMessages, whatsappInbound } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends, storeAppRequests, storeAppInstalls, themeRequests } from "./schema";
-import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
+import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
 	user: one(users, {
@@ -36,7 +38,6 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	reviews: many(reviews),
 	reviewVotes: many(reviewVotes),
 	searchLogs: many(searchLogs),
-	sellerDocuments: many(sellerDocuments),
 	reviewComments: many(reviewComments),
 	userAddresses: many(userAddresses),
 	userDevices: many(userDevices),
@@ -231,7 +232,6 @@ export const sellersRelations = relations(sellers, ({one, many}) => ({
 	cartItems: many(cartItems),
 	shipments: many(shipments),
 	reviews: many(reviews),
-	sellerDocuments: many(sellerDocuments),
 	sellerPayouts: many(sellerPayouts),
 	reviewComments: many(reviewComments),
 	orderItems: many(orderItems),
@@ -524,17 +524,6 @@ export const searchLogsRelations = relations(searchLogs, ({one}) => ({
 	user: one(users, {
 		fields: [searchLogs.userId],
 		references: [users.id]
-	}),
-}));
-
-export const sellerDocumentsRelations = relations(sellerDocuments, ({one}) => ({
-	user: one(users, {
-		fields: [sellerDocuments.reviewedBy],
-		references: [users.id]
-	}),
-	seller: one(sellers, {
-		fields: [sellerDocuments.sellerId],
-		references: [sellers.id]
 	}),
 }));
 
@@ -1501,6 +1490,22 @@ export const productCrossSellsRelations = relations(productCrossSells, ({one}) =
 	product: one(products, { fields: [productCrossSells.productId], references: [products.id], relationName: "crossSellMain" }),
 	offerProduct: one(products, { fields: [productCrossSells.offerProductId], references: [products.id], relationName: "crossSellOffer" }),
 	offerVariant: one(productVariants, { fields: [productCrossSells.offerVariantId], references: [productVariants.id] }),
+}));
+
+export const productDownsellsRelations = relations(productDownsells, ({one}) => ({
+	seller: one(sellers, { fields: [productDownsells.sellerId], references: [sellers.id] }),
+	store: one(stores, { fields: [productDownsells.storeId], references: [stores.id] }),
+	product: one(products, { fields: [productDownsells.productId], references: [products.id], relationName: "downsellMain" }),
+	offerProduct: one(products, { fields: [productDownsells.offerProductId], references: [products.id], relationName: "downsellOffer" }),
+	coupon: one(coupons, { fields: [productDownsells.couponId], references: [coupons.id] }),
+}));
+
+export const productBundleItemsRelations = relations(productBundleItems, ({one}) => ({
+	seller: one(sellers, { fields: [productBundleItems.sellerId], references: [sellers.id] }),
+	store: one(stores, { fields: [productBundleItems.storeId], references: [stores.id] }),
+	bundle: one(products, { fields: [productBundleItems.bundleProductId], references: [products.id], relationName: "bundleMain" }),
+	item: one(products, { fields: [productBundleItems.itemProductId], references: [products.id], relationName: "bundleItem" }),
+	itemVariant: one(productVariants, { fields: [productBundleItems.itemVariantId], references: [productVariants.id] }),
 }));
 
 export const productQuantityOffersRelations = relations(productQuantityOffers, ({one}) => ({

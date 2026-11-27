@@ -1,0 +1,163 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import Image from "next/image";
+import { useRouter } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
+import { RotateCcw, Trash2 } from "lucide-react";
+import { EmptyState, Row, Rows, SectionCard, SellerButton } from "@/components/seller-ui";
+import { Checkbox } from "@workspace/ui/components/checkbox";
+import { trashDaysLeft } from "@workspace/lib/products/trash";
+import type { TrashedProduct } from "@workspace/lib/products/trash/server";
+import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { cn, getPublicUrl } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
+import { deleteProductsForeverAction, restoreProductsAction } from "@/app/[locale]/(main)/stores/[storeId]/products/trash/trash.server";
+
+/**
+ * Store settings › Trash (moved from Products, owner 2026-11-27): each deleted
+ * product waits 30 days, then the daily job deletes it. The seller restores it
+ * as it was, or deletes it for good now. `storeId` is the store the page
+ * checked; every action checks it against the session again.
+ */
+export function ProductTrash({ storeId: productStoreId, items }: { storeId: string; items: TrashedProduct[] }) {
+  const t = useTranslations("products.trash");
+  const locale = useLocale();
+  const router = useRouter();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirming, setConfirming] = useState<string[] | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const visibleSelected = items.filter((p) => selected.has(p.id)).map((p) => p.id);
+  const allSelected = items.length > 0 && visibleSelected.length === items.length;
+  const toggle = (id: string, on: boolean) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  const restore = (ids: string[]) =>
+    startTransition(async () => {
+      const res = await restoreProductsAction(productStoreId, ids);
+      if (!res.success) {
+        toast.error(t("restoreFailed"));
+        return;
+      }
+      toast.success(t("restored", { count: res.count }));
+      announceStoreLive(res.live);
+      setSelected(new Set());
+      router.refresh();
+    });
+
+  const deleteForever = (ids: string[]) =>
+    startTransition(async () => {
+      const res = await deleteProductsForeverAction(productStoreId, ids);
+      if (!res.success) {
+        toast.error(t("deleteFailed"));
+        return;
+      }
+      toast.success(t("deleted", { count: res.count }));
+      setConfirming(null);
+      setSelected(new Set());
+      router.refresh();
+    });
+
+  return (
+    <SectionCard icon={Trash2} title={t("pageTitle")} description={t("subtitle")} action={<TutorialVideoButton video="T-14" />}>
+
+      {items.length === 0 ? (
+        <EmptyState icon={Trash2} image="/illustrations/empty/trash.png" title={t("emptyTitle")} description={t("emptyDescription")} />
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="flex min-h-10 cursor-pointer items-center gap-2 text-[13px] font-semibold text-(--s-muted)">
+              <Checkbox
+                checked={allSelected ? true : visibleSelected.length > 0 ? "indeterminate" : false}
+                onCheckedChange={(value) => setSelected(value === true ? new Set(items.map((p) => p.id)) : new Set())}
+              />
+              {t("selectAll", { count: items.length })}
+            </label>
+            {visibleSelected.length > 0 && (
+              <div className="ms-auto flex flex-wrap gap-2 max-[600px]:ms-0 max-[600px]:w-full">
+                <SellerButton variant="outline" size="sm" className="max-[600px]:flex-1" disabled={isPending} onClick={() => restore(visibleSelected)}>
+                  <RotateCcw aria-hidden />
+                  {t("restoreCount", { count: visibleSelected.length })}
+                </SellerButton>
+                <SellerButton variant="danger" size="sm" className="max-[600px]:flex-1" disabled={isPending} onClick={() => setConfirming(visibleSelected)}>
+                  <Trash2 aria-hidden />
+                  {t("deleteCount", { count: visibleSelected.length })}
+                </SellerButton>
+              </div>
+            )}
+          </div>
+
+          <Rows>
+            {items.map((item) => {
+              const daysLeft = trashDaysLeft(item.deletedAt);
+              const title = item.title || t("untitled");
+              return (
+                <Row key={item.id} className="flex-wrap min-[721px]:flex-nowrap">
+                  <label className="-ms-2 grid size-10 shrink-0 cursor-pointer place-items-center">
+                    <Checkbox
+                      checked={selected.has(item.id)}
+                      onCheckedChange={(value) => toggle(item.id, value === true)}
+                      aria-label={t("select", { title })}
+                    />
+                  </label>
+                  {item.image ? (
+                    <Image
+                      src={getPublicUrl(item.image, "products")}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="size-12 shrink-0 rounded-xl border border-(--s-line) object-cover"
+                    />
+                  ) : (
+                    <div className="size-12 shrink-0 rounded-xl border border-(--s-line) bg-(--s-fill)" />
+                  )}
+                  <div className="min-w-0 flex-1 basis-40">
+                    <p className="truncate text-sm font-bold text-(--s-text)">{title}</p>
+                    <p className="text-xs text-(--s-subtle)">
+                      {t("deletedOn", { date: formatDateTime(item.deletedAt, locale) })}
+                      {" · "}
+                      <span className={cn(daysLeft <= 3 && "font-semibold text-destructive")}>
+                        {t("daysLeft", { count: daysLeft, days: formatNumber(daysLeft, locale) })}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex gap-2 max-[720px]:w-full">
+                    <SellerButton variant="mini" size="sm" className="max-[720px]:flex-1" disabled={isPending} onClick={() => restore([item.id])}>
+                      <RotateCcw aria-hidden />
+                      {t("restore")}
+                    </SellerButton>
+                    <SellerButton variant="mini" size="sm" className="text-destructive max-[720px]:flex-1 [&_svg]:text-destructive" disabled={isPending} onClick={() => setConfirming([item.id])}>
+                      <Trash2 aria-hidden />
+                      {t("deleteForever")}
+                    </SellerButton>
+                  </div>
+                </Row>
+              );
+            })}
+          </Rows>
+        </>
+      )}
+
+      <ConfirmActionDialog
+        open={confirming !== null}
+        onOpenChange={(open) => !open && !isPending && setConfirming(null)}
+        title={t("confirmTitle", { count: confirming?.length ?? 0 })}
+        description={t("confirmDescription")}
+        confirmLabel={t("deleteForever")}
+        cancelLabel={t("cancel")}
+        destructive
+        pending={isPending}
+        onConfirm={() => confirming && deleteForever(confirming)}
+      />
+    </SectionCard>
+  );
+}
