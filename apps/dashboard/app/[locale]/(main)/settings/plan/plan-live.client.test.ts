@@ -45,7 +45,18 @@ describe("PlanLive before activation", () => {
     const html = render({ ordersLast30Days: 42 });
     expect(html).toContain("42 طلبًا في آخر 30 يومًا");
     expect(html).toContain("<p class=\"text-[13px] text-white/70\">أنت على الباقة المجانية.</p>");
-    expect(html).toContain("كلفتك $1.26");
+    expect(html).toContain("كلفتك ⁦1.26$⁩");
+  });
+});
+
+describe("PlanLive prices in dollars (paid from the USD wallet)", () => {
+  it("shows the plan prices, the order fee and the credit pack in $, never EGP", () => {
+    const html = render({ walletBalance: 50 });
+    expect(html).toContain("⁦0$⁩ شهريًا");
+    expect(html).toContain("⁦29$⁩ شهريًا");
+    expect(html).toContain("⁦0.03$⁩ رسوم على الطلب");
+    expect(html).toContain("اشترِ بـ⁦1$⁩");
+    expect(html).not.toContain("جنيه");
   });
 
   it("shows neither to a seller who isn't activated, and the plan line takes the heading", () => {

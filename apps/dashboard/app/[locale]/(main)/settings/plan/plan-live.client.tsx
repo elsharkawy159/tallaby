@@ -18,8 +18,8 @@ import type { AiCreditStatus } from "@workspace/lib/billing/credits";
 import { AI_CREDITS_MONTHLY_NOT_ACTIVATED, PLANS } from "@workspace/lib/plans";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { Note, PageContainer, PageHeader, SellerButton, SellerCard, Tag, TwoColumns } from "@/components/seller-ui";
-import { formatDate, formatNumber, formatUsdPrice, formatWalletMoney } from "@/lib/i18n/format";
-import { useEgpRate } from "@/components/egp-rate.client";
+import { formatDate, formatNumber, formatWalletMoney } from "@/lib/i18n/format";
+import { formatUsdShort } from "@/lib/billing/order-lock-copy.lib";
 import { cn } from "@/lib/utils";
 import { buyCreditPacksAction, setPlanCancelAction, upgradeToProAction, type PlanActionState } from "./plan.server";
 
@@ -46,9 +46,9 @@ export function PlanLive(props: PlanLiveProps) {
   const { isPro, periodEnd, cancelAtPeriodEnd, graceUntil, adminGranted, credits, walletBalance, ordersLast30Days } = props;
   const t = useTranslations("planLive");
   const locale = useLocale();
-  // Every price here shows in EGP at the live rate (owner, 2026-11-09); the plan prices stay in USD.
-  const egpRate = useEgpRate();
-  const usd = (cents: number) => formatUsdPrice(cents, locale, egpRate);
+  // Every amount here is paid from (or into) the USD store wallet, so it shows in dollars,
+  // like the wallet and the order lock (owner, 2026-11-27; replaced the EGP view of 2026-11-09).
+  const usd = (cents: number) => formatUsdShort(cents, locale);
   const [isPending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState<"upgrade" | "cancel" | null>(null);
   const [packs, setPacks] = useState(1);
@@ -122,7 +122,7 @@ export function PlanLive(props: PlanLiveProps) {
       <TwoColumns className="items-stretch gap-3.5">
         {(
           [
-            { id: "free", price: t("freePrice"), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: credits.notActivated ? credits.monthlyAllowance : PLANS.free.aiCreditsMonthly, emails: PLANS.free.emailsMonthly, stores: PLANS.free.maxStores, current: !isPro },
+            { id: "free", price: t("freePrice", { amount: usd(0) }), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: credits.notActivated ? credits.monthlyAllowance : PLANS.free.aiCreditsMonthly, emails: PLANS.free.emailsMonthly, stores: PLANS.free.maxStores, current: !isPro },
             { id: "pro", price: t("proPrice", { amount: usd(PRO_MONTHLY_USD_CENTS) }), fee: t("noFee"), credits: PLANS.pro.aiCreditsMonthly, emails: PLANS.pro.emailsMonthly, stores: PLANS.pro.maxStores, current: isPro },
           ] as const
         ).map((plan) => (

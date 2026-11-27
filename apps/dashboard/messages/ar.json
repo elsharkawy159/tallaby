@@ -4859,7 +4859,7 @@
       "pro": "Pro"
     },
     "current": "باقتك",
-    "freePrice": "0 جنيه شهريًا",
+    "freePrice": "{amount} شهريًا",
     "proPrice": "{amount} شهريًا",
     "noFee": "بدون",
     "feeLine": "{fee} رسوم على الطلب",

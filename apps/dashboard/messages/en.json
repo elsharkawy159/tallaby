@@ -4859,7 +4859,7 @@
       "pro": "Pro"
     },
     "current": "Your plan",
-    "freePrice": "0 EGP a month",
+    "freePrice": "{amount} a month",
     "proPrice": "{amount} a month",
     "noFee": "No",
     "feeLine": "{fee} order fee",

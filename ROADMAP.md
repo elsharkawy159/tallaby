@@ -2173,6 +2173,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Settings › Plan shows wallet amounts in dollars (owner request; no migration)
+
+- **Owner:** "on the settings page plan page, I see «اشترِ بـ≈ 54 جنيه», I need to change it to be in $ not EGP as it deducts from the $ wallet".
+- **Changed:** `plan-live.client.tsx`'s `usd()` uses `formatUsdShort` instead of `formatUsdPrice` at the live EGP rate, so the credit pack button ("Buy for $1"), Free $0 / Pro $29 a month (`planLive.freePrice` now takes `{amount}`), the $0.03 order fee, the email pack, the 30-day fees summary, the upgrade confirm and the top-up minimum show in dollars. Display only: no price or charge change.
+- **Checks:** plan vitest 5 pass (new test: no «جنيه» on the page), eslint clean; not tried in a browser.
+
 ### 2026-11-27 — Sidebar groups open and close smoothly (owner request; no migration)
 
 - **Owner:** "make the accordions on sidebar to collapse and uncollapse smoothly".
