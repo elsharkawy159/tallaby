@@ -57,6 +57,7 @@ const cartWithShippingItems = {
           freeDelivery: true,
           dimensions: true,
           minOrderQuantity: true,
+          images: true,
         },
         with: {
           productTranslations: {

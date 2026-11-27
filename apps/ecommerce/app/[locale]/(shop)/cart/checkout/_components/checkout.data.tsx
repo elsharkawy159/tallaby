@@ -710,9 +710,12 @@ export const CheckoutData = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 md:gap-8 lg:gap-12">
+        {/* Two halves on desktop: the form, payment and Buy button, then the
+            summary beside them. On phones the summary sits before the button,
+            so the total is seen before buying. */}
+        <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-10">
           {/* Shipping Information */}
-          <div className="space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6 lg:col-start-1 lg:row-start-1">
             <SimpleCheckoutForm
               address={address}
               saved={savedAddresses}
@@ -939,7 +942,7 @@ export const CheckoutData = ({
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="lg:sticky lg:top-8 h-fit order-2 lg:order-2">
+          <div className="h-fit lg:sticky lg:top-8 lg:col-start-2 lg:row-span-2 lg:row-start-1">
             <OrderSummary
               items={cartLines}
               onQuantityChange={handleQuantityChange}
@@ -956,70 +959,73 @@ export const CheckoutData = ({
               deposit={depositRows}
               onlinePaymentFee={onlinePaymentFee}
             >
-              {shippingRefusal ? (
-                <p role="alert" className="text-xs md:text-sm text-orange-600">
-                  {shippingRefusal}
-                </p>
-              ) : isZoneShipping &&
-                storeShipping?.daysMin != null &&
-                storeShipping.daysMax != null ? (
+              {isZoneShipping && !shippingRefusal && storeShipping?.daysMin != null && storeShipping.daysMax != null && (
                 <p className="text-xs md:text-sm text-gray-600">
                   {t("arrivesIn", {
                     min: storeShipping.daysMin,
                     max: storeShipping.daysMax,
                   })}
                 </p>
-              ) : null}
-              {minOrderMessage && (
-                <p role="alert" className="text-xs md:text-sm text-orange-600">
-                  <PriceText locale={locale}>{minOrderMessage}</PriceText>
-                </p>
               )}
-              {minOrderIssues.length > 0 && (
-                <div role="alert" className="mb-2 space-y-2 rounded-lg border border-orange-200 bg-orange-50 p-3 text-xs md:text-sm text-orange-800">
-                  <p className="font-semibold">{t("minOrderQuantityTitle")}</p>
-                  <ul className="space-y-2">
-                    {minOrderIssues.map((issue) => (
-                      <li key={issue.productId} className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="min-w-0 flex-1">{t("minOrderQuantityErrorItem", { title: issue.title, minimum: issue.minimum, current: issue.current })}</span>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={Boolean(busyItemId)}
-                          onClick={() => void handleQuantityChange({ id: issue.lineId }, issue.lineQuantity + issue.missing)}
-                        >
-                          {t("minOrderQuantityFix", { missing: issue.missing })}
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {!shippingRefusal && noMethodInCurrency && (
-                <p role="alert" className="text-xs md:text-sm text-orange-600">
-                  {t("noPaymentInCurrency")}
-                </p>
-              )}
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full h-10 md:h-12 text-xs md:text-base font-semibold transition-all duration-200"
-                disabled={isPending || !canPlaceOrder}
-              >
-                {isPending ? t("placingOrder") : t("placeOrder")}
-              </Button>
-
-              <Link href="/cart">
-                <Button
-                  variant="outline"
-                  className="w-full h-9 md:h-11 text-xs md:text-sm border-2 hover:bg-gray-50 transition-colors"
-                >
-                  <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-2" />
-                  {t("backToCart")}
-                </Button>
-              </Link>
             </OrderSummary>
+          </div>
+
+          {/* Buy now */}
+          <div className="space-y-3 self-start md:space-y-4 lg:col-start-1 lg:row-start-2">
+            {shippingRefusal && (
+              <p role="alert" className="text-xs md:text-sm text-orange-600">
+                {shippingRefusal}
+              </p>
+            )}
+            {minOrderMessage && (
+              <p role="alert" className="text-xs md:text-sm text-orange-600">
+                <PriceText locale={locale}>{minOrderMessage}</PriceText>
+              </p>
+            )}
+            {minOrderIssues.length > 0 && (
+              <div role="alert" className="mb-2 space-y-2 rounded-lg border border-orange-200 bg-orange-50 p-3 text-xs md:text-sm text-orange-800">
+                <p className="font-semibold">{t("minOrderQuantityTitle")}</p>
+                <ul className="space-y-2">
+                  {minOrderIssues.map((issue) => (
+                    <li key={issue.productId} className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="min-w-0 flex-1">{t("minOrderQuantityErrorItem", { title: issue.title, minimum: issue.minimum, current: issue.current })}</span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={Boolean(busyItemId)}
+                        onClick={() => void handleQuantityChange({ id: issue.lineId }, issue.lineQuantity + issue.missing)}
+                      >
+                        {t("minOrderQuantityFix", { missing: issue.missing })}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {!shippingRefusal && noMethodInCurrency && (
+              <p role="alert" className="text-xs md:text-sm text-orange-600">
+                {t("noPaymentInCurrency")}
+              </p>
+            )}
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full h-10 md:h-12 text-xs md:text-base font-semibold transition-all duration-200"
+              disabled={isPending || !canPlaceOrder}
+            >
+              {isPending ? t("placingOrder") : t("placeOrder")}
+            </Button>
+
+            <Link href="/cart">
+              <Button
+                variant="outline"
+                className="w-full h-9 md:h-11 text-xs md:text-sm border-2 hover:bg-gray-50 transition-colors"
+              >
+                <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-2" />
+                {t("backToCart")}
+              </Button>
+            </Link>
           </div>
         </div>
       </form>

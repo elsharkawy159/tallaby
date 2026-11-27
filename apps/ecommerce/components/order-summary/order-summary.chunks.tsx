@@ -15,7 +15,8 @@ import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
 import { CustomerInputsLines } from '@/components/cart/customer-inputs-lines.client'
 import { cartItemFloor } from '@/lib/cart-min-order.lib'
-import { cn } from '@workspace/ui/lib/utils'
+import Image from 'next/image'
+import { cn, getPublicUrl } from '@workspace/ui/lib/utils'
 import { orderDiscountLabel } from '@/lib/order-discount-label'
 import type {
   AppliedCouponInfo,
@@ -62,12 +63,23 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
           : null
         // At the seller's minimum (0151) minus is refused, so removing gets its own button.
         const floor = cartItemFloor({ ...item, productId: item.product?.id ?? item.id }, minOrderLines)
+        const images = item.product?.images
+        const firstImage = Array.isArray(images) && typeof images[0] === 'string' && images[0] ? images[0] : null
 
         return (
           <div
             key={item.id}
             className='flex items-start justify-between gap-2 md:gap-4 py-2 md:py-3 border-b border-gray-100 last:border-0'
           >
+            {firstImage && (
+              <Image
+                src={getPublicUrl(firstImage, 'products')}
+                alt={productTitle ?? ''}
+                width={64}
+                height={64}
+                className='size-14 shrink-0 rounded-lg border border-gray-100 bg-gray-50 object-contain md:size-16'
+              />
+            )}
             <div className='flex-1 min-w-0'>
               {productTitle && (
                 <p className='text-xs md:text-sm font-medium text-gray-900 line-clamp-2'>

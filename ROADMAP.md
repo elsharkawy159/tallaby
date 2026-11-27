@@ -2172,6 +2172,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Checkout: governorate and area lists, two-column page (owner request; no migration)
+
+- **Owner:** "the customer picks the governorate first from a list, then sees only its cities, areas and districts, picks the area from a list instead of typing the address, and the delivery price is worked out from the area"; then "make the page two halves: form, payment method and buy button on the left; order summary with each item in a row (photo, quantity +/−, price), the discount code, the products total, shipping and the total".
+- **Changed (address):** the simple checkout form (`simple-checkout-form.client.tsx`, `use-checkout-address.client.ts`) always shows the Governorate list first in Egypt, then an "Area or district" list with only that governorate's areas from `@workspace/lib/places`, then the street line. `parseCheckoutAddress` takes a picked governorate code and an area of it first (`resolvePickedPlace`; an area of another governorate or a made-up key is ignored), and falls back to reading the text as before when nothing is picked. The saved city is the area's own name, so `resolveAddressPlace` and the zone quote price it as `EG/<GOV>/<area>`; a test checks this for every area in both languages. A save that found the governorate in the text or the location fills the lists (`placeKey` in the action result). Old-client payloads behave as before.
+- **Changed (layout):** `checkout.data.tsx` is a 50/50 grid on `lg`: form, payment and the Buy block (alerts, Place order, Back to cart) on one side, the sticky summary on the other; on phones the summary sits between payment and the button. The summary lines show the product's first photo (`images` added to the checkout cart query), and the discount code now comes right after the items, before the totals.
+- **Checks:** lib and ecommerce tests pass, typecheck has no new errors (16 already in `profile.chunks.tsx`), lint 0 errors; not tried in a browser.
+
 ### 2026-11-27 — Builder: elements hidden on a device are hidden in its preview (owner request; no migration)
 
 - **Owner:** "don't show the elements on another screen size, for example show the desktop elements on desktop and the mobile responsive on switching to mobile preview, so it be easier for users to edit their website"

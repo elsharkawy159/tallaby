@@ -22,6 +22,8 @@ export interface OrderSummaryItem {
     title: string
     /** The seller's minimum per order (0151). */
     minOrderQuantity?: number | null
+    /** Storage paths or URLs; the first one is the line's thumbnail when present. */
+    images?: unknown
     productType?: string | null
     freeDelivery?: boolean | null
     seller?: {

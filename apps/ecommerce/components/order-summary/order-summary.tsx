@@ -73,14 +73,8 @@ export function OrderSummary ({
             <FreeDeliveryProgress subtotal={subtotal} />
           )}
 
-          <OrderSummaryCostRows
-            summary={summary}
-            showShipping={showShipping}
-            isRecalculatingShipping={isRecalculatingShipping}
-          />
-
           {enableCoupons && onCouponApplied && (
-            <div className='pt-2'>
+            <div className='pb-2'>
               <OrderSummaryCoupon
                 isLoggedIn={isLoggedIn}
                 shippingAddressId={shippingAddressId}
@@ -91,6 +85,12 @@ export function OrderSummary ({
               />
             </div>
           )}
+
+          <OrderSummaryCostRows
+            summary={summary}
+            showShipping={showShipping}
+            isRecalculatingShipping={isRecalculatingShipping}
+          />
 
           {onlinePaymentFee && <OrderSummaryOnlinePaymentFeeRow fee={onlinePaymentFee} />}
           <OrderSummaryTotalRow total={displayTotal} />
