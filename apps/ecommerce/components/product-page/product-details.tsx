@@ -1,7 +1,7 @@
 "use client";
 
 import { useCurrencyLabel } from "@/lib/currency-label.client";
-import { Truck, RotateCcw, Globe, Banknote } from "lucide-react";
+import { Truck, RotateCcw, Globe, Banknote, Download } from "lucide-react";
 import { ProductActions } from "./ProductActions";
 import { HideBottomNavOnScroll } from "@/components/layout/hide-bottom-nav-on-scroll.client";
 import type { Product } from "./product-page.types";
@@ -132,7 +132,15 @@ export const ProductDetails = ({
                 {t("badgeSeasonal")}
               </span>
             )}
-            <ProductStockBadge hasStock={hasStock} isLowStock={isLowStock} stock={stock} />
+            {/* A digital product (F-108b) is downloaded after payment: no stock badge. */}
+            {isPhysicalProduct ? (
+              <ProductStockBadge hasStock={hasStock} isLowStock={isLowStock} stock={stock} />
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-900">
+                <Download className="h-3.5 w-3.5" aria-hidden />
+                {t("digitalBadge")}
+              </span>
+            )}
           </div>
         </div>
 
@@ -330,7 +338,10 @@ export const ProductDetails = ({
         {/* Shipping and Returns Information */}
         {(() => {
           const showsNationwideFirst = !hasFreeDelivery && !FREE_SHIPPING_ENABLED;
-          const perks = [
+          // A digital product (F-108b) has no delivery or returns: one "download after payment" card.
+          const perks = !isPhysicalProduct
+            ? [{ key: "digital", icon: Download, title: t("digitalProduct"), description: t("digitalDownloadAfterPayment") }]
+            : [
             {
               key: "delivery",
               icon: Truck,

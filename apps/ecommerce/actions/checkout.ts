@@ -26,6 +26,7 @@ import {
 } from "@/lib/product-translations";
 import { validateCoupon } from "./coupons";
 import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
+import { allowedPaymentMethodsForCart, cartHasDigitalProduct } from "@workspace/lib/payments/store-methods";
 import { ONLINE_CARD_PAYMENT_ENABLED } from "@/lib/constants";
 import { getCheckoutShipping } from "@/lib/shipping.server";
 import { getStorefrontShippingContext } from "@workspace/lib/stores/server";
@@ -319,7 +320,12 @@ export async function getCheckoutData() {
 
     // On a storefront only the store's enabled methods are offered; card and
     // the customer wallet are not store options (Store settings › Payment methods).
-    const storePayments = await getStorefrontCheckoutPayments();
+    // A cart with a digital product takes no cash on delivery, so no deposit (F-108b).
+    const hasDigitalProduct = cartHasDigitalProduct(cart.cartItems);
+    const offeredPayments = await getStorefrontCheckoutPayments();
+    const storePayments = offeredPayments
+      ? allowedPaymentMethodsForCart(offeredPayments, { hasDigital: hasDigitalProduct })
+      : null;
     const walletSummary = storePayments
       ? null
       : await getUserWalletSummary(db, userId);
@@ -371,6 +377,8 @@ export async function getCheckoutData() {
   } catch (error) {
     console.error("Error getting checkout data:", error);
     return { success: false, error: "Failed to get checkout data" };
+        // F-108b: the checkout hides cash on delivery (placeOrderFromCart refuses it too).
+        digitalNoCod: hasDigitalProduct,
   }
 }
 

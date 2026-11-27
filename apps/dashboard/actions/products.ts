@@ -60,6 +60,7 @@ import {
   PRODUCT_IMPORT_HEADER_MAP,
 } from "@/lib/product-import-headers";
 import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
+import { digitalPublishError } from "@/app/[locale]/(main)/stores/[storeId]/products/_digital/digital-publish.server";
 // tables imported above via @workspace/db default export; no need for direct table imports here
 
 /** Builds the cache-invalidation snapshot for a product from its current DB state. */
@@ -1736,6 +1737,10 @@ export async function setProductPublished(storeId: string, productId: string, pu
         error: "Add at least one image before publishing",
       };
     }
+
+    // A digital product is never live without a file (F-108b).
+    const digitalError = published && product.productType === "digital" ? await digitalPublishError(product.sellerId, productId) : null;
+    if (digitalError) return { success: false, error: digitalError };
 
     if (published && !(await canPublishProducts(session.user.id))) {
       return {

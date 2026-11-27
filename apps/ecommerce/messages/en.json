@@ -236,6 +236,9 @@
     "suggestedTitle": "You may also like"
   },
   "checkout": {
+    "digitalNoCod": "Cash on delivery isn't available for digital products. Please choose another way to pay.",
+    "digitalNoPaymentMethod": "This store can't take payment for digital products yet. Please contact the store.",
+    "digitalDownload": "Digital download",
     "offerLines": {
       "crossSell": "Bundle offer",
       "quantityOffer": "Quantity offer"
@@ -581,6 +584,9 @@
     "photos": "Product photos"
   },
   "product": {
+    "digitalBadge": "Digital product",
+    "digitalProduct": "Digital product",
+    "digitalDownloadAfterPayment": "Download it after payment. Nothing is shipped.",
     "addToCart": "Add to Cart",
     "adding": "Adding...",
     "inCartCount": "{count} in cart",

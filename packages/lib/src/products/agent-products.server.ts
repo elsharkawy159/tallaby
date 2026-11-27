@@ -89,6 +89,7 @@ import { roundPricePayload, roundVariantPriceRow } from "./price-rounding-payloa
 import { loadStorePriceRounding } from "./price-rounding.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+import { DIGITAL_FILE_REQUIRED, digitalProductsWithoutFiles } from "./digital-publish.server";
 
 export type AgentProductErrorCode =
   | "not_found"
@@ -705,6 +706,10 @@ export async function agentSetProductStatus(
     .update(products)
     .set({ status: wanted, updatedAt: new Date().toISOString() })
     .where(and(eq(products.id, productId), storeShowsProduct(store, ctx.sellerId), isNull(products.deletedAt)))
+  // A digital product is never live without a file (F-108b).
+  if (wanted === "active" && (await digitalProductsWithoutFiles(ctx.sellerId, [productId])).size > 0) {
+    throw new AgentProductError("cannot_publish", "This digital product has no file yet. Add its file in the Tallaby dashboard before publishing.", { reason: DIGITAL_FILE_REQUIRED });
+  }
     .returning({ id: products.id });
   if (!updated.length) throw new AgentProductError("not_found", "Product not found in this store.");
   if (before) await syncCategoryProductCountForProductChange({ categoryId: before.categoryId, previousStatus: before.status, nextStatus: wanted });

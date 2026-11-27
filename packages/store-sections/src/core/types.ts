@@ -237,6 +237,11 @@ export type ProductDetail = ProductSummary & {
   liveViews?: boolean;
   /** The seller's "Show a low-stock alert" (0122, F-34): the stock element turns into the urgency badge at or below the threshold. */
   lowStockAlert?: LowStockSetting | null;
+  /**
+   * A digital product (F-108b): downloaded after payment. The stock line shows that
+   * instead, and no low-stock badge, delivery row or delivery perk is drawn. Absent = physical.
+   */
+  digital?: boolean;
   variants: ProductVariantDetail[];
   /** The variants' option name ("Size") for the picker's header; absent = the generic "Options". */
   optionName?: string;

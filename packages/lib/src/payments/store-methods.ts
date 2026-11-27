@@ -14,6 +14,9 @@ import { parseStoreCurrency } from "../utils/formatPrice";
 import type { OrderGatewayMeta, StorefrontGatewayMeta } from "./store-gateways.lib";
 import { codDepositFor, depositPayable, type CodDepositSetting } from "../orders/cod-deposit.lib";
 
+// Digital products take no cash on delivery (F-108b).
+export * from "./digital-checkout.lib";
+
 export type PaymentCollector = "seller" | "tallaby" | "delivery";
 export type PaymentMethodStatus = "live" | "soon";
 export type PaymentMethodKind = "cod" | "wallet" | "instapay" | "other";

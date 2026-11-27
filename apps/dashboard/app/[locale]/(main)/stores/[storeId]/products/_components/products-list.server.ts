@@ -4,6 +4,7 @@ import { getLocale } from "next-intl/server";
 import { setProductPublished } from "@/actions/products";
 import { isAccessError } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
+import { digitalProductsMissingFiles } from "../_digital/digital-publish.server";
 import {
   listSellerProductIds,
   listSellerProductsForExport,
@@ -73,10 +74,13 @@ export async function bulkSetPublishedAction(
     const { seller, store, inStore } = await requireProductStore(storeId);
     const wanted = Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string").slice(0, MAX_BULK_PUBLISH) : [];
     const own = await loadOwnProductStatuses(seller.sellerId, wanted, inStore);
-    const targets = own.filter((p) => p.status !== "rejected" && (p.status === "active") !== published);
+    const candidates = own.filter((p) => p.status !== "rejected" && (p.status === "active") !== published);
+    // Digital products with no file stay drafts (F-108b): one batched check, counted as failed.
+    const missingFile = published ? await digitalProductsMissingFiles(seller.sellerId, candidates.map((p) => p.id)) : new Set<string>();
+    const targets = missingFile.size ? candidates.filter((p) => !missingFile.has(p.id)) : candidates;
 
     let done = 0;
-    let failed = 0;
+    let failed = missingFile.size;
     let live: LiveSite | null = null;
     for (let i = 0; i < targets.length; i += PUBLISH_BATCH) {
       const results = await Promise.all(

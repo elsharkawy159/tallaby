@@ -2174,6 +2174,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Digital products step 2: no cash on delivery, digital note on the product page, publish needs a file (F-108b, owner "keep going"; no migration)
+
+- **Checkout:** a cart with any digital product takes no cash on delivery and so no COD deposit (`allowedPaymentMethodsForCart` in `packages/lib/src/payments/digital-checkout.lib.ts`). The checkout hides COD, and `placeOrderFromCart` refuses it for storefront and marketplace orders with `digitalNoCashOnDelivery`, even for a forged request. A store whose only method is COD shows "This store can't take payment for digital products yet". Physical-only carts get the exact same methods as before.
+- **Product page:** the marketplace page shows a "Digital product" badge and one "Download it after payment" card instead of stock, delivery and returns. On builder pages (`ProductDetail.digital`), the stock element says "Digital product", and the low-stock badge, delivery row and delivery/COD perks are hidden. No template design changed. A digital cart line says "Digital download".
+- **Publish gate:** a digital product with no file can't become live from the list switch, the edit page's Publish, bulk publish or the agent's `set_product_status` (`digitalProductsWithoutFiles`, two batched queries per 500 ids). Not covered: Trash restore and a legacy `pending` product through `update_product`.
+- **Checks:** dashboard, lib and store-sections typecheck pass; new unit tests 15 + 38 product element tests pass; the COD integration test is skipped (no `TEST_DATABASE_URL`). Not tried in a browser.
+
 ### 2026-11-27 — Digital products step 1: Physical/Digital type and file upload in the product form (F-108a, owner request; migration 0189 NOT applied)
 
 - **Owner:** "start work on it but make the Physical product to be the default selected one". Defaults picked while the owner's answers are pending: strict one-time download (the seller can make a new link), unopened links expire after 7 days, no COD for digital, 100 MB per file and up to 10 files.

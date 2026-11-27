@@ -55,7 +55,7 @@ import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server"
 import { buildOrderPagePath, verifyOrderAccess } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { getServiceClient } from "@workspace/db/supabase/service";
-import { STOREFRONT_ONLY_METHODS } from "@workspace/lib/payments/store-methods";
+import { DIGITAL_NO_COD_ERROR, STOREFRONT_ONLY_METHODS } from "@workspace/lib/payments/store-methods";
 import { parseWalletPartialPaymentMethod } from "@workspace/lib/orders/payment";
 import {
   PAYMENT_PROOF_BUCKET,
@@ -313,6 +313,11 @@ export async function createOrder(data: {
       await recordWhatsAppConsent({ orderId: order.id, storeId: order.storeId });
     }
 
+      // A cart with a digital product takes no cash on delivery (F-108b).
+      if (result.error === DIGITAL_NO_COD_ERROR) {
+        const t = await getTranslations("checkout");
+        return { success: false, error: t("digitalNoCod") };
+      }
     await applyInvalidation(invalidateProductInventory(inventoryItems), {
       from: "ecommerce",
       mode: "action",

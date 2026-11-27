@@ -160,7 +160,10 @@ export const CheckoutData = ({
   const storePayments: StorefrontCheckoutPayments | null =
     checkoutData.storePayments ?? null;
   const codAllowed =
-    !storePayments || storePayments.methods.includes("cash_on_delivery");
+  // A cart with a digital product takes no cash on delivery (F-108b); the server
+  // already left it out of a store's methods and refuses it on the order.
+  const digitalNoCod = checkoutData.digitalNoCod === true;
+    !digitalNoCod && (!storePayments || storePayments.methods.includes("cash_on_delivery"));
   const manualMethods = useMemo(
     () =>
       storePayments
@@ -912,7 +915,7 @@ export const CheckoutData = ({
 
                       {paymentGroups.length === 0 && (
                         <p className="text-xs md:text-sm text-orange-600">
-                          {t("noPaymentMethodsAvailable")}
+                          {digitalNoCod ? t("digitalNoPaymentMethod") : t("noPaymentMethodsAvailable")}
                         </p>
                       )}
 

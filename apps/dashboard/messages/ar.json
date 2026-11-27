@@ -707,6 +707,7 @@
     "productUnpublished": "تم إلغاء نشر المنتج",
     "productSavedAsDraft": "تم حفظ المنتج كمسودة. أضف صورة لنشره.",
     "failedToUpdateProductStatus": "فشل تحديث حالة المنتج",
+    "digitalNeedsFileToPublish": "أضف الملف قبل نشر هذا المنتج الرقمي.",
     "productUpdatedSuccessfully": "تم تحديث المنتج بنجاح!",
     "viewOnStore": "عرض",
     "failedToUpdateProduct": "فشل تحديث المنتج",

@@ -707,6 +707,7 @@
     "productUnpublished": "Product unpublished",
     "productSavedAsDraft": "Product saved as a draft. Add an image to publish it.",
     "failedToUpdateProductStatus": "Failed to update product status",
+    "digitalNeedsFileToPublish": "Add the file before you publish this digital product.",
     "productUpdatedSuccessfully": "Product updated successfully!",
     "viewOnStore": "View",
     "failedToUpdateProduct": "Failed to update product",

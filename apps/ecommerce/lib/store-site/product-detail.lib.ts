@@ -128,6 +128,8 @@ export function toProductDetail(
     directCheckout: product.directCheckout === true,
     liveViews: product.showLiveViews === true,
     lowStockAlert: product.showLowStockBadge === true ? { show: true, threshold: product.lowStockThreshold ?? null } : null,
+    // A digital product (F-108b): no stock, delivery or shipping parts.
+    ...(product.productType === "digital" && { digital: true }),
     variants,
     reviewCount: Number(product.reviewCount ?? 0),
     // With no reviews and no questions the reviews section is not drawn (productSectionEmpty).

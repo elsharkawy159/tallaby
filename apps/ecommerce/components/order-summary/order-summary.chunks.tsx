@@ -51,6 +51,7 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
   const tCommon = useTranslations('common')
   const tSimple = useTranslations('checkout.simpleForm')
   const minOrderLines = items.map((item) => ({ ...item, productId: item.product?.id ?? item.id }))
+  const tCheckout = useTranslations('checkout')
 
   return (
     <div className='space-y-0 mb-2 md:mb-3'>
@@ -164,6 +165,10 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
             </div>
             <div
               className='text-xs md:text-sm font-semibold text-gray-900 whitespace-nowrap'
+              {/* A digital product is downloaded after payment, never shipped (F-108b). */}
+              {item.product?.productType === 'digital' && (
+                <p className='mt-1 text-xs text-muted-foreground'>{tCheckout('digitalDownload')}</p>
+              )}
               dangerouslySetInnerHTML={{
                 __html: formatPrice(lineTotal, locale, 'sm', currencyLabel),
               }}

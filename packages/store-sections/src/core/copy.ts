@@ -146,6 +146,10 @@ export const SECTION_COPY = {
   perkSecureNote: { ar: "بالكارت أو المحفظة", en: "By card or wallet" },
   perkQuality: { ar: "جودة عالية", en: "High quality" },
   perkQualityNote: { ar: "منتجات متختارة بعناية", en: "Carefully picked products" },
+  // A digital product (F-108b): downloaded after payment, never shipped.
+  perkDigital: { ar: "منتج رقمي", en: "Digital product" },
+  perkDigitalNote: { ar: "تحميل بعد الدفع", en: "Download after payment" },
+  digitalProduct: { ar: "منتج رقمي · تحميل بعد الدفع", en: "Digital product · download after payment" },
   productNoDetails: { ar: "أضف وصفًا أو مميزات للمنتج لتظهر هنا.", en: "Add a description or key features to the product to show them here." },
   productNoContent: { ar: "أضف محتوى للمنتج من صفحة المنتج في لوحة التحكم ليظهر هنا.", en: "Add content to the product in your dashboard to show it here." },
   /** A code section in the builder canvas, until its preview ships (F-101e). */

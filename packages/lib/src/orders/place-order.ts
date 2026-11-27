@@ -70,6 +70,7 @@ import {
   type StorefrontCheckoutPayments,
 } from '../payments/store-methods'
 import { gatewayCollector, storeGatewayOrderMetadata } from '../payments/store-gateways.lib'
+import { DIGITAL_NO_COD_ERROR, isPaymentMethodAllowedForCart } from '../payments/digital-checkout.lib'
 import { getTallabyPaySettings } from '../tallaby-pay/settings.server'
 import { amountToPiastres, customerTallabyPayFee, piastresToAmount } from '../tallaby-pay/fee.lib'
 import {
@@ -906,6 +907,17 @@ export async function placeOrderFromCart(
     orderSource === 'storefront' && resolvedPaymentMethod === 'cash_on_delivery'
       ? (storefrontPayments?.deposit ?? null)
       : null
+  // Digital products (F-108b): a customer checkout with any digital product
+  // takes no cash on delivery (nothing is delivered to pay for), so no COD
+  // deposit either, whatever the client sent. Seller and admin orders keep
+  // their own payment.
+  if (
+    (orderSource === 'storefront' || orderSource === 'website') &&
+    !isPaymentMethodAllowedForCart(resolvedPaymentMethod, { hasDigital: hasDigitalItems })
+  ) {
+    return { success: false, error: DIGITAL_NO_COD_ERROR }
+  }
+
   const depositSplit = depositSetting ? splitDeposit(totalAmount, depositSetting.percent) : null
   const deposit =
     depositSetting && depositSplit && depositSplit.depositPiastres > 0

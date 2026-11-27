@@ -397,6 +397,10 @@
       "types": "./src/size-charts/size-chart.server.ts",
       "default": "./src/size-charts/size-chart.server.ts"
     },
+    "./products/digital-publish/server": {
+      "types": "./src/products/digital-publish.server.ts",
+      "default": "./src/products/digital-publish.server.ts"
+    },
     "./whatsapp": {
       "types": "./src/whatsapp/index.ts",
       "default": "./src/whatsapp/index.ts"

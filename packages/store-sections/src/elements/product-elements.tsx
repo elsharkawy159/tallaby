@@ -12,7 +12,7 @@
  * sanitizer here, so it stays out of the editor's client bundle).
  */
 import type { ReactNode } from "react";
-import { BadgeCheck, Banknote, Check, ChevronDown, ChevronRight, Flame, Image as ImageIcon, Minus, Plus, ShieldCheck, ShoppingBag, Star, Truck, Zap } from "lucide-react";
+import { BadgeCheck, Banknote, Check, ChevronDown, ChevronRight, Download, Flame, Image as ImageIcon, Minus, Plus, ShieldCheck, ShoppingBag, Star, Truck, Zap } from "lucide-react";
 import { sectionText, type SectionCopyKey } from "../core/copy";
 import { CROSS_SELL_ELSEWHERE_PROP } from "../core/cross-sell";
 import { DEMO_PRODUCT } from "../core/demo-product";
@@ -292,6 +292,16 @@ function Stock({ product, props, attrs, ctx }: StillProps) {
   );
 }
 
+/** A digital product's line in place of the stock pill (F-108b): it is downloaded after payment. */
+function DigitalNote({ attrs, ctx }: { attrs: Attrs; ctx: RenderContext }) {
+  return (
+    <p {...attrs} data-stock="digital" className="inline-flex w-fit items-center gap-2 rounded-full bg-(--sf-shelf) px-3 py-1.5 text-[13px] font-semibold leading-none text-(--sf-ink)">
+      <Download aria-hidden className="size-3.5 shrink-0 text-(--sf-brand)" />
+      {sectionText("digitalProduct", ctx.locale)}
+    </p>
+  );
+}
+
 /** Units the editor's sample badge shows when the product has no alert to show. */
 const SAMPLE_LEFT = 2;
 
@@ -550,13 +560,14 @@ function offersCashOnDelivery(ctx: RenderContext): boolean {
  * one bordered box. Static and drawn by the package, also beside the host's
  * live buy box, so every store gets it (`perks` switch, default on).
  */
-function Perks({ ctx }: { ctx: RenderContext }) {
+function Perks({ ctx, digital = false }: { ctx: RenderContext; digital?: boolean }) {
   const t = (key: SectionCopyKey) => sectionText(key, ctx.locale);
   const methods = ctx.store.paymentMethods;
   const others = !methods || methods.some((method) => method.key !== "cash_on_delivery");
+  // A digital product (F-108b) is downloaded, not delivered, and takes no cash on delivery.
   const perks = [
-    { icon: Truck, title: t("perkDelivery"), note: t("perkDeliveryNote") },
-    offersCashOnDelivery(ctx)
+    digital ? { icon: Download, title: t("perkDigital"), note: t("perkDigitalNote") } : { icon: Truck, title: t("perkDelivery"), note: t("perkDeliveryNote") },
+    !digital && offersCashOnDelivery(ctx)
       ? { icon: Banknote, title: t("perkCod"), note: others ? t("perkCodNote") : t("perkCodOnlyNote") }
       : { icon: ShieldCheck, title: t("perkSecure"), note: t("perkSecureNote") },
     { icon: BadgeCheck, title: t("perkQuality"), note: t("perkQualityNote") },
@@ -589,7 +600,8 @@ function Details({ product, props, attrs, ctx }: StillProps) {
   // `descriptionHtml` is sanitised by the host on the server, like `contentHtml` (core/types.ts).
   const descriptionHtml = description ? (product.descriptionHtml?.trim() ?? "") : "";
   const bullets = props.showBullets !== false ? product.bulletPoints.filter((point) => point.trim()).map(decodeTextEntities) : [];
-  const delivery = props.showDelivery !== false ? deliveryNote(props, ctx) : "";
+  // A digital product (F-108b) has no delivery row.
+  const delivery = props.showDelivery !== false && !product.digital ? deliveryNote(props, ctx) : "";
   if (!description && !bullets.length && !delivery) return ctx.mode === "edit" ? <EditorNote attrs={attrs}>{sectionText("productNoDetails", ctx.locale)}</EditorNote> : null;
   const returns = ctx.store.policies?.find((policy) => policy.key === "return");
   const row = (title: string, open: boolean, body: ReactNode) => (
@@ -756,7 +768,7 @@ function productPartEmpty(node: ComponentNode & { type: ProductElementType }, pr
       return (
         !(props.showDescription !== false && product.description?.trim()) &&
         !(props.showBullets !== false && product.bulletPoints.some((point) => point.trim())) &&
-        props.showDelivery === false
+        (props.showDelivery === false || product.digital === true)
       );
     case "productContent":
       return !product.contentHtml?.trim();
@@ -765,7 +777,7 @@ function productPartEmpty(node: ComponentNode & { type: ProductElementType }, pr
       return product.reviewCount <= 0 && (product.questionCount ?? 0) <= 0;
     // Variant-aware on the storefront, so only "alert off" is known to draw nothing.
     case "productStockBadge":
-      return !product.lowStockAlert?.show;
+      return product.digital === true || !product.lowStockAlert?.show;
     default:
       return false;
   }
@@ -852,6 +864,10 @@ export function renderProductElement(type: ProductElementType, rawProps: Record<
   // card's) marks the product page, where the phone bottom navigation steps aside (BottomNavRuntime).
   const ownProduct = scope?.kind !== "product" || scope.record.id === ctx.product?.id;
   const attrs = { ...nodeAttrs, ...(type === "productReviews" && { id: "reviews" }), ...(ownProduct && { "data-sf-product-page": "" }) };
+  // A digital product (F-108b): its stock line says it is downloaded after payment, and it has no low-stock badge.
+  if (product.digital && (type === "productStock" || type === "productStockBadge")) {
+    return type === "productStock" ? <DigitalNote attrs={attrs} ctx={ctx} /> : null;
+  }
   const hookKey = HOOKS[type];
   const hook: ProductElementHook | undefined = hookKey && ctx.mode === "public" ? ctx[hookKey] : undefined;
   // The seller's live views line sits just above the buy box (public only: the number is illustrative, not data).
@@ -860,7 +876,7 @@ export function renderProductElement(type: ProductElementType, rawProps: Record<
   const offerCountdown = type === "productBuyBox" && ctx.mode === "public" ? ctx.renderOfferCountdown?.(product) : null;
   // Below it, the perks box (static, the package's own): a sibling after the host's buy box, so a
   // sticky phone bar the host draws inside its buy box never takes it along.
-  const perks = type === "productBuyBox" && ownProduct && props.perks !== false ? <Perks ctx={ctx} /> : null;
+  const perks = type === "productBuyBox" && ownProduct && props.perks !== false ? <Perks ctx={ctx} digital={product.digital === true} /> : null;
   // The Size chart app's "Find my size" (F-92), right above the page product's add-to-cart (the host draws nothing without a chart).
   const sizeFinder = type === "productBuyBox" && ownProduct && ctx.mode === "public" ? ctx.renderSizeFinder?.(product) : null;
   if (liveViews || offerCountdown || perks || sizeFinder) {

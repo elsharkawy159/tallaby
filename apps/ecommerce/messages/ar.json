@@ -236,6 +236,9 @@
     "suggestedTitle": "قد يعجبك أيضًا"
   },
   "checkout": {
+    "digitalNoCod": "الدفع عند الاستلام غير متاح للمنتجات الرقمية. اختر طريقة دفع أخرى.",
+    "digitalNoPaymentMethod": "لا يستطيع هذا المتجر استلام دفع المنتجات الرقمية حاليًا. تواصل مع المتجر.",
+    "digitalDownload": "تحميل رقمي",
     "offerLines": {
       "crossSell": "عرض مع المنتج",
       "quantityOffer": "عرض الكمية"
@@ -581,6 +584,9 @@
     "photos": "صور المنتج"
   },
   "product": {
+    "digitalBadge": "منتج رقمي",
+    "digitalProduct": "منتج رقمي",
+    "digitalDownloadAfterPayment": "تحمّله بعد الدفع، بدون شحن.",
     "addToCart": "أضف إلى السلة",
     "adding": "جاري الإضافة...",
     "inCartCount": "{count} في السلة",

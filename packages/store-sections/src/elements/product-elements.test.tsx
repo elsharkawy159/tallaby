@@ -451,3 +451,29 @@ describe("product sections with nothing to show", () => {
     expect(publicDraw(section([paragraph, node("productPrice")]), null)).toContain("Free returns.");
   });
 });
+
+describe("a digital product (F-108b)", () => {
+  const digital: ProductDetail = { ...product, digital: true, quantity: 0, lowStockAlert: { show: true, threshold: 5 } };
+
+  it("shows the download note in place of the stock line, and no low-stock badge", () => {
+    const stock = draw(node("productStock"), digital, { mode: "public" });
+    expect(stock).toContain(`data-stock="digital"`);
+    expect(stock).toContain("Digital product · download after payment");
+    expect(stock).not.toContain("Out of stock");
+    expect(draw(node("productStockBadge"), digital, { mode: "public" })).not.toContain("data-stock");
+  });
+
+  it("has no delivery row and a download perk instead of delivery", () => {
+    const details = draw(node("productDetails"), digital);
+    expect(details).not.toContain("Delivery &amp; returns");
+    const buyBox = draw(node("productBuyBox"), digital);
+    expect(buyBox).toContain("Download after payment");
+    expect(buyBox).not.toContain("Fast delivery");
+    expect(buyBox).not.toContain("Pay on delivery");
+  });
+
+  it("leaves a physical product as it was", () => {
+    expect(draw(node("productDetails"), product)).toContain("Delivery &amp; returns");
+    expect(draw(node("productBuyBox"), product)).toContain("Fast delivery");
+  });
+});
