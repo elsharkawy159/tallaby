@@ -8,12 +8,26 @@
 
 const PLATFORM_HOST = { type: "host", value: "(?:www\\.)?tallaby\\.com" };
 
+/** Old marketplace pages with no page on tallaby.com now (redirected to the home page below). */
+export const MARKETPLACE_PAGES = ["categories", "products", "wishlist"];
+
 export const redirects = [
   // The marketplace seller pages are gone: the marketing home has the signup.
   { source: "/become-seller", destination: "/", permanent: true },
   { source: "/sell", destination: "/", permanent: true },
   { source: "/en/become-seller", destination: "/en", permanent: true, has: [PLATFORM_HOST] },
   { source: "/en/sell", destination: "/en", permanent: true, has: [PLATFORM_HOST] },
+
+  // The old marketplace's catalog and wishlist are gone from tallaby.com, but
+  // search engines still crawl them (Search Console 404s, 2026-11-27): each
+  // goes to its language's home page. The query (e.g. ?category=) is passed on
+  // and ignored there; the home page's canonical has none.
+  ...MARKETPLACE_PAGES.flatMap((page) =>
+    [`/${page}`, `/${page}/:path*`].flatMap((source) => [
+      { source, destination: "/", permanent: true, has: [PLATFORM_HOST] },
+      { source: `/en${source}`, destination: "/en", permanent: true, has: [PLATFORM_HOST] },
+    ]),
+  ),
 
   // Old marketplace addresses with a page that does the same job now.
   { source: "/help", destination: "/faq", permanent: false, has: [PLATFORM_HOST] },
