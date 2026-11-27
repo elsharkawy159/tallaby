@@ -11,6 +11,9 @@ describe("App Center state (F-93)", () => {
   it("treats built-in apps as installed", () => {
     expect(stateOf("ai_assistants")).toMatchObject({ installed: true, badge: "installed" });
     expect(stateOf("product_feeds")).toMatchObject({ installed: true, badge: "installed" });
+    // Moved out of Website › SEO: a store that verified before needs no install step.
+    expect(stateOf("google_search_console")).toMatchObject({ installed: true, badge: "installed" });
+    expect(actionOf("google_search_console")).toBe("settings");
     expect(actionOf("ai_assistants")).toBe("settings");
   });
 

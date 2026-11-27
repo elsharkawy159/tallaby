@@ -1,17 +1,20 @@
-import { GOOGLE_SITE_VERIFICATION_RE, type StoreSeo, type StoreSeoInput } from "@workspace/lib/stores";
+import type { StoreSeo, StoreSeoInput } from "@workspace/lib/stores";
 
 /** Website › SEO form values and helpers. Error keys live under `domainSeo.errors`. */
 export type DomainSeoErrorKey = "invalidInput" | "readOnly" | "notFound" | "generic";
 
 export type DomainSeoResult = { success: true } | { success: false; error: DomainSeoErrorKey };
 
-/** The SEO form as edited in the browser ("" = empty). */
+/**
+ * The SEO form as edited in the browser ("" = empty). The Google Search
+ * Console code moved to Apps › Google Search Console (2026-11-27): the form
+ * never sends it, so saving keeps the stored token.
+ */
 export type StoreSeoFormValues = {
   titleTemplate: string;
   description: string;
   shareImageUrl: string;
   indexing: boolean;
-  googleSiteVerification: string;
   keywords: string[];
 };
 
@@ -21,25 +24,8 @@ export function toSeoFormValues(seo: StoreSeo): StoreSeoFormValues {
     description: seo.description ?? "",
     shareImageUrl: seo.shareImageUrl ?? "",
     indexing: seo.indexing,
-    googleSiteVerification: seo.googleSiteVerification ?? "",
     keywords: [...seo.keywords],
   };
-}
-
-/**
- * Search Console shows the token inside a whole tag:
- * `<meta name="google-site-verification" content="abc…" />`. Sellers often
- * paste the tag; keep only the content value. Anything else is returned
- * trimmed and still has to pass GOOGLE_SITE_VERIFICATION_RE on the server.
- */
-export function extractVerificationToken(input: string): string {
-  const value = input.trim();
-  const match = /content\s*=\s*["']([^"']*)["']/i.exec(value);
-  return (match ? match[1]! : value).trim();
-}
-
-export function isVerificationToken(value: string): boolean {
-  return GOOGLE_SITE_VERIFICATION_RE.test(value);
 }
 
 /** Form values → the strict server schema (empty strings become null there). */
@@ -49,7 +35,6 @@ export function toSeoPatch(v: StoreSeoFormValues): StoreSeoInput {
     description: v.description.trim(),
     shareImageUrl: v.shareImageUrl.trim(),
     indexing: v.indexing,
-    googleSiteVerification: extractVerificationToken(v.googleSiteVerification),
     keywords: v.keywords,
   };
 }

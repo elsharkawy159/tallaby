@@ -228,6 +228,9 @@ const facebookDomainVerification = z
   .trim()
   .regex(FACEBOOK_DOMAIN_VERIFICATION_RE, "invalid_verification_token");
 
+/** Apps › Google Search Console: a token, or empty to remove it. */
+export const googleSiteVerificationSchema = z.preprocess(blankToNull, googleSiteVerification.nullable());
+
 /** Apps › Meta Pixel › Domain verification: a token, or empty to remove it. */
 export const facebookDomainVerificationSchema = z.preprocess(blankToNull, facebookDomainVerification.nullable());
 
@@ -244,7 +247,12 @@ export const storeSeoSchema = z
     shareImageUrl: z.preprocess(blankToNull, httpUrl.nullable()),
     /** false = ask search engines not to index the store (noindex, no sitemap). */
     indexing: z.boolean(),
-    googleSiteVerification: z.preprocess(blankToNull, googleSiteVerification.nullable()),
+    /**
+     * Apps › Google Search Console saves it (2026-11-27); the Website › SEO
+     * form no longer sends it. Optional, so a caller that doesn't send it
+     * keeps the saved token; empty removes it.
+     */
+    googleSiteVerification: googleSiteVerificationSchema.optional(),
     /**
      * `<meta name="keywords">` of the store (Website › SEO). Optional, so a
      * caller that doesn't send it keeps the saved list; an empty list removes it.
@@ -262,6 +270,7 @@ export type StoreSeo = {
   description: string | null;
   shareImageUrl: string | null;
   indexing: boolean;
+  /** Not part of the SEO form (Apps › Google Search Console saves it); the form keeps it. */
   googleSiteVerification: string | null;
   /** Not part of the SEO form (Apps › Meta Pixel saves it); the form keeps it. */
   facebookDomainVerification: string | null;

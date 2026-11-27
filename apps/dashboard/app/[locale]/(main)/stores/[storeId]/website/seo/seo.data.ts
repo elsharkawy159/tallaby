@@ -1,7 +1,6 @@
-import { parseStoreSeo, storeSeoDefaults, suggestStoreKeywords } from "@workspace/lib/stores";
+import { storeSeoDefaults, suggestStoreKeywords } from "@workspace/lib/stores";
 import { storeHasVisibleProducts, type StoreRow } from "@workspace/lib/stores/server";
 import { storeCategoryGroups } from "@workspace/lib/store-sites/catalog-data";
-import { storeUrl } from "@workspace/lib/storefront";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { loadWebsitePages } from "../website.data";
 import type { WebsitePageRow } from "../website.types";
@@ -11,28 +10,22 @@ import type { WebsitePageRow } from "../website.types";
  * through loadStorePage (ownership checked) and stays scoped to it.
  */
 
-/** Why a store is kept out of search; empty = indexable. */
-export type NoindexReason = "storeInactive" | "indexingOff" | "noProducts";
-
-export type CrawlStatus = {
-  baseUrl: string;
-  sitemapUrl: string;
-  robotsUrl: string;
-  reasons: NoindexReason[];
-};
+/** Why a store is kept out of search besides its own switch; empty = indexable. */
+export type NoindexReason = "storeInactive" | "noProducts";
 
 /**
- * Mirrors the storefront rule (apps/ecommerce isStorefrontIndexable): a live
- * store is indexed when indexing is on and it shows at least one product.
+ * Why the store is kept out of search, besides the seller's own "Show in
+ * search engines" switch (the form shows that one live). Mirrors the
+ * storefront rule (apps/ecommerce isStorefrontIndexable): a live store is
+ * indexed when indexing is on and it shows at least one product. The sitemap
+ * and robots addresses moved to Apps › Google Search Console (2026-11-27).
  */
-export async function loadCrawlStatus(store: StoreRow, liveDomain: string | null): Promise<CrawlStatus> {
+export async function loadNoindexReasons(store: StoreRow): Promise<NoindexReason[]> {
   const hasProducts = await storeHasVisibleProducts(store.sellerId, store.id, { catalogSplit: await isSwitchOn("stores_catalog_split") });
-  const baseUrl = storeUrl(store.subdomain, liveDomain);
   const reasons: NoindexReason[] = [];
   if (store.status !== "active") reasons.push("storeInactive");
-  if (!parseStoreSeo(store.seo).indexing) reasons.push("indexingOff");
   if (!hasProducts) reasons.push("noProducts");
-  return { baseUrl, sitemapUrl: `${baseUrl}/sitemap.xml`, robotsUrl: `${baseUrl}/robots.txt`, reasons };
+  return reasons;
 }
 
 /** What the storefront uses when a field is left empty, in the store's default language. */

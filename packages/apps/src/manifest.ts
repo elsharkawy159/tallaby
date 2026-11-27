@@ -20,6 +20,7 @@ export const APP_IDS = [
   "tiktok_pixel",
   "snapchat_pixel",
   "product_feeds",
+  "google_search_console",
   "bosta",
   "wassalha",
   "mylerz",
@@ -96,6 +97,7 @@ export const APP_SETTINGS_ROUTES = [
   "qr_codes",
   "ai_assistants",
   "product_feeds",
+  "google_search_console",
   "whatsapp",
 ] as const;
 export type AppSettingsRoute = (typeof APP_SETTINGS_ROUTES)[number];

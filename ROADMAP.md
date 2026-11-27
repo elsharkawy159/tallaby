@@ -2173,6 +2173,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Website › SEO simplified; Google Search Console is its own app (owner request; no migration)
+
+- **Owner:** "simplify the /website/seo page, move 'Google Search Console' to be a separated app on /apps, keep page very simple and easy."
+- **Changed:** new built-in App Center app `google_search_console` (Tracking, free, `packages/apps/src/manifests/google-search-console.ts`, settings route `google_search_console`, Simple Icons mark, also on the tallaby.com apps grid): three steps (store address to add as a URL-prefix property, the HTML-tag verification code, the sitemap to submit, plus the robots link). The code is stored where it always was, `stores.seo.googleSiteVerification`, through the new `updateStoreGoogleSiteVerification` (store-scoped, `GOOGLE_SITE_VERIFICATION_RE` token only, storefront cache invalidated), so verified stores keep their tag and the storefront output is unchanged; built in, so it shows as installed with nothing to do. `storeSeoSchema.googleSiteVerification` is now optional (not sent = kept), so the SEO form no longer touches it; Admin and the agent still send it as before. Website › SEO is now one page with no in-page nav: Google preview first, title template, description, keywords, "Show in search engines" (with a one-line reason and fix link when the store is still hidden for having no products or being archived), the share image, the pages list (`#pages` kept) and a small link card to the app. Removed from the page: the SEO checklist on the store form (kept in the page sheet), the Search Console card and the Sitemap & indexing section (`crawl-status.client.tsx` deleted); `/website/domain/sitemap` now redirects to the app. Unused strings removed (`domainSeo.sections`, `domainSeo.seo.verification`/`optional`/`preview.noDescription`, most of `domainSeo.sitemap`); new `searchConsoleApp.*` and `sellerWebsite.seoPage.searchConsole.*`.
+- **Checks:** dashboard, lib, apps, admin, agent, marketing typecheck clean; vitest apps + website/seo folders (39), lib `src/integrations` + `stores.lib.test.ts` (168), `@workspace/apps` (18), dashboard `lib/i18n` (47) pass; eslint clean on the changed dashboard and marketing files.
+
+
 ### 2026-11-27 — Website › Forms lists the storefront's own forms, and a simpler form editor (owner request; no migration)
 
 - **Owner:** "For the forms, make it includes all forms that already on the storefront like Checkout form, Newsletter form, etc, so user can edit them directly and improve the UX of editing form to be very easy to users."

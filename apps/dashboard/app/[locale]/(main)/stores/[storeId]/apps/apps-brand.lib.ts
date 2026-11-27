@@ -1,5 +1,6 @@
 import {
   siGoogleanalytics,
+  siGooglesearchconsole,
   siGooglesheets,
   siGoogletagmanager,
   siMeta,
@@ -86,6 +87,7 @@ const GLYPHS: Record<AppId, Pick<SimpleIcon, "path">> = {
   meta_pixel: siMeta,
   meta_capi: siMeta,
   google_analytics: siGoogleanalytics,
+  google_search_console: siGooglesearchconsole,
   google_tag_manager: siGoogletagmanager,
   tiktok_pixel: siTiktok,
   snapchat_pixel: siSnapchat,

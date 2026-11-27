@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createStoreInputSchema,
   facebookDomainVerificationSchema,
+  googleSiteVerificationSchema,
   SEO_DESCRIPTION_RANGE,
   SEO_KEYWORDS_MAX,
   SEO_KEYWORD_MAX_LENGTH,
@@ -164,6 +165,23 @@ describe("facebook domain verification", () => {
   it("is not part of the SEO form, so saving the form never sends it", () => {
     const parsed = storeSeoSchema.parse({ titleTemplate: "", description: "", shareImageUrl: "", indexing: true, googleSiteVerification: "" });
     expect(parsed).not.toHaveProperty("facebookDomainVerification");
+  });
+});
+
+describe("Google Search Console token (Apps › Google Search Console)", () => {
+  const form = { titleTemplate: "", description: "", shareImageUrl: "", indexing: true };
+
+  it("accepts a token, turns empty into null and refuses anything else", () => {
+    expect(googleSiteVerificationSchema.parse(" abc123XYZ_- ")).toBe("abc123XYZ_-");
+    expect(googleSiteVerificationSchema.parse("")).toBeNull();
+    expect(googleSiteVerificationSchema.safeParse('<meta name="x">').success).toBe(false);
+    expect(googleSiteVerificationSchema.safeParse("short").success).toBe(false);
+  });
+
+  it("is optional in the SEO form: not sent keeps the saved token, empty still removes it", () => {
+    expect(storeSeoSchema.parse(form).googleSiteVerification).toBeUndefined();
+    expect(storeSeoSchema.parse({ ...form, googleSiteVerification: "" }).googleSiteVerification).toBeNull();
+    expect(storeSeoSchema.parse({ ...form, googleSiteVerification: "google-token_1" }).googleSiteVerification).toBe("google-token_1");
   });
 });
 

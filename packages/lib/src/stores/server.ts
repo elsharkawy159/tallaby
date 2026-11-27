@@ -72,6 +72,7 @@ import {
   storeGeneralSettingsSchema,
   storeSocialLinksSchema,
   facebookDomainVerificationSchema,
+  googleSiteVerificationSchema,
   parseStoreSeo,
   storeSeoSchema,
   subdomainCandidates,
@@ -575,6 +576,36 @@ export async function updateStoreSeo(
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
     .returning({ id: stores.id });
   return updated.length ? { success: true, data: parseStoreSeo(next) } : { success: false, error: "store_read_only" };
+}
+
+/**
+ * Apps › Google Search Console (2026-11-27). Sets (or, when empty, removes)
+ * only `stores.seo.googleSiteVerification`, the same key the Website › SEO
+ * form used to save, so existing stores keep their verification; every other
+ * SEO key is kept. The storefront renders it as `<meta name="google-site-verification">`.
+ */
+export async function updateStoreGoogleSiteVerification(
+  sellerId: string,
+  storeId: string,
+  input: unknown,
+  q: Queryable = db,
+): Promise<StoreResult<{ token: string | null }, StoreWriteError>> {
+  const parsed = googleSiteVerificationSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const store = await getStore(sellerId, storeId, q);
+  if (!store) return { success: false, error: "not_found" };
+  if (store.status !== "active") return { success: false, error: "store_read_only" };
+
+  const token = parsed.data;
+  const seo = token
+    ? sql`coalesce(${stores.seo}, '{}'::jsonb) || jsonb_build_object('googleSiteVerification', ${token}::text)`
+    : sql`coalesce(${stores.seo}, '{}'::jsonb) - 'googleSiteVerification'`;
+  const updated = await q
+    .update(stores)
+    .set({ seo, updatedAt: sql`now()` })
+    .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
+    .returning({ id: stores.id });
+  return updated.length ? { success: true, data: { token } } : { success: false, error: "store_read_only" };
 }
 
 /**

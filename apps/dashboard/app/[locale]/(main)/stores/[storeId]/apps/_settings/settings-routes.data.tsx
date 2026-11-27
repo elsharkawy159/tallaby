@@ -25,6 +25,8 @@ import type { AppCategoryOption } from "../apps.types";
 import { labelStoreCategories } from "@/lib/stores/category-labels.lib";
 import { ProductFeeds } from "../product-feeds.client";
 import { storeFeedUrls } from "../product-feeds.lib";
+import { SearchConsoleApp } from "../search-console.client";
+import { searchConsoleUrls } from "../search-console.lib";
 import { AiAssistantsApp } from "./ai-assistants/ai-assistants.client";
 import { BostaApp } from "./bosta/bosta.client";
 import { IntegrationSettings } from "./integration-settings.client";
@@ -163,6 +165,19 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
     const customDomain = await findActiveCustomDomainForSubdomain(store.subdomain);
     const published = store.siteStatus === "published";
     return <ProductFeeds urls={storeFeedUrls(storeUrl(store.subdomain, customDomain), store.supportedLocales)} published={published} />;
+  },
+  // Moved from Website › SEO (2026-11-27): the same stores.seo.googleSiteVerification, on the store's own address.
+  google_search_console: async ({ store, readOnly }) => {
+    const customDomain = await findActiveCustomDomainForSubdomain(store.subdomain);
+    return (
+      <SearchConsoleApp
+        storeId={store.id}
+        initial={parseStoreSeo(store.seo).googleSiteVerification}
+        urls={searchConsoleUrls(storeUrl(store.subdomain, customDomain))}
+        published={store.siteStatus === "published"}
+        readOnly={readOnly}
+      />
+    );
   },
   qr_codes: async ({ store }) => <StoreQrCodesScreen store={store} />,
 

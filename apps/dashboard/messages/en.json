@@ -5552,6 +5552,31 @@
       "step4": "Set it to update <b>daily</b> and save. TikTok reviews your products"
     }
   },
+  "searchConsoleApp": {
+    "description": "Verify your store in Google Search Console and submit its sitemap, so Google finds your pages and products faster.",
+    "added": "Code added",
+    "notAdded": "Not set up",
+    "notPublished": "Google can read your store once your website is published.",
+    "step1": "Open <b>Google Search Console</b> and add a <b>URL prefix</b> property with your store address.",
+    "storeAddress": "Store address",
+    "open": "Open Search Console",
+    "step2": "Choose the <b>HTML tag</b> method, copy the tag and paste it here. Save, then press <b>Verify</b> in Search Console.",
+    "label": "Verification code",
+    "hint": "Paste the code, or the whole meta tag Google shows you.",
+    "invalid": "This isn't a valid verification code. It has 10 to 100 letters, numbers, dashes or underscores.",
+    "live": "Added to every page of your store.",
+    "save": "Save code",
+    "saved": "Code saved. Press Verify in Search Console.",
+    "removed": "Code removed.",
+    "step3": "Open <b>Sitemaps</b> in Search Console and submit this address.",
+    "sitemap": "Sitemap",
+    "sitemapHint": "It lists your pages, products and blog posts, and updates by itself.",
+    "robots": "Open robots file",
+    "copy": "Copy",
+    "copiedShort": "Copied",
+    "copied": "Address copied",
+    "copyFailed": "Couldn't copy. Select the address and copy it yourself."
+  },
   "sizeChartApp": {
     "back": "Apps",
     "subtitle": "Help shoppers of {store} pick the right size before they order.",
@@ -6918,7 +6943,11 @@
     },
     "seoPage": {
       "title": "SEO",
-      "description": "How your store and its pages appear on Google and when their links are shared. Every field already has a good default, and you can improve it in a few clicks."
+      "description": "How your store looks on Google and when its link is shared. Empty fields use a good default.",
+      "searchConsole": {
+        "title": "Google Search Console",
+        "description": "Verify your store and submit its sitemap in Apps."
+      }
     }
   },
   "websiteOverview": {
@@ -7066,21 +7095,6 @@
   },
   "domainSeo": {
     "settingsLink": "Store address and domain moved to Website › Domain & SEO",
-    "sections": {
-      "label": "On this page",
-      "store": {
-        "title": "Store SEO",
-        "description": "Your store's description, keywords, share image and search settings."
-      },
-      "pages": {
-        "title": "Pages SEO",
-        "description": "The title, description and keywords of each page of your website."
-      },
-      "sitemap": {
-        "title": "Sitemap & indexing",
-        "description": "Whether search engines can index your store, plus its sitemap and robots files."
-      }
-    },
     "domain": {
       "readOnly": "This store is archived or suspended, so its address can't be changed.",
       "address": {
@@ -7145,7 +7159,6 @@
     },
     "seo": {
       "readOnly": "This store is archived or suspended, so its SEO can't be changed.",
-      "optional": "Optional",
       "save": "Save SEO",
       "saved": "SEO settings saved. Your store uses them now.",
       "search": {
@@ -7166,7 +7179,6 @@
       },
       "preview": {
         "label": "Search preview",
-        "noDescription": "No description of your own yet: the default is shown.",
         "examplePage": "About us"
       },
       "share": {
@@ -7180,13 +7192,6 @@
         "title": "Show in search engines",
         "on": "Search engines can list your store.",
         "off": "Search engines are asked not to list your store, and it has no sitemap."
-      },
-      "verification": {
-        "title": "Google Search Console",
-        "description": "Verify that you own this store in Google Search Console with the \"HTML tag\" method.",
-        "label": "Verification code",
-        "hint": "Paste the code, or the whole meta tag Google shows you.",
-        "invalid": "This isn't a valid verification code. It has 10 to 100 letters, numbers, dashes or underscores."
       }
     },
     "errors": {
@@ -7196,37 +7201,14 @@
       "generic": "Something went wrong. Try again."
     },
     "sitemap": {
-      "status": {
-        "title": "Search status",
-        "indexed": "Search engines can find your store.",
-        "indexedBadge": "Visible",
-        "indexedHint": "New pages and products appear in your sitemap automatically.",
-        "notIndexed": "Search engines are asked not to list your store right now.",
-        "notIndexedBadge": "Hidden"
-      },
       "reasons": {
-        "storeInactive": "The store is archived or suspended.",
-        "indexingOff": "\"Show in search engines\" is off.",
-        "noProducts": "The store has no products to show yet."
+        "storeInactive": "Hidden from search: the store is archived or suspended.",
+        "noProducts": "Hidden from search until your store shows a product."
       },
       "fix": {
         "storeInactive": "Open My stores",
-        "indexingOff": "Change in Store SEO",
         "noProducts": "Choose products"
-      },
-      "files": {
-        "title": "Sitemap and robots",
-        "description": "Files search engines read. They are created automatically for this store.",
-        "sitemap": "Sitemap",
-        "robots": "Robots file",
-        "contents": "Lists your home page, pages, products and blog posts.",
-        "searchConsole": "In Google Search Console, submit the sitemap address to help Google find new pages faster."
-      },
-      "pagesNote": "Hidden pages and drafts are never listed.",
-      "open": "Open",
-      "copy": "Copy",
-      "copied": "Copied",
-      "copyFailed": "Couldn't copy"
+      }
     },
     "fields": {
       "removeKeyword": "Remove {keyword}",

@@ -8,6 +8,7 @@ import bosta from "./bosta";
 import customerNotifications from "./customer-notifications";
 import easykash from "./easykash";
 import googleAnalytics from "./google-analytics";
+import googleSearchConsole from "./google-search-console";
 import googleSheets from "./google-sheets";
 import googleTagManager from "./google-tag-manager";
 import jtExpress from "./jt-express";
@@ -45,6 +46,7 @@ export const MANIFESTS = [
   tiktokPixel,
   snapchatPixel,
   productFeeds,
+  googleSearchConsole,
   bosta,
   wassalha,
   mylerz,

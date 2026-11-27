@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
-import { siGoogleanalytics, siGooglesheets, siGoogletagmanager, siMeta, siShopify, siSnapchat, siTiktok } from "simple-icons";
+import { siGoogleanalytics, siGooglesearchconsole, siGooglesheets, siGoogletagmanager, siMeta, siShopify, siSnapchat, siTiktok } from "simple-icons";
 import { APPS, localize, type AppId } from "@workspace/apps";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
@@ -524,6 +524,7 @@ const APP_GLYPHS: Partial<Record<AppId, string>> = {
   meta_pixel: siMeta.path,
   meta_capi: siMeta.path,
   google_analytics: siGoogleanalytics.path,
+  google_search_console: siGooglesearchconsole.path,
   google_tag_manager: siGoogletagmanager.path,
   shopify_import: siShopify.path,
   google_sheets: siGooglesheets.path,

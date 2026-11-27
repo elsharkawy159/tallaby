@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { FileText, Map as MapIcon, Search } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { appPaths, getApp } from "@workspace/apps";
 import { parseStoreSeo, storeSeoDefaults } from "@workspace/lib/stores";
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
 import { PageContainer, PageHeader } from "@/components/seller-ui";
+import { Link } from "@/i18n/navigation";
 import { loadStorePage } from "@/lib/stores/store-page.server";
-import { InPageNav, SectionGroup } from "../_components/section-group";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import { loadLiveDomain } from "../domain/domain.data";
-import { CrawlStatusView } from "./crawl-status.client";
 import { PagesSeo } from "./pages-seo.client";
-import { loadCrawlStatus, loadSeoDefaults, loadSeoPages } from "./seo.data";
+import { loadNoindexReasons, loadSeoDefaults, loadSeoPages } from "./seo.data";
 import { toSeoFormValues } from "./seo.dto";
 import { StoreSeoForm } from "./seo-form.client";
 
@@ -24,19 +24,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Website › SEO (owner, 2026-11-09): the store's own SEO (#store), every
- * page's SEO (#pages) and Sitemap & indexing (#sitemap). Split from the old
- * Domain & SEO page, which is now Website › Domain.
+ * Website › SEO (owner, 2026-11-09; simplified 2026-11-27): the store's own
+ * SEO, then every page's SEO. Google Search Console (code, sitemap, robots)
+ * is its own app now: Apps › Google Search Console.
  */
 export default async function StoreSeoPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadStorePage(storeId);
   const liveDomain = await loadLiveDomain(store);
-  const [crawlStatus, defaults, pages, t, tp] = await Promise.all([
-    loadCrawlStatus(store, liveDomain),
+  const [blockedBy, defaults, pages, tp] = await Promise.all([
+    loadNoindexReasons(store),
     loadSeoDefaults(store),
     loadSeoPages(store),
-    getTranslations("domainSeo.sections"),
     getTranslations("sellerWebsite.seoPage"),
   ]);
   const readOnly = store.status !== "active";
@@ -47,33 +46,25 @@ export default async function StoreSeoPage({ params }: { params: Promise<{ store
     seo,
     defaults.locale,
   );
+  const searchConsole = getApp("google_search_console");
 
   return (
     <PageContainer narrow>
       <PageHeader className="sui-rise" title={tp("title")} description={tp("description")} />
       <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
-      <InPageNav
-        label={t("label")}
-        items={[
-          { id: "store", label: t("store.title"), icon: Search },
-          { id: "pages", label: t("pages.title"), icon: FileText },
-          { id: "sitemap", label: t("sitemap.title"), icon: MapIcon },
-        ]}
+
+      <StoreSeoForm
+        storeId={store.id}
+        storeName={store.name}
+        storeHost={liveDomain ?? storeHostname(store.subdomain)}
+        initial={toSeoFormValues(seo)}
+        defaults={defaults}
+        blockedBy={blockedBy}
+        readOnly={readOnly}
       />
 
-      <SectionGroup id="store" icon={Search} title={t("store.title")} description={t("store.description")}>
-        <StoreSeoForm
-          storeId={store.id}
-          storeName={store.name}
-          storeHost={liveDomain ?? storeHostname(store.subdomain)}
-          hasCustomDomain={Boolean(liveDomain)}
-          initial={toSeoFormValues(seo)}
-          defaults={defaults}
-          readOnly={readOnly}
-        />
-      </SectionGroup>
-
-      <SectionGroup id="pages" icon={FileText} title={t("pages.title")} description={t("pages.description")}>
+      {/* #pages: Website › Pages links here. */}
+      <div id="pages" className="scroll-mt-24">
         <PagesSeo
           storeId={store.id}
           initial={pages}
@@ -88,11 +79,20 @@ export default async function StoreSeoPage({ params }: { params: Promise<{ store
             locale: defaults.locale,
           }}
         />
-      </SectionGroup>
+      </div>
 
-      <SectionGroup id="sitemap" icon={MapIcon} title={t("sitemap.title")} description={t("sitemap.description")}>
-        <CrawlStatusView storeId={store.id} status={crawlStatus} />
-      </SectionGroup>
+      {searchConsole && (
+        <Link
+          href={appPaths.settings(store.id, searchConsole)}
+          className="flex items-center gap-3 rounded-[18px] border border-(--s-line) bg-(--s-surface) px-4 py-3 text-[13px] text-(--s-muted) hover:border-(--s-primary)"
+        >
+          <span className="min-w-0 flex-1">
+            <b className="block text-sm font-bold text-(--s-text)">{tp("searchConsole.title")}</b>
+            {tp("searchConsole.description")}
+          </span>
+          <ChevronRight aria-hidden className="size-4 shrink-0 text-(--s-subtle) rtl:-scale-x-100" />
+        </Link>
+      )}
     </PageContainer>
   );
 }

@@ -66,7 +66,7 @@ describe("store apps catalog", () => {
   });
 
   it("keeps the entries the install engine and the old pages read, as before the registry (F-93)", () => {
-    // The catalog as it was in packages/lib before @workspace/apps, plus Product feeds (F-11b, now an app), EasyKash (F-98)
+    // The catalog as it was in packages/lib before @workspace/apps, plus Product feeds (F-11b, now an app), Google Search Console (moved out of Website › SEO), EasyKash (F-98)
     // and Tallaby Pay (F-100b: live, with its own provider, moved first among the payment gateways).
     const before = [
       { key: "ai_assistants", group: "ai", kind: "agent", live: true, pricing: FREE, defaultInstalled: true },
@@ -80,6 +80,7 @@ describe("store apps catalog", () => {
       { key: "tiktok_pixel", group: "tracking", kind: "script", provider: "tiktok_pixel", pricing: FREE },
       { key: "snapchat_pixel", group: "tracking", kind: "script", provider: "snapchat_pixel", pricing: FREE },
       { key: "product_feeds", group: "tracking", kind: "feed", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "google_search_console", group: "tracking", kind: "script", live: true, pricing: FREE, defaultInstalled: true },
       { key: "bosta", group: "shipping", kind: "carrier", provider: "bosta", pricing: FREE },
       { key: "wassalha", group: "shipping", kind: "sheet", provider: "wassalha", pricing: FREE },
       { key: "mylerz", group: "shipping", kind: "carrier", pricing: FREE },
@@ -116,7 +117,7 @@ describe("store apps catalog", () => {
 
   it("lists the built-in apps, and every built-in app is live", () => {
     const defaults = STORE_APPS.filter(isStoreAppDefaultInstalled);
-    expect(defaults.map((a) => a.key)).toEqual(["ai_assistants", "qr_codes", "product_feeds"]);
+    expect(defaults.map((a) => a.key)).toEqual(["ai_assistants", "qr_codes", "product_feeds", "google_search_console"]);
     for (const app of defaults) expect(isStoreAppLive(app), app.key).toBe(true);
   });
 
