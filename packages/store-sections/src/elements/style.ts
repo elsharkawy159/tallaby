@@ -477,9 +477,10 @@ function reducedMotionRule(selectors: string[]): string {
   return `@media (prefers-reduced-motion:reduce){${selectors.join(",")}{transition:none}${selectors.map((s) => `${s}:hover`).join(",")}{transform:none}}`;
 }
 
-function hiddenRule(selector: string, mode: StyleCssMode): string {
-  // In the editor a hidden element stays visible but faded, so it can still be selected.
-  return mode === "edit" ? `${selector}{opacity:0.35;outline:1px dashed currentColor}` : `${selector}{display:none!important}`;
+// The editor hides it too, so each device preview shows only what visitors on
+// that device see (owner, 2026-11-27); it stays reachable in the Layers panel.
+function hiddenRule(selector: string): string {
+  return `${selector}{display:none!important}`;
 }
 
 type Responsive = { base?: StyleValues; tablet?: StyleValues; mobile?: StyleValues; sectionRoot?: boolean; capHeight?: boolean; stage?: boolean };
@@ -654,12 +655,12 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
     if ([entry.base, entry.tablet, entry.mobile].some((style) => style?.hover)) hovered.push(selector);
     if (entry.base) base.push(ruleFor(selector, entry.base, entry.sectionRoot, entry.stage ? "base" : false));
     if (entry.capHeight) base.push(`${selector}{${BANNER_MAX_HEIGHT}}`);
-    if (entry.base?.hidden) hidden.base.push(hiddenRule(selector, mode));
+    if (entry.base?.hidden) hidden.base.push(hiddenRule(selector));
     for (const bp of STYLE_BREAKPOINTS) {
       const style = entry[bp];
       if (!style) continue;
       media[bp].push(ruleFor(selector, style, entry.sectionRoot, entry.stage ? "breakpoint" : false));
-      if (style.hidden) hidden[bp].push(hiddenRule(selector, mode));
+      if (style.hidden) hidden[bp].push(hiddenRule(selector));
     }
   }
   let css = base.join("");

@@ -112,6 +112,8 @@ function frameOrigin(frame: HTMLIFrameElement, container: HTMLElement) {
 
 function boxOf(element: HTMLElement | null, frame: HTMLIFrameElement, container: HTMLElement): CanvasBox | null {
   if (!element || !element.isConnected) return null;
+  // Not drawn (hidden on this device): no outline or toolbar at the frame's corner.
+  if (!element.getClientRects().length) return null;
   const r = visualRect(visualElement(element));
   const o = frameOrigin(frame, container);
   return { top: o.top + r.top, left: o.left + r.left, width: r.width, height: r.height };

@@ -92,8 +92,9 @@ describe("collectPageCss", () => {
     const css = collectPageCss([section({ breakpointStyles: { tablet: { parts: { title: { hidden: true } } } } })]);
     expect(css).toContain('@media (min-width:768px) and (max-width:1023px){.sf-site [data-part="s1::title"]{display:none!important}}');
     const edit = collectPageCss([section({ style: { hidden: true } })], "edit");
-    expect(edit).toContain("opacity:0.35");
-    expect(edit).not.toContain("display:none");
+    // The editor hides it the same way, so each device preview matches the store.
+    expect(edit).toContain("display:none!important");
+    expect(edit).not.toContain("opacity:0.35");
   });
 
   it("walks element trees", () => {
