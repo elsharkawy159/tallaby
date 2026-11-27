@@ -16,39 +16,49 @@ export const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot"
 // unprefixed; every other locale lives under /{locale} ("as-needed"), so those
 // are the prefixed copies to block.
 
+type RobotsRule = Extract<MetadataRoute.Robots["rules"], unknown[]>[number];
+
 /**
- * The same crawl rules on every host (store paths are a subset of these).
+ * Every crawler's group: the whole site except the private paths.
  * `defaultLocale`: the host's unprefixed language; an English-default store
  * blocks the /ar copies instead of the /en ones.
  */
-export function crawlRules(defaultLocale: string = routing.defaultLocale): MetadataRoute.Robots["rules"] {
+function publicRule(defaultLocale: string): RobotsRule {
   const prefixed = routing.locales.filter((l) => l !== defaultLocale);
-  return [
-    {
-      userAgent: "*",
-      allow: "/",
-      disallow: [
-        ...PRIVATE_PATHS,
-        ...prefixed.flatMap((l) => PRIVATE_PATHS.map((p) => `/${l}${p}`)),
-        "/admin/",
-        "/dashboard/",
-        "/api/",
-        "/private/",
-      ],
-    },
-    // Block crawlers that collect model-training data. AI *search* and
-    // user-triggered fetchers (OAI-SearchBot, ChatGPT-User, Claude-SearchBot,
-    // Claude-User, PerplexityBot) fall through to "*" so products can be
-    // found and recommended in AI answers, with the same private-path rules.
-    {
-      userAgent: [...TRAINING_CRAWLERS],
-      disallow: "/",
-    },
-  ];
+  return {
+    userAgent: "*",
+    allow: "/",
+    disallow: [
+      ...PRIVATE_PATHS,
+      ...prefixed.flatMap((l) => PRIVATE_PATHS.map((p) => `/${l}${p}`)),
+      "/admin/",
+      "/dashboard/",
+      "/api/",
+      "/private/",
+    ],
+  };
 }
 
+/**
+ * A store host's crawl rules (store paths are a subset of these): the public
+ * group, plus a full block for crawlers that collect model-training data,
+ * since a store is the seller's content. AI *search* and user-triggered
+ * fetchers (OAI-SearchBot, ChatGPT-User, Claude-SearchBot, Claude-User,
+ * PerplexityBot) fall through to "*" so products can be found and
+ * recommended in AI answers, with the same private-path rules.
+ */
+export function crawlRules(defaultLocale: string = routing.defaultLocale): MetadataRoute.Robots["rules"] {
+  return [publicRule(defaultLocale), { userAgent: [...TRAINING_CRAWLERS], disallow: "/" }];
+}
+
+/**
+ * tallaby.com's robots.txt: the public group only, so every crawler, the
+ * training ones included, may read the marketing pages and learn what
+ * Tallaby is, with the same private-path rules (owner, 2026-11-27).
+ * Google-Extended and Applebot-Extended fall under "*" already.
+ */
 export function marketplaceRobots(baseUrl: string): MetadataRoute.Robots {
-  return { rules: crawlRules(), sitemap: `${baseUrl}/sitemap.xml`, host: baseUrl };
+  return { rules: [publicRule(routing.defaultLocale)], sitemap: `${baseUrl}/sitemap.xml`, host: baseUrl };
 }
 
 /**
