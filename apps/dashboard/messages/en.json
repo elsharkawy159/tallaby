@@ -1305,7 +1305,12 @@
       },
       "stepDone": "Done",
       "later": "Later",
-      "optional": "Optional"
+      "optional": "Optional",
+      "markDone": "Mark as done",
+      "markDoneLabel": "Mark the \"{step}\" step as done",
+      "markNotDone": "Undo",
+      "markNotDoneLabel": "Mark the \"{step}\" step as not done",
+      "markDoneError": "We couldn't save that. Please try again."
     },
     "setupHome": {
       "title": "Let’s set up your store",

@@ -20,6 +20,8 @@ import {
   STORE_SETUP_OPTIONAL_STEPS,
   STORE_SETUP_STEP_DONE,
   STORE_SETUP_STEP_KEYS,
+  setupMarkScope,
+  storeSetupStepDoneFromData,
   storeSetupStepHref,
   type StoreSetupFlags,
   type StoreSetupStepKey,
@@ -39,19 +41,36 @@ export type SetupFlags = StoreSetupFlags;
 
 export type HomeStepKey = StoreSetupStepKey;
 
-export type HomeStep = { key: HomeStepKey; href: string; done: boolean; optional: boolean };
+export type HomeStep = {
+  key: HomeStepKey;
+  href: string;
+  done: boolean;
+  optional: boolean;
+  /** Done only because the seller marked it: the card offers to undo it. */
+  markedByHand: boolean;
+  /** The card offers "Mark as done" (not done, and it has a place to keep the mark). */
+  canMark: boolean;
+};
 
 /** Steps that need a store; the product and the wallet show without one. */
 const HOME_STORE_STEPS = new Set<HomeStepKey>(["theme", "identity", "domain", "seo"]);
 
 export function buildHomeSteps(flags: SetupFlags, storeId: string | null): HomeStep[] {
-  return STORE_SETUP_STEP_KEYS.filter((key) => storeId || !HOME_STORE_STEPS.has(key)).map((key) => ({
-    key,
-    // The product link keeps its no-store fallback (storeProductsHref).
-    href: key === "product" ? storeProductsHref(storeId, "/add") : storeSetupStepHref(key, storeId ?? ""),
-    done: STORE_SETUP_STEP_DONE[key](flags),
-    optional: STORE_SETUP_OPTIONAL_STEPS.has(key),
-  }));
+  return STORE_SETUP_STEP_KEYS.filter((key) => storeId || !HOME_STORE_STEPS.has(key))
+    // A seller whose wallet is above 0 doesn't see the wallet step (owner, 2026-11-28); it counts as done.
+    .filter((key) => !(key === "wallet" && flags.walletFunded))
+    .map((key) => {
+      const done = STORE_SETUP_STEP_DONE[key](flags);
+      return {
+        key,
+        // The product link keeps its no-store fallback (storeProductsHref).
+        href: key === "product" ? storeProductsHref(storeId, "/add") : storeSetupStepHref(key, storeId ?? ""),
+        done,
+        optional: STORE_SETUP_OPTIONAL_STEPS.has(key),
+        markedByHand: done && !storeSetupStepDoneFromData(key, flags),
+        canMark: !done && setupMarkScope(key, storeId) !== null,
+      };
+    });
 }
 
 /** The step the "next step" badge and the header point to: the first open required step, in order. */

@@ -54,4 +54,18 @@ describe("domain, SEO and wallet flags (owner, 2026-11-27)", () => {
     expect(toStoreSetupFlags({ setup_domain: true, setup_seo: true, setup_wallet: true })).toMatchObject({ domain: true, seo: true, wallet: true });
     expect(toStoreSetupFlags({})).toMatchObject({ domain: false, seo: false, wallet: false });
   });
+
+  it("read a wallet above 0 from the ledger's balance, the mirror only without a wallet row (owner 2026-11-28)", () => {
+    expect(text).toContain("(SELECT w.balance FROM seller_wallet w WHERE w.seller_id = s.id), s.wallet_balance, 0) > 0");
+    expect(toStoreSetupFlags({ setup_wallet_funded: true }).walletFunded).toBe(true);
+    expect(toStoreSetupFlags({}).walletFunded).toBe(false);
+  });
+
+  it("read the hand marks: store steps from the store's list, the wallet only from the account's", () => {
+    expect(text).toContain("s.seller_metrics -> 'setupMarkedDone' -> (st.id::text)");
+    expect(
+      toStoreSetupFlags({ setup_marked_store: ["theme", "wallet", "nope"], setup_marked_account: ["wallet", "seo"] }).marked,
+    ).toEqual(["theme", "wallet"]);
+    expect(toStoreSetupFlags({ setup_marked_store: null, setup_marked_account: "x" }).marked).toEqual([]);
+  });
 });

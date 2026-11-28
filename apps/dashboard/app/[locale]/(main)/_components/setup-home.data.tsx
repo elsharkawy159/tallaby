@@ -7,6 +7,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { HomeSnapshot } from "./home.queries";
 import { HOME_STEP_ICONS, HOME_STEP_IMAGES } from "./setup-checklist.data";
 import { buildHomeSteps, nextHomeStep } from "./setup-checklist.lib";
+import { SetupMarkDoneButton } from "./setup-mark-done.client";
 import { storeWelcomeHref } from "../stores/[storeId]/welcome/welcome.lib";
 
 /** Length of the progress ring's circle (r = 26). */
@@ -81,7 +82,7 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
               <SellerCard
                 className={cn(
                   "relative flex w-full flex-col gap-2.5 p-5 max-[600px]:p-4",
-                  "transition-[border-color,box-shadow] duration-150 hover:border-(--s-outline) hover:shadow-(--s-shadow-hover)",
+                  "transition-[border-color,box-shadow] duration-150 group-hover:border-(--s-outline) group-hover:shadow-(--s-shadow-hover)",
                   next && "border-accent shadow-(--s-shadow-hover)",
                   step.done && "border-dashed shadow-none",
                 )}
@@ -125,32 +126,42 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                   {step.done && <span className="sr-only"> — {tSetup("done")}</span>}
                 </h3>
                 <p className="text-pretty text-[13px] leading-[1.6] text-(--s-muted)">{tSetup(`tasks.${step.key}.description`)}</p>
-                <div className="mt-auto pt-1.5">
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1.5">
                   {step.done ? (
-                    <div className="flex flex-wrap items-center justify-between gap-2">
+                    <>
                       <span className="inline-flex items-center gap-[5px] text-[13px] font-bold text-success">
                         <Check className="size-4" aria-hidden />
                         {tSetup("stepDone")}
                       </span>
-                      <span className="text-[12.5px] font-bold text-(--s-subtle) group-hover:text-(--s-ink) group-hover:underline">{t("edit")}</span>
-                    </div>
+                      {!step.markedByHand && (
+                        <span className="text-[12.5px] font-bold text-(--s-subtle) group-hover:text-(--s-ink) group-hover:underline">{t("edit")}</span>
+                      )}
+                    </>
                   ) : (
-                    <SellerButton asChild size="sm" variant={next ? "amber" : "outline"} className="max-[600px]:w-full">
+                    <SellerButton asChild size="sm" variant={next ? "amber" : "outline"} className={cn(!step.canMark && "max-[600px]:w-full")}>
                       <span>
                         {tSetup(`tasks.${step.key}.cta`)}
                         <ArrowLeft className="ltr:rotate-180" aria-hidden />
                       </span>
                     </SellerButton>
                   )}
+                  {(step.canMark || step.markedByHand) && (
+                    // Above the card's link (z-index), so it is its own button, not part of the link.
+                    <SetupMarkDoneButton step={step.key} storeId={snapshot.setupStoreId} undo={step.markedByHand} className="relative z-[2]" />
+                  )}
                 </div>
               </SellerCard>
           );
-          // The whole card opens the step (owner, 2026-11-26); no step is locked (owner, 2026-11-27).
+          // The whole card opens the step (owner, 2026-11-26) through a link stretched over it, since the
+          // "Mark as done" button can't sit inside an <a>; no step is locked (owner, 2026-11-27).
           return (
-            <li key={step.key} className="flex">
-              <Link href={step.href} className="group flex w-full no-underline">
-                {card}
-              </Link>
+            <li key={step.key} className="group relative flex">
+              <Link
+                href={step.href}
+                aria-label={`${tSetup(`tasks.${step.key}.title`)}: ${tSetup(`tasks.${step.key}.cta`)}`}
+                className="absolute inset-0 z-[1] rounded-[24px] max-[600px]:rounded-[20px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              />
+              {card}
             </li>
           );
         })}

@@ -1,5 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
-import type { StoreSetupFlags } from "./store-setup.lib";
+import { parseSetupMarks, type StoreSetupFlags } from "./store-setup.lib";
 
 /**
  * The store setup flags as SQL columns (store-setup.lib.ts), for a query over
@@ -38,7 +38,13 @@ export const storeSetupFlagColumns = (productScope: SQL) => sql`
         OR nullif(btrim(st.seo ->> 'description'), '') IS NOT NULL, false) AS setup_seo,
       -- Account level: a paid top-up, the same rule as hasTopUp in billing/order-lock.server.ts.
       (EXISTS (SELECT 1 FROM seller_wallet_top_ups wtu WHERE wtu.seller_id = s.id AND wtu.status = 'succeeded')
-        OR EXISTS (SELECT 1 FROM wallet_transactions wtx WHERE wtx.seller_id = s.id AND wtx.type = 'top_up')) AS setup_wallet
+        OR EXISTS (SELECT 1 FROM wallet_transactions wtx WHERE wtx.seller_id = s.id AND wtx.type = 'top_up')) AS setup_wallet,
+      -- A store wallet above 0 hides the wallet step (owner, 2026-11-28). seller_wallet holds the ledger's
+      -- balance; sellers.wallet_balance is its mirror, read only when the seller has no wallet row yet.
+      (coalesce((SELECT w.balance FROM seller_wallet w WHERE w.seller_id = s.id), s.wallet_balance, 0) > 0) AS setup_wallet_funded,
+      -- Steps the seller marked done by hand (seller_metrics.setupMarkedDone: the store's id, or 'account' for the wallet).
+      s.seller_metrics -> 'setupMarkedDone' -> (st.id::text) AS setup_marked_store,
+      s.seller_metrics -> 'setupMarkedDone' -> 'account' AS setup_marked_account
 `;
 
 export const toStoreSetupFlags = (row: Record<string, unknown>): StoreSetupFlags => ({
@@ -51,4 +57,10 @@ export const toStoreSetupFlags = (row: Record<string, unknown>): StoreSetupFlags
   domain: Boolean(row.setup_domain),
   seo: Boolean(row.setup_seo),
   wallet: Boolean(row.setup_wallet),
+  walletFunded: Boolean(row.setup_wallet_funded),
+  // The wallet's mark is the account's; a store's list never marks it.
+  marked: [
+    ...parseSetupMarks(row.setup_marked_store).filter((key) => key !== "wallet"),
+    ...parseSetupMarks(row.setup_marked_account).filter((key) => key === "wallet"),
+  ],
 });

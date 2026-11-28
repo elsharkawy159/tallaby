@@ -29,6 +29,10 @@ export type StoreSetupFlags = {
   seo: boolean;
   /** The seller has a paid top-up (account level; same rule as `hasTopUp` in billing/order-lock.server.ts). */
   wallet: boolean;
+  /** The store wallet's balance is above 0 (account level): the wallet step counts as done and the home hides it (owner, 2026-11-28). */
+  walletFunded?: boolean;
+  /** Steps the seller marked done by hand on the home (`sellers.seller_metrics.setupMarkedDone`, owner 2026-11-28). */
+  marked?: readonly StoreSetupStepKey[];
 };
 
 export type StoreSetupStepKey = "product" | "theme" | "identity" | "domain" | "seo" | "wallet";
@@ -45,14 +49,41 @@ export const STORE_SETUP_OPTIONAL_STEPS: ReadonlySet<StoreSetupStepKey> = new Se
 /** The steps that decide "set up", in the home's order (the setup reminder emails list these). */
 export const STORE_SETUP_REQUIRED_STEP_KEYS: readonly StoreSetupRequiredStepKey[] = ["product", "theme", "identity", "wallet"];
 
-export const STORE_SETUP_STEP_DONE: Record<StoreSetupStepKey, (flags: StoreSetupFlags) => boolean> = {
+/** What the data says, before the seller's own "Mark as done". */
+const STEP_DONE_FROM_DATA: Record<StoreSetupStepKey, (flags: StoreSetupFlags) => boolean> = {
   product: (f) => f.product,
   theme: (f) => f.template,
   identity: (f) => f.brand,
   domain: (f) => f.domain,
   seo: (f) => f.seo,
-  wallet: (f) => f.wallet,
+  wallet: (f) => f.wallet || Boolean(f.walletFunded),
 };
+
+/** Done by its data alone; a step marked by hand but not done this way can be unmarked. */
+export function storeSetupStepDoneFromData(key: StoreSetupStepKey, flags: StoreSetupFlags): boolean {
+  return STEP_DONE_FROM_DATA[key](flags);
+}
+
+/** A step is done by its data or because the seller marked it done (owner, 2026-11-28). */
+export const STORE_SETUP_STEP_DONE = Object.fromEntries(
+  STORE_SETUP_STEP_KEYS.map((key) => [key, (f: StoreSetupFlags) => STEP_DONE_FROM_DATA[key](f) || Boolean(f.marked?.includes(key))]),
+) as Record<StoreSetupStepKey, (flags: StoreSetupFlags) => boolean>;
+
+/**
+ * Where a step's hand mark is kept in `sellers.seller_metrics.setupMarkedDone`:
+ * the wallet under "account" (it is the seller's), the other steps under the
+ * store's id. Null: the step can't be marked (a store step with no store).
+ */
+export const SETUP_MARK_ACCOUNT_KEY = "account";
+export function setupMarkScope(key: StoreSetupStepKey, storeId: string | null): string | null {
+  return key === "wallet" ? SETUP_MARK_ACCOUNT_KEY : storeId;
+}
+
+/** The marked steps of one scope from the saved JSON; anything unknown is dropped. */
+export function parseSetupMarks(value: unknown): StoreSetupStepKey[] {
+  if (!Array.isArray(value)) return [];
+  return STORE_SETUP_STEP_KEYS.filter((key) => value.includes(key));
+}
 
 /** The required steps that aren't done; an optional step is never "missing". */
 export function missingStoreSetupSteps(flags: StoreSetupFlags): StoreSetupStepKey[] {

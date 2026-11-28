@@ -10,6 +10,7 @@ import { getHomeSnapshot, type HomeSnapshot } from "./home.queries";
 import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { SetupDismissible } from "./setup-dismiss.client";
 import { SetupStepsToggle } from "./setup-steps-toggle.client";
+import { SetupMarkDoneButton } from "./setup-mark-done.client";
 
 import { buildHomeSteps, isSetupDone, nextHomeStep, type HomeStepKey } from "./setup-checklist.lib";
 
@@ -137,7 +138,7 @@ export async function SetupChecklistData() {
                 <>
                   {next && (
                     // On the card's edge: a three-column row is too narrow to share a line with the icon.
-                    <span className="absolute -top-2.5 start-3.5 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-(--tallaby-teal-900)">
+                    <span className="pointer-events-none absolute -top-2.5 start-3.5 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-(--tallaby-teal-900)">
                       {t("nextStep")}
                     </span>
                   )}
@@ -178,7 +179,7 @@ export async function SetupChecklistData() {
                   <small className={cn("text-pretty text-xs leading-[1.6] text-[#a9c3c9]", next && "text-(--s-muted)")}>
                     {t(`tasks.${task.key}.description`)}
                   </small>
-                  <div className="mt-auto pt-1">
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-1.5 pt-1">
                     {done ? (
                       <span className="inline-flex items-center gap-[5px] text-xs font-bold text-[#86efac]">
                         <Check className="size-3.5" aria-hidden />
@@ -197,14 +198,30 @@ export async function SetupChecklistData() {
                         <ArrowLeft className="size-[15px] ltr:rotate-180" aria-hidden />
                       </span>
                     )}
+                    {(task.canMark || task.markedByHand) && (
+                      // Above the card's link (z-index), so it is its own button, not part of the link.
+                      <SetupMarkDoneButton
+                        step={task.key}
+                        storeId={snapshot.setupStoreId}
+                        undo={task.markedByHand}
+                        tone={next ? "light" : "dark"}
+                        className="relative z-[1]"
+                      />
+                    )}
                   </div>
                 </>
               );
               return (
                 <li key={task.key} className={cn("flex", nextKey && !next && "max-[600px]:hidden max-[600px]:group-data-open/setup:flex")}>
-                  <Link href={task.href} className={cardClass}>
+                  <div className={cardClass}>
+                    {/* The whole card opens the step: a link stretched over it (a button can't sit inside an <a>). */}
+                    <Link
+                      href={task.href}
+                      aria-label={`${t(`tasks.${task.key}.title`)}: ${t(`tasks.${task.key}.cta`)}`}
+                      className="absolute inset-0 z-0 rounded-[20px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    />
                     {body}
-                  </Link>
+                  </div>
                 </li>
               );
             })}

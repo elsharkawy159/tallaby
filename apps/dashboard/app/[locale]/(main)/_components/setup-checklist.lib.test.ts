@@ -133,10 +133,45 @@ describe("shared setup rule (F-94 reminder emails)", () => {
     const { STORE_SETUP_STEP_KEYS, STORE_SETUP_REQUIRED_STEP_KEYS, isStoreSetupDone } = await import("@workspace/lib/sellers");
     expect(buildHomeSteps(none, STORE).map((s) => s.key)).toEqual([...STORE_SETUP_STEP_KEYS]);
     expect(buildHomeSteps(none, STORE).filter((s) => !s.optional).map((s) => s.key)).toEqual([...STORE_SETUP_REQUIRED_STEP_KEYS]);
-    const keys = Object.keys(none) as (keyof SetupFlags)[];
+    const keys = [...Object.keys(none), "walletFunded"] as (keyof SetupFlags)[];
     for (let mask = 0; mask < 1 << keys.length; mask++) {
-      const flags = Object.fromEntries(keys.map((k, i) => [k, Boolean(mask & (1 << i))])) as SetupFlags;
+      const flags = Object.fromEntries(keys.map((k, i) => [k, Boolean(mask & (1 << i))])) as unknown as SetupFlags;
       expect(isSetupDone(flags, STORE)).toBe(isStoreSetupDone(flags));
+      expect(isSetupDone({ ...flags, marked: ["theme", "wallet"] }, STORE)).toBe(isStoreSetupDone({ ...flags, marked: ["theme", "wallet"] }));
     }
+  });
+});
+
+describe("a wallet above 0 (owner 2026-11-28)", () => {
+  it("hides the wallet step and counts it as done", () => {
+    const flags: SetupFlags = { ...required, wallet: false, walletFunded: true };
+    expect(buildHomeSteps(flags, STORE).map((s) => s.key)).not.toContain("wallet");
+    expect(buildHomeSteps({ ...none, walletFunded: true }, null).map((s) => s.key)).toEqual(["product"]);
+    expect(isSetupDone(flags, STORE)).toBe(true);
+  });
+
+  it("keeps the wallet step for an empty or negative wallet", () => {
+    expect(buildHomeSteps({ ...none, walletFunded: false }, STORE).map((s) => s.key)).toContain("wallet");
+  });
+});
+
+describe("Mark as done (owner 2026-11-28)", () => {
+  it("counts a marked step as done and offers to undo only a hand mark", () => {
+    const steps = buildHomeSteps({ ...none, template: true, marked: ["product", "theme", "seo"] }, STORE);
+    const by = Object.fromEntries(steps.map((s) => [s.key, s]));
+    expect(by.product).toMatchObject({ done: true, markedByHand: true, canMark: false });
+    // Done by its data: the mark changes nothing and there's nothing to undo.
+    expect(by.theme).toMatchObject({ done: true, markedByHand: false, canMark: false });
+    expect(by.identity).toMatchObject({ done: false, markedByHand: false, canMark: true });
+    expect(nextHomeStep(steps)?.key).toBe("identity");
+  });
+
+  it("finishes setup once every required step is marked", () => {
+    expect(isSetupDone({ ...none, marked: ["product", "theme", "identity", "wallet"] }, STORE)).toBe(true);
+  });
+
+  it("can't mark a store step when the seller has no store", () => {
+    const by = Object.fromEntries(buildHomeSteps(none, null).map((s) => [s.key, s.canMark]));
+    expect(by).toEqual({ product: false, wallet: true });
   });
 });

@@ -1305,7 +1305,12 @@
       },
       "stepDone": "تمّت",
       "later": "لاحقًا",
-      "optional": "اختياري"
+      "optional": "اختياري",
+      "markDone": "علّمها إنها تمّت",
+      "markDoneLabel": "علّم خطوة «{step}» إنها تمّت",
+      "markNotDone": "تراجع",
+      "markNotDoneLabel": "رجّع خطوة «{step}» إنها لسه ما تمّتش",
+      "markDoneError": "ما قدرناش نحفظ التغيير. حاول تاني."
     },
     "setupHome": {
       "title": "يلا نجهّز متجرك",
