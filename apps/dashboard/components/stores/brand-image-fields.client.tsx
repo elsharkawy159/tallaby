@@ -210,8 +210,8 @@ export function BannerField({
 
 /**
  * Square favicon picker (same upload as the logo; shown in browser tabs), in
- * the Website › Design look. Moved from design.client.tsx so the welcome page
- * uses the same field.
+ * the Website › Design look. Moved from design.client.tsx so other pages can
+ * use the same field.
  */
 export function FaviconField({ value, onChange, disabled }: { value: string; onChange: (value: string) => void; disabled?: boolean }) {
   const t = useTranslations("websiteDesign.brand");

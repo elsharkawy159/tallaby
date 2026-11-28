@@ -15,7 +15,8 @@
  * - `/stores/<section>/…` for every store section (`STORE_SECTIONS`), the only
  *   form for sections whose top-level path is an account page (`/shipping`,
  *   `/settings`).
- * `/products/…` and `/welcome` have their own redirect pages.
+ * `/products/…` and `/welcome` have their own redirect pages (`/welcome`, like
+ * `/stores/<id>/welcome`, goes to the home: the welcome page was removed, 2026-11-28).
  */
 
 import { isUuid } from "@/lib/auth/access.lib";

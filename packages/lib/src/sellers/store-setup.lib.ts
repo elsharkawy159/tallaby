@@ -19,7 +19,7 @@ export type StoreSetupFlags = {
   product: boolean;
   /** `site_status = 'published'`. Not a step. */
   publish: boolean;
-  /** Shipping settings saved, or a delivery zone. Not a home step (the store welcome page and the prompts read it). */
+  /** Shipping settings saved, or a delivery zone. Not a home step (the setup prompts read it). */
   shipping: boolean;
   /** The store exists: checkout offers cash on delivery by default, so payments need no save (owner, 2026-11-17). Not a step. */
   payments: boolean;

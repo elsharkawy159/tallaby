@@ -184,7 +184,7 @@ describe("toStorelessPath", () => {
         // Through the existing /products/[[...path]] redirect page.
         expect(legacyProductsTarget(ID, rest)).toBe(original);
       } else if (first === "welcome") {
-        // Through the existing /welcome redirect page (storeWelcomeHref).
+        // Through the /welcome redirect page (to the home since the welcome page was removed, 2026-11-28).
         expect(route).toBe("/welcome");
       } else {
         expect(storelessTarget(segs(storeless), ID, {})).toBe(original);

@@ -397,7 +397,7 @@ function DetailsLine({ methodKey, entry, money }: { methodKey: LiveKey; entry?: 
   );
 }
 
-/** A method's details sheet; also used by the welcome page (stores/[storeId]/welcome). */
+/** A method's details sheet. */
 export function MethodSheet({
   methodKey,
   money,

@@ -13,9 +13,9 @@ const NO_NICHE = "__none__";
 /**
  * The store's industry and, under it, the niche of the picked industry
  * (owner, 2026-11-15). Controlled: the parent keeps the values and decides
- * what an industry change does (Store settings › General and the welcome
- * page both start the niche again). `nicheId` "" is "none".
- * `variant`: chips (the welcome page) or two dropdowns (Store settings ›
+ * what an industry change does (Store settings › General starts
+ * the niche again). `nicheId` "" is "none".
+ * `variant`: chips or two dropdowns (Store settings ›
  * General, owner 2026-11-27), same values and strings.
  */
 export function IndustryNichePicker({

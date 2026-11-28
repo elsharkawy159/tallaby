@@ -1,6 +1,4 @@
 import { Suspense } from "react";
-import { getLocale } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { AttentionData } from "../_components/attention.data";
 import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "../_components/home-header.data";
@@ -37,7 +35,6 @@ import { SignupPixelData } from "../_components/signup-pixel.data";
 import { getHomeSnapshot } from "../_components/home.queries";
 import { isSetupDone, showSetupOnlyHome } from "../_components/setup-checklist.lib";
 import { SetupHomeData } from "../_components/setup-home.data";
-import { welcomeLandingHref } from "../stores/[storeId]/welcome/welcome.lib";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -73,10 +70,6 @@ export default async function VendorDashboardPage({
     snapshot !== null &&
     showSetupOnlyHome({ flags: snapshot.setup, storeId: snapshot.setupStoreId, hasRealOrders: snapshot.hasRealOrders });
 
-  // Right after signup, a new seller lands on the store's welcome page once; the pixel and greeting go with it.
-  const landing = welcomeLandingHref({ welcome, signup, setupOnly, storeId: snapshot?.setupStoreId ?? null });
-  if (landing) redirect({ href: landing, locale: await getLocale() });
-
   const title = (
     <Suspense fallback={<Skeleton className="h-8 w-48" />}>
       <HomeGreeting />
@@ -108,7 +101,7 @@ export default async function VendorDashboardPage({
         lock={orderLock}
         storeReady={graceStoreReady && snapshot !== null && isSetupDone(snapshot.setup, snapshot.setupStoreId)}
       />
-      {/* Only when the welcome page didn't take over (no store, or setup already done). */}
+      {/* First visit after signup (`?welcome=1`): the greeting and the Meta signup event (the welcome page is gone, owner 2026-11-28). */}
       {welcome === "1" && <WelcomeBanner />}
       {welcome === "1" && signup && (
         <Suspense fallback={null}>

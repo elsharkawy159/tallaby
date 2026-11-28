@@ -125,12 +125,6 @@ describe("isPromptBlockedRoute", () => {
     expect(isPromptBlockedRoute(`/stores/${STORE}/editor/home`, publish)).toBe(true);
   });
 
-  it("blocks the welcome page for every step", () => {
-    expect(isPromptBlockedRoute(`/stores/${STORE}/welcome`, product)).toBe(true);
-    expect(isPromptBlockedRoute(`/stores/${STORE}/welcome`, design)).toBe(true);
-    expect(isPromptBlockedRoute(`/stores/${STORE}/welcomes`, design)).toBe(false);
-  });
-
   it("blocks the product forms only while the step is the first product", () => {
     expect(isPromptBlockedRoute("/products/add", product)).toBe(true);
     expect(isPromptBlockedRoute("/products/add/bulk", product)).toBe(true);

@@ -11,7 +11,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { announceStoreLive, queueStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { useLocale, useTranslations } from "next-intl";
-import { useSearchParams } from "next/navigation";
 import { getPathname, useRouter } from "@/i18n/navigation";
 import { ArrowRight, FileDown, LoaderCircle, Rocket, Save, Trash2 } from "lucide-react";
 import {
@@ -86,7 +85,6 @@ import { markProductAiAssisted } from "./ai/ai-source.server";
 import { AddMethodChooser } from "./add-method-chooser.client";
 import { UrlAddStage } from "./url-add-stage.client";
 import { useAddMethod } from "./use-add-method";
-import { addProductReturnHref } from "./add-method.lib";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
 import { useProductStoreId, useProductsHref } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
 import { queueProductCreatedToast, showProductSavedToast } from "../_components/product-saved-toast.client";
@@ -132,9 +130,6 @@ export default function AddProduct(props: AddProductProps) {
 /** A new product starts at the choice of method; a stored draft waits there for Continue or Delete. */
 function NewProduct(props: AddProductProps) {
   const { view, formOpened, pick, deleteDraft, draftStored } = useAddMethod(props.aiEnabled ?? false);
-  // Read once: switching methods rewrites the query, and the welcome page still wants the product back.
-  const from = useSearchParams().get("from");
-  const [returnFrom] = useState(from);
   return (
     <>
       {view === "choose" && (
@@ -142,7 +137,7 @@ function NewProduct(props: AddProductProps) {
       )}
       {formOpened && (
         <div className={cn(view === "choose" && "hidden")}>
-          <AddProductForm {...props} aiStageOpen={view === "ai"} urlStageOpen={view === "url"} onPickMethod={pick} returnFrom={returnFrom} />
+          <AddProductForm {...props} aiStageOpen={view === "ai"} urlStageOpen={view === "url"} onPickMethod={pick} />
         </div>
       )}
     </>
@@ -160,7 +155,6 @@ function AddProductForm({
   aiStageOpen = false,
   urlStageOpen = false,
   onPickMethod,
-  returnFrom = null,
 }: AddProductProps & {
   /** The AI screen shows instead of the form; both stay mounted, so a running fill and its result survive. */
   aiStageOpen?: boolean;
@@ -168,8 +162,6 @@ function AddProductForm({
   urlStageOpen?: boolean;
   /** Back to the choice, or on to the form, for a new product. */
   onPickMethod?: (method: "choose" | "manual") => void;
-  /** `?from=` of a new product's page: only "welcome" changes where a published product goes (addProductReturnHref). */
-  returnFrom?: string | null;
 }) {
   const isEdit = Boolean(edit);
   const router = useRouter();
@@ -398,10 +390,10 @@ function AddProductForm({
             toast.info(tToast("productSavedAsDraft"));
             window.location.reload();
           } else {
-            // The toast (with "View" on the live store) shows on the products page (or the welcome page) after the full load.
+            // The toast (with "View" on the live store) shows on the products page after the full load.
             const queued = Boolean(result.data?.id) && queueProductCreatedToast(productStoreId, result.data!.id);
             if (!queued) toast.success(tToast("productCreatedSuccessfully"));
-            window.location.assign(getPathname({ href: addProductReturnHref(returnFrom, productStoreId) ?? productsHref(), locale }));
+            window.location.assign(getPathname({ href: productsHref(), locale }));
           }
         } else {
           toast.error(result.error === CATEGORY_KIND_MISMATCH ? tForm("categoryField.kindMismatch") : result.error || tToast("failedToCreateProduct"));

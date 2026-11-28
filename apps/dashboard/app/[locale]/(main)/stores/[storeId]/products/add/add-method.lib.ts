@@ -13,14 +13,3 @@ export function resolveAddView(param: string | null, aiEnabled: boolean): AddVie
   if (param === "ai") return aiEnabled ? "ai" : "choose";
   return "choose";
 }
-
-/**
- * Where a published new product goes instead of the products list: only the
- * welcome page (`?from=welcome`, docs/plans/seller-welcome.md), back to its
- * first-product step. Any other value is ignored (no open redirect: the path
- * is built here, never taken from the URL).
- */
-export function addProductReturnHref(from: string | null, storeId: string): string | null {
-  if (from !== "welcome" || !storeId) return null;
-  return `/stores/${encodeURIComponent(storeId)}/welcome#product`;
-}

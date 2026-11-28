@@ -1315,8 +1315,7 @@
     "setupHome": {
       "title": "Let’s set up your store",
       "description": "A few quick steps and your store is ready for its first order.",
-      "edit": "Edit",
-      "openGuide": "Open setup guide"
+      "edit": "Edit"
     },
     "kpis": {
       "currency": "EGP",
@@ -1962,30 +1961,6 @@
         "reviewsDone": "{count, plural, one {1 review} other {# reviews}} · average {average} ★",
         "reviewsSkip": "No reviews in your message"
       }
-    },
-    "aiQuick": {
-      "photos": "Product photos",
-      "addPhoto": "Add photo",
-      "description": "Description",
-      "priceNote": "This is the price your customers see.",
-      "create": "Create the product",
-      "steps": {
-        "read": "Reading the photos and writing the details in Arabic and English",
-        "photos": "Adding the photos to the product",
-        "save": "Saving the product to your store"
-      },
-      "wait": "This can take up to a minute.",
-      "live": "Live",
-      "draft": "Draft",
-      "draftNote": "The product is saved as a draft, and customers can't see it yet. Open it to check and publish it.",
-      "edit": "Edit product",
-      "viewProducts": "View products",
-      "incomplete": "We wrote most of the product, and a few details are left. Finish them in the product form, then publish it.",
-      "incompleteNoDraft": "We couldn't finish the product here. Add it from the product form.",
-      "finish": "Finish the product",
-      "openForm": "Open the product form",
-      "saveFailed": "The product details are written, but it wasn't saved. Try saving it again.",
-      "retry": "Save the product"
     },
     "ai": {
       "title": "Add your product with AI",
@@ -9739,90 +9714,6 @@
       "message": "You have unsaved changes",
       "save": "Save changes",
       "discard": "Discard"
-    }
-  },
-  "storeWelcome": {
-    "title": "Set up your store",
-    "description": "A few short steps to get your store ready for its first order.",
-    "welcomeTitle": "Welcome to Tallaby! Your store is created",
-    "welcomeDescription": "A few steps left before it is ready for its first order. Follow them in order.",
-    "skip": "Go to dashboard",
-    "progress": "Steps done: {done} of {total}",
-    "progressLabel": "Setup progress",
-    "readOnly": "This store is read-only, so its setup can't be changed.",
-    "done": "Done",
-    "steps": {
-      "industry": {
-        "label": "Themes that fit what you sell: <b>{industry}</b>",
-        "labelNiche": "Themes that fit what you sell: <b>{industry}, {niche}</b>",
-        "empty": "Tell us what you sell and we suggest the themes that fit.",
-        "choose": "Choose",
-        "change": "Change",
-        "modalTitle": "What does your store sell?",
-        "cancel": "Cancel",
-        "save": "Save",
-        "saved": "Saved."
-      },
-      "theme": {
-        "title": "Choose your theme",
-        "description": "The best fit for your store comes first. You can change it any time.",
-        "doneNote": "Your theme is chosen.",
-        "current": "Your theme: {name}",
-        "seeAll": "See all themes"
-      },
-      "product": {
-        "title": "Add your first product with AI",
-        "description": "One product is enough to see your store the way customers do.",
-        "aiHint": "Describe your product and upload a photo, and we write the title and description for you.",
-        "cta": "Add a product with AI",
-        "ctaManual": "Add a product",
-        "doneNote": "Your first product is in your store.",
-        "viewProducts": "View products",
-        "fullForm": "Or use the full product form"
-      },
-      "shipping": {
-        "title": "Delivery price",
-        "description": "Set what customers pay for delivery. You can change it any time.",
-        "countryZoneName": "All {country}",
-        "priceLabel": "Delivery price",
-        "priceHint": "This is our suggested price. You can type your own.",
-        "priceHintAbroad": "Type the delivery price in your store's currency.",
-        "save": "Save delivery price",
-        "saved": "Delivery price saved.",
-        "noCountry": "Add the places you deliver to and the price for each.",
-        "zonesSummary": "{count, plural, one {# delivery zone} other {# delivery zones}}",
-        "moreZones": "{count, plural, one {and # more} other {and # more}}",
-        "freeSummary": "Free delivery for orders of {amount} or more",
-        "freeAll": "Free delivery on every order",
-        "edit": "Edit shipping"
-      }
-    },
-    "live": {
-      "title": "Your store is live",
-      "copy": "Copy link",
-      "copied": "Store link copied.",
-      "copyFailed": "Couldn’t copy the link.",
-      "open": "Open store",
-      "whatsapp": "Send via WhatsApp",
-      "message": "We’ve opened our new store, {storeName}! You can order now here: {url}"
-    },
-    "offline": {
-      "note": "Your store is not live.",
-      "link": "Publish it from the Website page"
-    },
-    "topUp": {
-      "fee": "Only {fee} is taken per order.",
-      "status": {
-        "review": "Your top-up is being reviewed. We’ll let you know once it’s approved.",
-        "offlineNow": "Your store is offline. Top up to bring it back.",
-        "offlineIn": "Your Tallaby wallet balance is 0, so your store goes offline and customers can’t see it in {days, plural, one {# day} other {# days}}. Top up your wallet to keep your store open.",
-        "locked": "Your orders are hidden until you top up."
-      },
-      "cta": "Top up your wallet"
-    },
-    "locked": {
-      "product": "Add your first product first.",
-      "theme": "Choose your theme first."
     }
   },
   "setupReminderUnsubscribe": {

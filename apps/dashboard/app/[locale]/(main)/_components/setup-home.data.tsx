@@ -8,7 +8,6 @@ import type { HomeSnapshot } from "./home.queries";
 import { HOME_STEP_ICONS, HOME_STEP_IMAGES } from "./setup-checklist.data";
 import { buildHomeSteps, nextHomeStep } from "./setup-checklist.lib";
 import { SetupMarkDoneButton } from "./setup-mark-done.client";
-import { storeWelcomeHref } from "../stores/[storeId]/welcome/welcome.lib";
 
 /** Length of the progress ring's circle (r = 26). */
 const RING = 163.4;
@@ -61,15 +60,6 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
             {t("title")}
           </h2>
           <p className="text-pretty text-[13.5px] text-[#c6d8dc]">{t("description")}</p>
-          {snapshot.setupStoreId && (
-            <Link
-              href={storeWelcomeHref(snapshot.setupStoreId)}
-              className="mt-1 inline-flex min-h-10 items-center gap-1 text-[13.5px] font-bold text-accent underline-offset-4 hover:underline"
-            >
-              {t("openGuide")}
-              <ArrowLeft className="size-4 ltr:rotate-180" aria-hidden />
-            </Link>
-          )}
         </div>
       </div>
 

@@ -5,7 +5,6 @@ import {
   isSetupDone,
   nextHomeStep,
   showSetupOnlyHome,
-  stepBlocker,
   type SetupFlags,
 } from "./setup-checklist.lib";
 
@@ -65,24 +64,6 @@ describe("nextHomeStep (the next-step badge)", () => {
 
   it("is undefined once every required step is done, even with domain and SEO open", () => {
     expect(nextHomeStep(buildHomeSteps(required, STORE))).toBeUndefined();
-  });
-});
-
-describe("stepBlocker (kept for the store welcome page)", () => {
-  const steps = [
-    { key: "a", done: false },
-    { key: "b", done: false },
-    { key: "c", done: true },
-  ] as const;
-
-  it("waits for the first open step before it; never locks a done step", () => {
-    expect(stepBlocker(steps, "a")).toBeNull();
-    expect(stepBlocker(steps, "b")).toBe("a");
-    expect(stepBlocker(steps, "c")).toBeNull();
-  });
-
-  it("is null for a key that isn't in the list", () => {
-    expect(stepBlocker(steps, "z" as "a")).toBeNull();
   });
 });
 

@@ -15,7 +15,7 @@ import { TEMPLATE_PREVIEW_ORIGIN, templatePreviewTabUrl } from "./templates.lib"
  * One gallery tile (Claude Design 1c "Gallery tile"): the preview fills the
  * tile, Use / Preview buttons sit below it, always visible (owner,
  * 2026-11-07). A tap on the tile opens the preview dialog. Moved from
- * templates.client.tsx so the welcome page shows the same card; the parent
+ * templates.client.tsx; the parent
  * owns the confirm and preview dialogs.
  */
 export function TemplateCard({
@@ -29,7 +29,6 @@ export function TemplateCard({
   disabled,
   onPreview,
   onUse,
-  compact = false,
 }: {
   storeId: string;
   template: TemplateCardView;
@@ -45,8 +44,6 @@ export function TemplateCard({
   disabled: boolean;
   onPreview: () => void;
   onUse: () => void;
-  /** Smaller action buttons (the /welcome theme step, owner 2026-11-16). */
-  compact?: boolean;
 }) {
   const t = useTranslations("websiteTemplates");
   const tw = useTranslations("sellerWebsite.templates");
@@ -54,7 +51,6 @@ export function TemplateCard({
   const name = template.name[locale] || template.name.ar || template.name.en || "";
   // Its home page screenshot, served by tallaby.com, when it shows this card's edition (owner, 2026-11-12): a tall card that scrolls the page on hover.
   const shot = previewShot(template.preview, locale, edition);
-  const buttonClass = compact ? "h-8 gap-1.5 px-2.5 text-[12px] max-[600px]:h-9 [&_svg]:size-3.5" : undefined;
 
   return (
     <li className="tpl-shot-trigger group flex min-w-0 flex-col gap-3">
@@ -109,12 +105,12 @@ export function TemplateCard({
         <Swatches colors={template.palette} />
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <SellerButton size="sm" className={cn("whitespace-normal", buttonClass)} disabled={disabled || template.isPremium} onClick={onUse}>
+        <SellerButton size="sm" className="whitespace-normal" disabled={disabled || template.isPremium} onClick={onUse}>
           {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
           {current ? tw("reapplyShort") : t("use")}
         </SellerButton>
         {/* The full-page template in a new tab, with this card's edition (owner, 2026-11-12). The tile still opens the preview dialog. */}
-        <SellerButton asChild size="sm" variant="outline" className={buttonClass}>
+        <SellerButton asChild size="sm" variant="outline">
           <a
             href={templatePreviewTabUrl(TEMPLATE_PREVIEW_ORIGIN, locale, template.key, null, edition)}
             target="_blank"

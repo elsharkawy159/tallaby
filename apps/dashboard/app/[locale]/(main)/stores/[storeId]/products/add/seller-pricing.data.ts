@@ -4,7 +4,7 @@ import { DEFAULT_COMMISSION_RATE, type SellerPricingSettings } from "@/lib/utils
 
 /**
  * The session seller's pricing settings the product form computes prices with
- * (the add page and the welcome page's AI uploader). Display and form maths
+ * (the add page). Display and form maths
  * only: the server recomputes every amount it stores.
  */
 export async function loadSellerPricing(): Promise<SellerPricingSettings> {

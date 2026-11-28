@@ -31,7 +31,7 @@ export function useAddMethod(aiEnabled: boolean) {
   const [formOpened, setFormOpened] = useState(false);
   if (!formOpened && (view === "ai" || view === "url" || view === "manual")) setFormOpened(true);
 
-  // No (or an unknown) method: name the choice in the URL, keeping the other params (`from=welcome`).
+  // No (or an unknown) method: name the choice in the URL, keeping the other params.
   const nameChoice = view === "choose" && param !== "choose";
   useEffect(() => {
     if (!nameChoice) return;

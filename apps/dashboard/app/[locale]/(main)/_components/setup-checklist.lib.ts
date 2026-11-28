@@ -78,19 +78,6 @@ export function nextHomeStep(steps: readonly HomeStep[]): HomeStep | undefined {
   return steps.find((step) => !step.optional && !step.done);
 }
 
-/**
- * Steps in order: a step that isn't done waits for the first earlier step
- * that isn't done, returned here so the page can say what to do first. Null
- * when the step can be started, and always for a done step. The home no
- * longer locks its steps (owner, 2026-11-27); the store welcome page still
- * uses this for its own steps.
- */
-export function stepBlocker<K extends string>(steps: readonly { key: K; done: boolean }[], key: K): K | null {
-  const index = steps.findIndex((step) => step.key === key);
-  if (index < 0 || steps[index]!.done) return null;
-  return steps.slice(0, index).find((step) => !step.done)?.key ?? null;
-}
-
 /** Every required step is done: the store is ready for its first order, and the guide can go away. */
 export function isSetupDone(flags: SetupFlags, storeId: string | null): boolean {
   return buildHomeSteps(flags, storeId).every((step) => step.optional || step.done);

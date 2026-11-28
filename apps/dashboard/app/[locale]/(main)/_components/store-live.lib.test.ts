@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isStoreLiveDialogBlocked, parseLiveSite } from "./store-live.lib";
+import { parseLiveSite } from "./store-live.lib";
 
 describe("parseLiveSite", () => {
   it("keeps a live site with an http(s) URL and a hostname", () => {
@@ -18,15 +18,5 @@ describe("parseLiveSite", () => {
     { url: "javascript:alert(1)", hostname: "shop" },
   ])("rejects %j", (value) => {
     expect(parseLiveSite(value)).toBeNull();
-  });
-});
-
-describe("isStoreLiveDialogBlocked", () => {
-  it("blocks only the welcome page, which shows its own live card", () => {
-    expect(isStoreLiveDialogBlocked("/stores/abc/welcome")).toBe(true);
-    expect(isStoreLiveDialogBlocked("/stores/abc/welcome/")).toBe(true);
-    expect(isStoreLiveDialogBlocked("/stores/abc/website")).toBe(false);
-    expect(isStoreLiveDialogBlocked("/stores/abc/products/add")).toBe(false);
-    expect(isStoreLiveDialogBlocked("/stores/abc/welcomeish")).toBe(false);
   });
 });

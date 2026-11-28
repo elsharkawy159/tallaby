@@ -58,10 +58,3 @@ export function takeQueuedStoreLive(): LiveSite | null {
     return null;
   }
 }
-
-const WELCOME_ROUTE = /^\/stores\/[^/]+\/welcome(\/|$)/;
-
-/** The welcome page shows its own "Your store is live" card (`WelcomeLiveCard`), so no dialog on top of it. */
-export function isStoreLiveDialogBlocked(pathname: string): boolean {
-  return WELCOME_ROUTE.test(pathname);
-}

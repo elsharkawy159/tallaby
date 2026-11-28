@@ -36,7 +36,7 @@ async function finish(go: (path: string) => NextResponse, next: string, user: Us
     // e.g. the address was taken meanwhile: let them pick another one.
     return go(`/signup?error=${result.error === "taken" ? "subdomainTaken" : "generic"}`);
   }
-  // `signup` only for a new account: the welcome page fires Meta's CompleteRegistration once.
+  // `signup` only for a new account: the home fires Meta's CompleteRegistration once.
   return go(withQuery(after ?? "/", { welcome: "1", signup: result.signup }));
 }
 

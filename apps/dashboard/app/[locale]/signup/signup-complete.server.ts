@@ -48,8 +48,8 @@ export async function completeSignup(
 
   if (!result.data.created) return { ...result, storeUrl: storeUrl(result.data.subdomain) };
   // Tallaby's Meta CompleteRegistration (CAPI), once per new account, after
-  // the response so signup never waits on Meta. `signup` tells the welcome
-  // page to fire the matching browser event.
+  // the response so signup never waits on Meta. `signup` tells the home
+  // to fire the matching browser event.
   const method = signupMethodOf(user);
   after(async () => {
     const context = signupRequestContext(await headers(), await cookies());
